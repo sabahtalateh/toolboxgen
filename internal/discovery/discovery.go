@@ -19,10 +19,6 @@ func Discover(conf *Conf) error {
 
 	d.typesFromCalls()
 
-	for _, c := range d.calls {
-		println(c)
-	}
-
 	return nil
 }
 
