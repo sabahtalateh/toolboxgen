@@ -17,6 +17,8 @@ func Discover(conf *Conf) error {
 		return err
 	}
 
+	d.typesFromCalls()
+
 	for _, c := range d.calls {
 		println(c)
 	}
