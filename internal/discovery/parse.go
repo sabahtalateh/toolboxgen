@@ -6,6 +6,8 @@ import (
 	"go/ast"
 	"go/token"
 	"strings"
+
+	"github.com/kim89098/slice"
 )
 
 type callSequence struct {
@@ -73,15 +75,57 @@ func (c *call) firstError() *parseError {
 	return nil
 }
 
-func analyzeCallExpr(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec) (callSequence, *parseError) {
-	var calls []call
-	analyzeCallExprRec(&calls, e, fset, imports)
+func extractCalls(fset *token.FileSet, file *ast.File) ([]callSequence, error) {
+	var err error
+	var calls []callSequence
+
+	ast.Inspect(file, func(node ast.Node) bool {
+		if err != nil {
+			return false
+		}
+		switch n := node.(type) {
+		case *ast.FuncDecl:
+			if isInit(n) {
+				for _, stmt := range n.Body.List {
+					switch exprStmt := stmt.(type) {
+					case *ast.ExprStmt:
+						switch expr := exprStmt.X.(type) {
+						case *ast.CallExpr:
+							callSeq, analyzeErr := parseCallSequence(expr, fset, file.Imports)
+							_, ok := slice.Find(lookupPrefixes, func(s string) bool {
+								return strings.HasPrefix(callSeq.pakage, s)
+							})
+							if !ok {
+								continue
+							}
+							if analyzeErr != nil {
+								err = fmt.Errorf("%w\n\tat %s", analyzeErr.err, analyzeErr.position.String())
+								return false
+							}
+							calls = append(calls, callSeq)
+						}
+					}
+				}
+			}
+		}
+		return true
+	})
+
+	return calls, err
+}
+
+func parseCallSequence(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec) (callSequence, *parseError) {
 	var seq callSequence
 
-	if len(calls) > 0 {
-		seq.pakage = calls[0].pakage
-		seq.calls = calls
+	var calls []call
+	parseCalls(e, fset, imports, &calls)
+
+	if len(calls) == 0 {
+		return seq, nil
 	}
+
+	seq.pakage = calls[0].pakage
+	seq.calls = calls
 
 	var err *parseError
 	for _, c := range calls {
@@ -93,7 +137,7 @@ func analyzeCallExpr(e *ast.CallExpr, fset *token.FileSet, imports []*ast.Import
 	return seq, err
 }
 
-func analyzeCallExprRec(calls *[]call, e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec) {
+func parseCalls(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec, calls *[]call) {
 	var fun ast.Expr
 	var pkg string
 	var err error
@@ -101,7 +145,7 @@ func analyzeCallExprRec(calls *[]call, e *ast.CallExpr, fset *token.FileSet, imp
 	case *ast.SelectorExpr:
 		switch x := n.X.(type) {
 		case *ast.CallExpr:
-			analyzeCallExprRec(calls, x, fset, imports)
+			parseCalls(x, fset, imports, calls)
 			fun = n.Sel
 		case *ast.Ident:
 			pkg, err = resolvePackage(x.Name, imports)
@@ -125,7 +169,7 @@ func analyzeCallExprRec(calls *[]call, e *ast.CallExpr, fset *token.FileSet, imp
 		}
 		*calls = append(*calls, c)
 	case *ast.IndexExpr:
-		*calls = append(*calls, analyzeIndexExpr(n, e.Args, fset, imports)...)
+		*calls = append(*calls, parseIndexExpr(n, e.Args, fset, imports)...)
 	default:
 		*calls = append(*calls, call{
 			error:    errors.New("not supported"),
@@ -134,8 +178,8 @@ func analyzeCallExprRec(calls *[]call, e *ast.CallExpr, fset *token.FileSet, imp
 	}
 }
 
-func analyzeIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) []call {
-	var res []call
+func parseIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) []call {
+	var calls []call
 	c := call{
 		typed:    true,
 		position: fset.Position(i.Pos()),
@@ -148,7 +192,7 @@ func analyzeIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, im
 	case *ast.SelectorExpr:
 		switch xx := x.X.(type) {
 		case *ast.CallExpr:
-			analyzeCallExprRec(&res, xx, fset, imports)
+			parseCalls(xx, fset, imports, &calls)
 		case *ast.Ident:
 			var err error
 			c.pakage, err = resolvePackage(xx.Name, imports)
@@ -159,7 +203,7 @@ func analyzeIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, im
 			c.error = errors.New("not supported")
 		}
 		c.funcName = x.Sel.Name
-		c.arguments = analyzeArguments(args, fset, imports)
+		c.arguments = parseArguments(args, fset, imports)
 		c.position = fset.Position(x.Sel.Pos())
 	case *ast.CallExpr:
 		c.error = errors.New("function call not supported")
@@ -180,49 +224,28 @@ func analyzeIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, im
 			c.typeParameter.error = errors.New("not supported")
 		}
 	case *ast.CallExpr:
-		c.typeParameter.error = errors.New("function call not supported")
+		c.typeParameter.error = errors.New("function call as type parameter not supported")
 	default:
 		c.typeParameter.error = errors.New("not supported")
 	}
 
-	return append(res, c)
+	return append(calls, c)
 }
 
 func callFromIdent(pkg string, i *ast.Ident, args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) call {
 	return call{
 		pakage:    pkg,
 		funcName:  i.Name,
-		arguments: analyzeArguments(args, fset, imports),
+		arguments: parseArguments(args, fset, imports),
 		position:  fset.Position(i.Pos()),
 	}
 }
 
-func stringArgument(val string, pos token.Position) argument {
-	return argument{
-		typ: stringType,
-		stringArg: struct {
-			val string
-		}{val: val},
-		position: pos,
-	}
-}
-
-func funcArgument(pkg, name string, pos token.Position) argument {
-	return argument{
-		typ: refType,
-		refArg: struct {
-			pakage string
-			elem   string
-		}{pakage: pkg, elem: name},
-		position: pos,
-	}
-}
-
-func analyzeArguments(args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) []argument {
+func parseArguments(args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) []argument {
 	var res []argument
 
 	for _, arg := range args {
-		res = append(res, analyzeArgument(arg, fset, imports))
+		res = append(res, parseArgument(arg, fset, imports))
 	}
 
 	return res
@@ -235,7 +258,7 @@ func argumentFromError(error error, pos token.Position) argument {
 	}
 }
 
-func analyzeArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) argument {
+func parseArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) argument {
 	pos := fset.Position(arg.Pos())
 	switch a := arg.(type) {
 	case *ast.BasicLit:
@@ -245,7 +268,7 @@ func analyzeArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpe
 			return stringArgument(unquote(a.Value), pos)
 		}
 	case *ast.Ident:
-		return funcArgument("", a.Name, pos)
+		return refArgument("", a.Name, pos)
 	case *ast.SelectorExpr:
 		var pkg string
 		var err error
@@ -261,11 +284,32 @@ func analyzeArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpe
 			return argumentFromError(errors.New("should be in form of `package.ConstructorFunctionName`"), pos)
 		}
 
-		return funcArgument(pkg, funcName, pos)
+		return refArgument(pkg, funcName, pos)
 	case *ast.CallExpr:
 		return argumentFromError(errors.New("function call not supported"), pos)
 	default:
 		return argumentFromError(errors.New("not supported"), pos)
+	}
+}
+
+func stringArgument(val string, pos token.Position) argument {
+	return argument{
+		typ: stringType,
+		stringArg: struct {
+			val string
+		}{val: val},
+		position: pos,
+	}
+}
+
+func refArgument(pkg, name string, pos token.Position) argument {
+	return argument{
+		typ: refType,
+		refArg: struct {
+			pakage string
+			elem   string
+		}{pakage: pkg, elem: name},
+		position: pos,
 	}
 }
 

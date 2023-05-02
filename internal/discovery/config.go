@@ -3,7 +3,7 @@ package discovery
 import (
 	"fmt"
 
-	"github.com/sabahtalateh/toolboxgen/internal/discovery/mod"
+	"github.com/sabahtalateh/toolboxgen/internal/mod"
 )
 
 type Conf struct {

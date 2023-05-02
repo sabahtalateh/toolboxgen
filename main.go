@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/sabahtalateh/toolboxgen/internal/discovery"
-	"log"
 )
 
 var (
@@ -16,6 +15,6 @@ func main() {
 	}
 
 	if err = discovery.Discover(conf); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
