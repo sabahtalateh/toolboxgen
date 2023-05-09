@@ -6,14 +6,7 @@ import (
 	"go/ast"
 	"go/token"
 	"strings"
-
-	"github.com/kim89098/slice"
 )
-
-type callSequence struct {
-	pakage string
-	calls  []call
-}
 
 type call struct {
 	pakage        string
@@ -57,6 +50,17 @@ type parseError struct {
 	position token.Position
 }
 
+func firstError(cc []call) *parseError {
+	for _, c := range cc {
+		err := c.firstError()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (c *call) firstError() *parseError {
 	if c.error != nil {
 		return &parseError{err: c.error, position: c.position}
@@ -75,9 +79,9 @@ func (c *call) firstError() *parseError {
 	return nil
 }
 
-func extractCalls(fset *token.FileSet, file *ast.File) ([]callSequence, error) {
+func extractToolsFromFileInitBlock(fset *token.FileSet, file *ast.File) ([]Tool, error) {
 	var err error
-	var calls []callSequence
+	var tools []Tool
 
 	ast.Inspect(file, func(node ast.Node) bool {
 		if err != nil {
@@ -85,24 +89,20 @@ func extractCalls(fset *token.FileSet, file *ast.File) ([]callSequence, error) {
 		}
 		switch n := node.(type) {
 		case *ast.FuncDecl:
-			if isInit(n) {
-				for _, stmt := range n.Body.List {
-					switch exprStmt := stmt.(type) {
-					case *ast.ExprStmt:
-						switch expr := exprStmt.X.(type) {
-						case *ast.CallExpr:
-							callSeq, analyzeErr := parseCallSequence(expr, fset, file.Imports)
-							_, ok := slice.Find(lookupPrefixes, func(s string) bool {
-								return strings.HasPrefix(callSeq.pakage, s)
-							})
-							if !ok {
-								continue
-							}
-							if analyzeErr != nil {
-								err = fmt.Errorf("%w\n\tat %s", analyzeErr.err, analyzeErr.position.String())
-								return false
-							}
-							calls = append(calls, callSeq)
+			if !isInit(n) {
+				return true
+			}
+			for _, stmt := range n.Body.List {
+				switch exprStmt := stmt.(type) {
+				case *ast.ExprStmt:
+					switch expr := exprStmt.X.(type) {
+					case *ast.CallExpr:
+						var calls []call
+						parseCalls(expr, fset, file.Imports, &calls)
+						var t Tool
+						t, err = makeTool(calls)
+						if t != nil {
+							tools = append(tools, t)
 						}
 					}
 				}
@@ -111,30 +111,7 @@ func extractCalls(fset *token.FileSet, file *ast.File) ([]callSequence, error) {
 		return true
 	})
 
-	return calls, err
-}
-
-func parseCallSequence(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec) (callSequence, *parseError) {
-	var seq callSequence
-
-	var calls []call
-	parseCalls(e, fset, imports, &calls)
-
-	if len(calls) == 0 {
-		return seq, nil
-	}
-
-	seq.pakage = calls[0].pakage
-	seq.calls = calls
-
-	var err *parseError
-	for _, c := range calls {
-		if err = c.firstError(); err != nil {
-			break
-		}
-	}
-
-	return seq, err
+	return tools, err
 }
 
 func parseCalls(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec, calls *[]call) {
