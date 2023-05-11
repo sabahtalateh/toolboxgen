@@ -49,7 +49,8 @@ func makeComponent(calls []call) (*component.Component, error) {
 	if err := validate(
 		func() error { return v.component.typed(firstCall) },
 		func() error { return v.component.typeNotEmpty(firstCall) },
-		func() error { return v.component.validateName(calls) },
+		func() error { return v.component.componentCall(firstCall) },
+		func() error { return v.component.name(calls) },
 	); err != nil {
 		return nil, err
 	}
@@ -70,7 +71,8 @@ func makeProvider(calls []call) (*component.Provider, error) {
 	if err := validate(
 		func() error { return v.component.typed(firstCall) },
 		func() error { return v.component.typeNotEmpty(firstCall) },
-		func() error { return v.component.validateName(calls) },
+		func() error { return v.component.providerCall(firstCall) },
+		func() error { return v.component.name(calls) },
 	); err != nil {
 		return nil, err
 	}

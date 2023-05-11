@@ -14,36 +14,40 @@ func validate(ff ...func() error) error {
 
 type validators struct {
 	component struct {
-		typed        func(c call) error
-		typeNotEmpty func(c call) error
-		validateName func(c []call) error
+		typed         func(c call) error
+		typeNotEmpty  func(c call) error
+		name          func(c []call) error
+		componentCall func(c call) error
+		providerCall  func(c call) error
 	}
 }
 
 var v = validators{
 	component: struct {
-		typed        func(c call) error
-		typeNotEmpty func(c call) error
-		validateName func(c []call) error
+		typed         func(c call) error
+		typeNotEmpty  func(c call) error
+		name          func(c []call) error
+		componentCall func(c call) error
+		providerCall  func(c call) error
 	}{},
 }
 
 func init() {
 	v.component.typed = func(c call) error {
 		if !c.typed {
-			return fmt.Errorf("`component.Register` should have type parameter\n\tat %s", c.position)
+			return fmt.Errorf("`component.Component` should have type parameter\n\tat %s", c.position)
 		}
 		return nil
 	}
 
 	v.component.typeNotEmpty = func(c call) error {
 		if c.typed && c.typeParameter.typ == "" {
-			return fmt.Errorf("`component.Register` should have type parameter\n\tat %s", c.position)
+			return fmt.Errorf("`component.Component` should have type parameter\n\tat %s", c.position)
 		}
 		return nil
 	}
 
-	v.component.validateName = func(calls []call) error {
+	v.component.name = func(calls []call) error {
 		names := 0
 		var nameCall *call
 		for _, c := range calls {
@@ -68,4 +72,18 @@ func init() {
 
 		return nil
 	}
+
+	v.component.componentCall = func(c call) error {
+		if len(c.arguments) != 1 {
+			return fmt.Errorf("`component.Component` should have exactly one argument\n\tat %s", c.position)
+		}
+
+		arg := c.arguments[0]
+		if arg.typ != refType {
+			return fmt.Errorf("`component.Component` argument should be of function type\n\tat %s", c.position)
+		}
+
+		return nil
+	}
+	v.component.providerCall = v.component.componentCall
 }
