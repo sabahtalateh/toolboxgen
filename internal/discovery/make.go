@@ -8,7 +8,7 @@ import (
 	"github.com/sabahtalateh/toolboxgen/internal/discovery/tool/component"
 )
 
-func makeTool(calls []call) (Tool, error) {
+func (d *discovery) makeTool(calls []call) (Tool, error) {
 	if len(calls) == 0 {
 		return nil, nil
 	}
@@ -26,36 +26,38 @@ func makeTool(calls []call) (Tool, error) {
 
 	switch pkg {
 	case "github.com/sabahtalateh/toolbox/di/component":
-		return makeComponentTool(calls)
+		return d.makeComponent(calls)
 	default:
 		return nil, fmt.Errorf("unsupported package `%s`\n\tat %s", pkg, firstCall.position)
 	}
 }
 
-func makeComponentTool(calls []call) (Tool, error) {
+func (d *discovery) makeComponent(calls []call) (Tool, error) {
 	firstCall := calls[0]
 	switch firstCall.funcName {
-	case "Component":
-		return makeComponent(calls)
+	case "Constructor":
+		return d.makeConstructor(calls)
 	case "Provider":
-		return makeProvider(calls)
+		return d.makeProvider(calls)
 	default:
 		return nil, fmt.Errorf("unsupported function `%s`\n\tat %s", firstCall.funcName, firstCall.position)
 	}
 }
 
-func makeComponent(calls []call) (*component.Component, error) {
+func (d *discovery) makeConstructor(calls []call) (*component.Constructor, error) {
 	firstCall := calls[0]
 	if err := validate(
 		func() error { return v.component.typed(firstCall) },
 		func() error { return v.component.typeNotEmpty(firstCall) },
-		func() error { return v.component.componentCall(firstCall) },
+		func() error { return v.component.constructorArgs(firstCall) },
 		func() error { return v.component.name(calls) },
 	); err != nil {
 		return nil, err
 	}
 
-	c := component.Component{
+	// d.findFunction(firstCall.arguments[0].refArg.pakage)
+
+	c := component.Constructor{
 		Type: tool.Type{
 			Package: firstCall.typeParameter.pakage,
 			Type:    firstCall.typeParameter.typ,
@@ -66,12 +68,12 @@ func makeComponent(calls []call) (*component.Component, error) {
 	return &c, nil
 }
 
-func makeProvider(calls []call) (*component.Provider, error) {
+func (d *discovery) makeProvider(calls []call) (*component.Provider, error) {
 	firstCall := calls[0]
 	if err := validate(
 		func() error { return v.component.typed(firstCall) },
 		func() error { return v.component.typeNotEmpty(firstCall) },
-		func() error { return v.component.providerCall(firstCall) },
+		func() error { return v.component.providerArgs(firstCall) },
 		func() error { return v.component.name(calls) },
 	); err != nil {
 		return nil, err

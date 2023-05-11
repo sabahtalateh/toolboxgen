@@ -79,7 +79,7 @@ func (c *call) firstError() *parseError {
 	return nil
 }
 
-func discoverToolsInFile(fset *token.FileSet, file *ast.File, currPkg string) ([]Tool, error) {
+func (d *discovery) discoverToolsInFile(fset *token.FileSet, file *ast.File, currPkg string) ([]Tool, error) {
 	var err error
 	var tools []Tool
 
@@ -101,7 +101,7 @@ func discoverToolsInFile(fset *token.FileSet, file *ast.File, currPkg string) ([
 						var calls []call
 						parseCalls(expr, fset, file.Imports, &calls, currPkg)
 						var t Tool
-						t, err = makeTool(calls)
+						t, err = d.makeTool(calls)
 						if err != nil {
 							break LOOP
 						}

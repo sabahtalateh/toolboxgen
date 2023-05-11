@@ -14,21 +14,21 @@ func validate(ff ...func() error) error {
 
 type validators struct {
 	component struct {
-		typed         func(c call) error
-		typeNotEmpty  func(c call) error
-		name          func(c []call) error
-		componentCall func(c call) error
-		providerCall  func(c call) error
+		typed           func(c call) error
+		typeNotEmpty    func(c call) error
+		name            func(c []call) error
+		constructorArgs func(c call) error
+		providerArgs    func(c call) error
 	}
 }
 
 var v = validators{
 	component: struct {
-		typed         func(c call) error
-		typeNotEmpty  func(c call) error
-		name          func(c []call) error
-		componentCall func(c call) error
-		providerCall  func(c call) error
+		typed           func(c call) error
+		typeNotEmpty    func(c call) error
+		name            func(c []call) error
+		constructorArgs func(c call) error
+		providerArgs    func(c call) error
 	}{},
 }
 
@@ -73,7 +73,7 @@ func init() {
 		return nil
 	}
 
-	v.component.componentCall = func(c call) error {
+	v.component.constructorArgs = func(c call) error {
 		if len(c.arguments) != 1 {
 			return fmt.Errorf("`component.Component` should have exactly one argument\n\tat %s", c.position)
 		}
@@ -85,5 +85,5 @@ func init() {
 
 		return nil
 	}
-	v.component.providerCall = v.component.componentCall
+	v.component.providerArgs = v.component.constructorArgs
 }

@@ -48,7 +48,7 @@ func (d *discovery) discoverTools(dir string) error {
 					return errors.New("impossibru")
 				}
 				var tools []Tool
-				tools, err = discoverToolsInFile(fset, file, currentPkgPath)
+				tools, err = d.discoverToolsInFile(fset, file, currentPkgPath)
 				if err != nil {
 					return err
 				}
