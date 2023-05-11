@@ -79,7 +79,7 @@ func (c *call) firstError() *parseError {
 	return nil
 }
 
-func extractToolsFromFileInitBlock(fset *token.FileSet, file *ast.File) ([]Tool, error) {
+func discoverToolsInFile(fset *token.FileSet, file *ast.File, currPkg string) ([]Tool, error) {
 	var err error
 	var tools []Tool
 
@@ -92,15 +92,19 @@ func extractToolsFromFileInitBlock(fset *token.FileSet, file *ast.File) ([]Tool,
 			if !isInit(n) {
 				return true
 			}
+		LOOP:
 			for _, stmt := range n.Body.List {
 				switch exprStmt := stmt.(type) {
 				case *ast.ExprStmt:
 					switch expr := exprStmt.X.(type) {
 					case *ast.CallExpr:
 						var calls []call
-						parseCalls(expr, fset, file.Imports, &calls)
+						parseCalls(expr, fset, file.Imports, &calls, currPkg)
 						var t Tool
 						t, err = makeTool(calls)
+						if err != nil {
+							break LOOP
+						}
 						if t != nil {
 							tools = append(tools, t)
 						}
@@ -114,7 +118,7 @@ func extractToolsFromFileInitBlock(fset *token.FileSet, file *ast.File) ([]Tool,
 	return tools, err
 }
 
-func parseCalls(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec, calls *[]call) {
+func parseCalls(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec, calls *[]call, currPkg string) {
 	var fun ast.Expr
 	var pkg string
 	var err error
@@ -122,10 +126,10 @@ func parseCalls(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec,
 	case *ast.SelectorExpr:
 		switch x := n.X.(type) {
 		case *ast.CallExpr:
-			parseCalls(x, fset, imports, calls)
+			parseCalls(x, fset, imports, calls, currPkg)
 			fun = n.Sel
 		case *ast.Ident:
-			pkg, err = resolvePackage(x.Name, imports)
+			pkg, err = resolvePackage(x.Name, imports, currPkg)
 			fun = n.Sel
 		default:
 			*calls = append(*calls, call{
@@ -140,13 +144,13 @@ func parseCalls(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec,
 
 	switch n := fun.(type) {
 	case *ast.Ident:
-		c := callFromIdent(pkg, n, e.Args, fset, imports)
+		c := callFromIdent(pkg, n, e.Args, fset, imports, currPkg)
 		if c.error == nil {
 			c.error = err
 		}
 		*calls = append(*calls, c)
 	case *ast.IndexExpr:
-		*calls = append(*calls, parseIndexExpr(n, e.Args, fset, imports)...)
+		*calls = append(*calls, parseIndexExpr(n, e.Args, fset, imports, currPkg)...)
 	default:
 		*calls = append(*calls, call{
 			error:    errors.New("not supported"),
@@ -155,7 +159,7 @@ func parseCalls(e *ast.CallExpr, fset *token.FileSet, imports []*ast.ImportSpec,
 	}
 }
 
-func parseIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) []call {
+func parseIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec, currPkg string) []call {
 	var calls []call
 	c := call{
 		typed:    true,
@@ -163,16 +167,16 @@ func parseIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, impo
 	}
 	switch x := i.X.(type) {
 	case *ast.Ident:
-		c = callFromIdent("", x, args, fset, imports)
+		c = callFromIdent("", x, args, fset, imports, currPkg)
 		c.typed = true
 		c.position = fset.Position(i.Pos())
 	case *ast.SelectorExpr:
 		switch xx := x.X.(type) {
 		case *ast.CallExpr:
-			parseCalls(xx, fset, imports, &calls)
+			parseCalls(xx, fset, imports, &calls, currPkg)
 		case *ast.Ident:
 			var err error
-			c.pakage, err = resolvePackage(xx.Name, imports)
+			c.pakage, err = resolvePackage(xx.Name, imports, currPkg)
 			if err != nil {
 				c.error = err
 			}
@@ -180,7 +184,7 @@ func parseIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, impo
 			c.error = errors.New("not supported")
 		}
 		c.funcName = x.Sel.Name
-		c.arguments = parseArguments(args, fset, imports)
+		c.arguments = parseArguments(args, fset, imports, currPkg)
 		c.position = fset.Position(x.Sel.Pos())
 	case *ast.CallExpr:
 		c.error = errors.New("function call not supported")
@@ -191,12 +195,17 @@ func parseIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, impo
 	c.typeParameter.position = fset.Position(i.Index.Pos())
 	switch index := i.Index.(type) {
 	case *ast.Ident:
+		c.typeParameter.pakage = currPkg
 		c.typeParameter.typ = index.Name
 	case *ast.SelectorExpr:
 		c.typeParameter.typ = index.Sel.Name
 		switch x := index.X.(type) {
 		case *ast.Ident:
-			c.typeParameter.pakage = x.Name
+			var err error
+			c.typeParameter.pakage, err = resolvePackage(x.Name, imports, currPkg)
+			if err != nil {
+				c.error = err
+			}
 		default:
 			c.typeParameter.error = errors.New("not supported")
 		}
@@ -209,20 +218,20 @@ func parseIndexExpr(i *ast.IndexExpr, args []ast.Expr, fset *token.FileSet, impo
 	return append(calls, c)
 }
 
-func callFromIdent(pkg string, i *ast.Ident, args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) call {
+func callFromIdent(pkg string, i *ast.Ident, args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec, currPkg string) call {
 	return call{
 		pakage:    pkg,
 		funcName:  i.Name,
-		arguments: parseArguments(args, fset, imports),
+		arguments: parseArguments(args, fset, imports, currPkg),
 		position:  fset.Position(i.Pos()),
 	}
 }
 
-func parseArguments(args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) []argument {
+func parseArguments(args []ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec, currPkg string) []argument {
 	var res []argument
 
 	for _, arg := range args {
-		res = append(res, parseArgument(arg, fset, imports))
+		res = append(res, parseArgument(arg, fset, imports, currPkg))
 	}
 
 	return res
@@ -235,7 +244,7 @@ func argumentFromError(error error, pos token.Position) argument {
 	}
 }
 
-func parseArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec) argument {
+func parseArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec, currPkg string) argument {
 	pos := fset.Position(arg.Pos())
 	switch a := arg.(type) {
 	case *ast.BasicLit:
@@ -245,7 +254,7 @@ func parseArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec)
 			return stringArgument(unquote(a.Value), pos)
 		}
 	case *ast.Ident:
-		return refArgument("", a.Name, pos)
+		return refArgument(currPkg, a.Name, pos)
 	case *ast.SelectorExpr:
 		var pkg string
 		var err error
@@ -253,7 +262,7 @@ func parseArgument(arg ast.Expr, fset *token.FileSet, imports []*ast.ImportSpec)
 
 		switch x := a.X.(type) {
 		case *ast.Ident:
-			pkg, err = resolvePackage(x.Name, imports)
+			pkg, err = resolvePackage(x.Name, imports, currPkg)
 			if err != nil {
 				return argumentFromError(fmt.Errorf("error analyzing argument: %w", err), pos)
 			}
@@ -290,7 +299,7 @@ func refArgument(pkg, name string, pos token.Position) argument {
 	}
 }
 
-func resolvePackage(pkgAlias string, imports []*ast.ImportSpec) (string, error) {
+func resolvePackage(pkgAlias string, imports []*ast.ImportSpec, currPkg string) (string, error) {
 	if pkgAlias == "" {
 		return "", nil
 	}

@@ -2,9 +2,10 @@ package discovery
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/sabahtalateh/toolboxgen/internal/discovery/tool"
 	"github.com/sabahtalateh/toolboxgen/internal/discovery/tool/component"
-	"strings"
 )
 
 func makeTool(calls []call) (Tool, error) {
@@ -20,7 +21,7 @@ func makeTool(calls []call) (Tool, error) {
 
 	parseErr := firstError(calls)
 	if parseErr != nil {
-		return nil, fmt.Errorf("%w\n\tat%s", parseErr.err, parseErr.position)
+		return nil, fmt.Errorf("%w\n\tat %s", parseErr.err, parseErr.position)
 	}
 
 	switch pkg {
@@ -36,16 +37,22 @@ func makeComponent(calls []call) (Tool, error) {
 	switch firstCall.funcName {
 	case "Register":
 		return makeRegister(calls)
+	case "RegisterE":
+		return makeRegister(calls)
+	case "Provider":
+		return makeProvider(calls)
+	case "ProviderE":
+		return makeProvider(calls)
 	default:
 		return nil, fmt.Errorf("unsupported function `%s`\n\tat %s", firstCall.funcName, firstCall.position)
 	}
 }
 
-func makeRegister(calls []call) (Tool, error) {
+func makeRegister(calls []call) (*component.Register, error) {
 	firstCall := calls[0]
 	if err := validate(
-		func() error { return v.component.register.typed(firstCall) },
-		func() error { return v.component.register.typeNotEmpty(firstCall) },
+		func() error { return v.component.typed(firstCall) },
+		func() error { return v.component.typeNotEmpty(firstCall) },
 	); err != nil {
 		return nil, err
 	}
@@ -55,5 +62,24 @@ func makeRegister(calls []call) (Tool, error) {
 			Package: firstCall.typeParameter.pakage,
 			Type:    firstCall.typeParameter.typ,
 		},
+		WithError: firstCall.funcName == "RegisterE",
+	}, nil
+}
+
+func makeProvider(calls []call) (*component.Provider, error) {
+	firstCall := calls[0]
+	if err := validate(
+		func() error { return v.component.typed(firstCall) },
+		func() error { return v.component.typeNotEmpty(firstCall) },
+	); err != nil {
+		return nil, err
+	}
+
+	return &component.Provider{
+		Type: tool.Type{
+			Package: firstCall.typeParameter.pakage,
+			Type:    firstCall.typeParameter.typ,
+		},
+		WithError: firstCall.funcName == "ProviderE",
 	}, nil
 }

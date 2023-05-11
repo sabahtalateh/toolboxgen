@@ -1,6 +1,8 @@
 package discovery
 
 import (
+	"errors"
+	"github.com/sabahtalateh/toolboxgen/internal/mod"
 	"go/parser"
 	"go/token"
 	"io/fs"
@@ -9,10 +11,8 @@ import (
 )
 
 func Discover(conf *Conf) error {
-	d := discovery{
-		vendorDir: filepath.Join(conf.Mod.Dir, "vendor"),
-	}
-	if err := d.extractToolsFromInits(conf.RootDir); err != nil {
+	d := discovery{mod: conf.Mod}
+	if err := d.discoverTools(conf.RootDir); err != nil {
 		return err
 	}
 
@@ -20,16 +20,17 @@ func Discover(conf *Conf) error {
 }
 
 type discovery struct {
-	tools     []Tool
-	vendorDir string
+	mod   *mod.Module
+	tools []Tool
 }
 
-func (d *discovery) extractToolsFromInits(dir string) error {
+func (d *discovery) discoverTools(dir string) error {
 	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if strings.HasPrefix(path, d.vendorDir) {
+		// skip vendors
+		if strings.HasPrefix(path, filepath.Join(d.mod.Dir, "vendor")) {
 			return err
 		}
 		if !info.IsDir() {
@@ -39,9 +40,15 @@ func (d *discovery) extractToolsFromInits(dir string) error {
 		fset := token.NewFileSet()
 		pkgs, err := parser.ParseDir(fset, path, nil, parser.ParseComments)
 		for _, pkg := range pkgs {
-			for _, file := range pkg.Files {
+			for filePath, file := range pkg.Files {
+				currentPkgPath := filepath.Dir(filePath)
+				if strings.HasPrefix(currentPkgPath, d.mod.Dir) {
+					currentPkgPath = strings.Replace(currentPkgPath, d.mod.Dir, d.mod.Path, 1)
+				} else {
+					return errors.New("impossibru")
+				}
 				var tools []Tool
-				tools, err = extractToolsFromFileInitBlock(fset, file)
+				tools, err = discoverToolsInFile(fset, file, currentPkgPath)
 				if err != nil {
 					return err
 				}
