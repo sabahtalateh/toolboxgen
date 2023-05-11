@@ -26,44 +26,43 @@ func makeTool(calls []call) (Tool, error) {
 
 	switch pkg {
 	case "github.com/sabahtalateh/toolbox/di/component":
-		return makeComponent(calls)
+		return makeComponentTool(calls)
 	default:
 		return nil, fmt.Errorf("unsupported package `%s`\n\tat %s", pkg, firstCall.position)
 	}
 }
 
-func makeComponent(calls []call) (Tool, error) {
+func makeComponentTool(calls []call) (Tool, error) {
 	firstCall := calls[0]
 	switch firstCall.funcName {
-	case "Register":
-		return makeRegister(calls)
-	case "RegisterE":
-		return makeRegister(calls)
+	case "Component":
+		return makeComponent(calls)
 	case "Provider":
-		return makeProvider(calls)
-	case "ProviderE":
 		return makeProvider(calls)
 	default:
 		return nil, fmt.Errorf("unsupported function `%s`\n\tat %s", firstCall.funcName, firstCall.position)
 	}
 }
 
-func makeRegister(calls []call) (*component.Register, error) {
+func makeComponent(calls []call) (*component.Component, error) {
 	firstCall := calls[0]
 	if err := validate(
 		func() error { return v.component.typed(firstCall) },
 		func() error { return v.component.typeNotEmpty(firstCall) },
+		func() error { return v.component.validateName(calls) },
 	); err != nil {
 		return nil, err
 	}
 
-	return &component.Register{
+	c := component.Component{
 		Type: tool.Type{
 			Package: firstCall.typeParameter.pakage,
 			Type:    firstCall.typeParameter.typ,
 		},
-		WithError: firstCall.funcName == "RegisterE",
-	}, nil
+		Name: extractName(calls),
+	}
+
+	return &c, nil
 }
 
 func makeProvider(calls []call) (*component.Provider, error) {
@@ -71,15 +70,28 @@ func makeProvider(calls []call) (*component.Provider, error) {
 	if err := validate(
 		func() error { return v.component.typed(firstCall) },
 		func() error { return v.component.typeNotEmpty(firstCall) },
+		func() error { return v.component.validateName(calls) },
 	); err != nil {
 		return nil, err
 	}
 
-	return &component.Provider{
+	p := component.Provider{
 		Type: tool.Type{
 			Package: firstCall.typeParameter.pakage,
 			Type:    firstCall.typeParameter.typ,
 		},
-		WithError: firstCall.funcName == "ProviderE",
-	}, nil
+		Name: extractName(calls),
+	}
+
+	return &p, nil
+}
+
+func extractName(cc []call) string {
+	for _, c := range cc {
+		if c.funcName == "Name" {
+			return c.arguments[0].stringArg.val
+		}
+	}
+
+	return ""
 }

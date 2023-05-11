@@ -2,16 +2,18 @@ package component
 
 import "github.com/sabahtalateh/toolboxgen/internal/discovery/tool"
 
-type Register struct {
+type Component struct {
 	Type      tool.Type
+	Name      string
 	WithError bool
 }
 
-func (r *Register) Tool() {
+func (r *Component) Tool() {
 }
 
 type Provider struct {
 	Type      tool.Type
+	Name      string
 	WithError bool
 }
 
