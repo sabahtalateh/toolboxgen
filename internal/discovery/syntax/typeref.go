@@ -17,7 +17,7 @@ type TypeRef struct {
 	Star       bool
 	TypeParams []TypeRef
 	Position   token.Position
-	Error      *errors.PositionedErr
+	Err        *errors.PositionedErr
 }
 
 func ParseTypeRef(expr ast.Expr, files *token.FileSet) TypeRef {
@@ -32,7 +32,7 @@ func ParseTypeRef(expr ast.Expr, files *token.FileSet) TypeRef {
 
 func newTypeRef(files *token.FileSet, expr ast.Expr) *TypeRef {
 	t := &TypeRef{files: files, Expr: expr}
-	t.Code, t.Error = nodeToString(expr, files.Position(expr.Pos()))
+	t.Code, t.Err = code(expr, files.Position(expr.Pos()))
 	return t
 }
 
@@ -51,7 +51,7 @@ func (t *TypeRef) addSelector(pos token.Pos, sel string) {
 }
 
 func (t *TypeRef) errorf(pos token.Pos, format string, a ...any) {
-	t.Error = errors.Errorf(t.files.Position(pos), format, a...)
+	t.Err = errors.Errorf(t.files.Position(pos), format, a...)
 }
 
 func (t *TypeRef) visitExpr(expr ast.Expr) {

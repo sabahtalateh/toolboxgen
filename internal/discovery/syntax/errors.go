@@ -2,76 +2,76 @@ package syntax
 
 import "github.com/sabahtalateh/toolboxgen/internal/errors"
 
-func (c FunctionCall) FirstError() *errors.PositionedErr {
+func (c FunctionCall) Error() *errors.PositionedErr {
 	var err *errors.PositionedErr
 
 	for _, x := range c.TypeParams {
-		if err = x.FirstError(); err != nil {
+		if err = x.Error(); err != nil {
 			return err
 		}
 	}
 
 	for _, x := range c.Args {
-		if err = x.FirstError(); err != nil {
+		if err = x.Error(); err != nil {
 			return err
 		}
 	}
 
-	return c.Error
+	return c.Err
 }
 
-func (c *Ref) FirstError() *errors.PositionedErr {
+func (c *Ref) Error() *errors.PositionedErr {
 	return c.err
 }
 
-func (s *String) FirstError() *errors.PositionedErr {
+func (s *String) Error() *errors.PositionedErr {
 	return s.err
 }
 
-func (i *Int) FirstError() *errors.PositionedErr {
+func (i *Int) Error() *errors.PositionedErr {
 	return i.err
 }
 
-func (f *FuncDef) FirstError() *errors.PositionedErr {
+func (f *FuncDef) Error() *errors.PositionedErr {
 	var err *errors.PositionedErr
 
-	if err = f.Receiver.FirstError(); err != nil {
+	if err = f.Receiver.Error(); err != nil {
 		return err
 	}
 
 	for _, x := range f.TypeParams {
-		if err = x.FirstError(); err != nil {
+		if err = x.Error(); err != nil {
 			return err
 		}
 	}
 
 	for _, x := range f.Args {
-		if err = x.FirstError(); err != nil {
+		if err = x.Error(); err != nil {
 			return err
 		}
 	}
 
 	for _, x := range f.Results {
-		if err = x.FirstError(); err != nil {
+		if err = x.Error(); err != nil {
 			return err
 		}
 	}
 
-	return f.Error
+	return f.Err
 }
 
-func (a *TypeParam) FirstError() *errors.PositionedErr {
-	return a.Error
+func (a *TypeParam) Error() *errors.PositionedErr {
+	return a.Err
 }
 
-func (t *TypeRef) FirstError() *errors.PositionedErr {
+func (t *TypeRef) Error() *errors.PositionedErr {
 	var err *errors.PositionedErr
 
 	for _, x := range t.TypeParams {
-		if err = x.FirstError(); err != nil {
+		if err = x.Error(); err != nil {
 			return err
 		}
 	}
 
-	return t.Error
+	return t.Err
 }

@@ -8,7 +8,7 @@ import (
 	"go/token"
 )
 
-func nodeToString(n ast.Node, p token.Position) (string, *errors.PositionedErr) {
+func code(n ast.Node, p token.Position) (string, *errors.PositionedErr) {
 	bb := new(bytes.Buffer)
 	if err := printer.Fprint(bb, token.NewFileSet(), n); err != nil {
 		return "", errors.Errorf(p, "failed to get string representation")

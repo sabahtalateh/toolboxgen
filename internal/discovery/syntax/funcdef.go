@@ -21,7 +21,7 @@ type FuncDef struct {
 	Args         []TypeRef
 	Results      []TypeRef
 	Position     token.Position
-	Error        *errors.PositionedErr
+	Err          *errors.PositionedErr
 }
 
 func ParseFuncDef(def *ast.FuncDecl, files *token.FileSet) FuncDef {
@@ -32,11 +32,11 @@ func ParseFuncDef(def *ast.FuncDecl, files *token.FileSet) FuncDef {
 
 func newFuncDef(def *ast.FuncDecl, files *token.FileSet) *FuncDef {
 	fd := &FuncDef{files: files}
-	fd.Code, fd.Error = nodeToString(def, files.Position(def.Pos()))
+	fd.Code, fd.Err = code(def, files.Position(def.Pos()))
 
 	// remove function body. leave just function signature
 	var body string
-	body, fd.Error = nodeToString(def.Body, files.Position(def.Pos()))
+	body, fd.Err = code(def.Body, files.Position(def.Pos()))
 	fd.Code = strings.TrimSpace(strings.TrimSuffix(fd.Code, body))
 
 	return fd

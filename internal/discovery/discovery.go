@@ -98,7 +98,7 @@ func (d *discovery) discoverFile(files *token.FileSet, file *ast.File, currPkg s
 		switch n := node.(type) {
 		case *ast.FuncDecl:
 			fd := syntax.ParseFuncDef(n, files)
-			if err = fd.FirstError().Err(); err != nil {
+			if err = fd.Error().Err(); err != nil {
 				return false
 			}
 
@@ -132,7 +132,7 @@ func (d *discovery) discoverFile(files *token.FileSet, file *ast.File, currPkg s
 			if insideFunction == nil || isInit(insideFunction) {
 				calls := syntax.ParseFuncCalls(n, files)
 				for _, call := range calls {
-					if err = call.FirstError().Err(); err != nil {
+					if err = call.Error().Err(); err != nil {
 						return false
 					}
 				}

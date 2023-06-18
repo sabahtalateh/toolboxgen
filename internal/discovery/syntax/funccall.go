@@ -15,7 +15,7 @@ type FunctionCall struct {
 	FuncName   string
 	TypeParams []TypeRef
 	Args       []FunctionCallArgument
-	Error      *errors.PositionedErr
+	Err        *errors.PositionedErr
 	Position   token.Position
 }
 
@@ -45,7 +45,7 @@ func newCalls(files *token.FileSet) *calls {
 
 func (s *calls) push(expr *ast.CallExpr) {
 	c := FunctionCall{CallExpr: expr}
-	c.Code, c.Error = nodeToString(expr, s.files.Position(expr.Pos()))
+	c.Code, c.Err = code(expr, s.files.Position(expr.Pos()))
 	s.stack = append([]FunctionCall{c}, s.stack...)
 }
 
@@ -61,7 +61,7 @@ func (s *calls) pop() {
 }
 
 func (s *calls) errorf(pos token.Pos, format string, a ...any) {
-	s.stack[0].Error = errors.Errorf(s.files.Position(pos), format, a...)
+	s.stack[0].Err = errors.Errorf(s.files.Position(pos), format, a...)
 }
 
 func (s *calls) addSelector(pos token.Pos, sel string) {

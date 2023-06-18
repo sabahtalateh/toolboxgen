@@ -27,7 +27,7 @@ type FunctionCallArgument interface {
 
 	Code() string
 	Position() token.Position
-	FirstError() *errors.PositionedErr
+	Error() *errors.PositionedErr
 }
 
 type Ref struct {
@@ -161,7 +161,7 @@ func (a *callArg) addCallArgRefSelector(pos token.Pos, sel string) {
 
 func newCallArg(files *token.FileSet, expr ast.Expr) *callArg {
 	c := &callArg{files: files, expr: expr}
-	c.code, c.err = nodeToString(expr, files.Position(expr.Pos()))
+	c.code, c.err = code(expr, files.Position(expr.Pos()))
 	return c
 }
 

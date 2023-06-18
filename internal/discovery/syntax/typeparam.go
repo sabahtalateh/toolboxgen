@@ -12,7 +12,7 @@ type TypeParam struct {
 	Code     string
 	Name     string
 	Position token.Position
-	Error    *errors.PositionedErr
+	Err      *errors.PositionedErr
 }
 
 type typeParams struct {
@@ -42,6 +42,6 @@ func (t *typeParams) visitIdent(id *ast.Ident) {
 		Position: t.files.Position(id.Pos()),
 	}
 
-	param.Code, param.Error = nodeToString(id, t.files.Position(id.Pos()))
+	param.Code, param.Err = code(id, t.files.Position(id.Pos()))
 	t.result = append(t.result, param)
 }
