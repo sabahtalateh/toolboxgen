@@ -4,53 +4,15 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"golang.org/x/mod/modfile"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
-
-	"golang.org/x/mod/modfile"
-	"golang.org/x/tools/go/packages"
 )
 
 var (
 	ErrPkgNotFound = errors.New("package not found")
 )
-
-type stdLib struct {
-	mx     sync.Mutex
-	pkgs   map[string]*packages.Package
-	loaded bool
-}
-
-var (
-	stdLibPkgs = &stdLib{
-		mx:     sync.Mutex{},
-		pkgs:   make(map[string]*packages.Package),
-		loaded: false,
-	}
-)
-
-func (s *stdLib) load() error {
-	// s.mx.Lock()
-	// if !stdLibPkgs.loaded {
-	//     // pkgs, err := packages.Load(nil, "std")
-	//     pkgs, err := stdlibcache.Packages()
-	//     if err != nil {
-	//         stdLibPkgs.mx.Unlock()
-	//         return err
-	//     }
-	//
-	//     for _, p := range pkgs {
-	//         stdLibPkgs.pkgs[p.PkgPath] = p
-	//     }
-	//     stdLibPkgs.loaded = true
-	//
-	//     log.Printf("[mods] %d packages found in Go standard library..", len(pkgs))
-	// }
-	// stdLibPkgs.mx.Unlock()
-	return nil
-}
 
 type Module struct {
 	Path             string              // module package name
@@ -220,7 +182,7 @@ type PkgInfo struct {
 //     return impAlias, nil
 // }
 
-func LookupAtDir(dir string, withVendored bool) (*Module, error) {
+func LookupDir(dir string, withVendored bool) (*Module, error) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return nil, fmt.Errorf("dir `%s` not exists", dir)
 	}
@@ -363,12 +325,4 @@ func parseModulesTxt(pathParts ...string) (map[string][]string, error) {
 	}
 
 	return res, nil
-}
-
-func UnquoteImport(imp string) string {
-	imp = strings.Trim(imp, "\"")
-	imp = strings.Trim(imp, "`")
-	imp = strings.Trim(imp, "'")
-
-	return imp
 }

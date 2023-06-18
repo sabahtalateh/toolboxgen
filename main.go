@@ -9,12 +9,9 @@ var (
 )
 
 func main() {
-	conf, err := discovery.ConfigBuilder().Root(root).Build()
+	tools, err := discovery.Discover(root)
 	if err != nil {
 		panic(err)
 	}
-
-	if err = discovery.Discover(conf); err != nil {
-		panic(err)
-	}
+	println(tools)
 }
