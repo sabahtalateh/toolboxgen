@@ -10,8 +10,9 @@ type TypeParam struct {
 	Position token.Position
 }
 
-type Parametrized interface {
-	NumberOfParams() int
+// ParametrizedRef struct reference, function reference or interface or
+type ParametrizedRef interface {
+	NumberOfTypeParams() int
 	NthTypeParam(n int) (*TypeParam, error)
 	RenameTypeParam(old string, new string)
 	SetEffectiveParam(paramName string, typ TypeRef)
@@ -37,7 +38,7 @@ func setTypeParamRecursive(typeParams *struct {
 	}
 
 	for _, t := range typeParams.Effective {
-		tt, ok := t.(Parametrized)
+		tt, ok := t.(ParametrizedRef)
 		if ok {
 			tt.SetEffectiveParam(param, effective)
 		}

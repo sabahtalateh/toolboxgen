@@ -4,25 +4,25 @@ import "go/token"
 
 const (
 	inconsistentTypeParams = "inconsistent type params"
-	stringExpected         = "string expected"
+	stringLitExpected      = "string literal expected"
 	errorExpected          = "error expected"
-	functionExpected       = "function expected"
+	functionRefExpected    = "function reference expected"
 )
 
 func InconsistentTypeParamsErr(pos token.Position) *PositionedErr {
 	return Errorf(pos, inconsistentTypeParams)
 }
 
-func StringExpectedErr(pos token.Position) *PositionedErr {
-	return Errorf(pos, stringExpected)
+func StringLitExpectedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, stringLitExpected)
 }
 
 func ErrorExpectedErr(pos token.Position) *PositionedErr {
 	return Errorf(pos, errorExpected)
 }
 
-func FunctionExpectedErr(pos token.Position) *PositionedErr {
-	return Errorf(pos, functionExpected)
+func FunctionRefExpectedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, functionRefExpected)
 }
 
 func BuiltinFunctionErr(pos token.Position, funcName string) *PositionedErr {

@@ -19,6 +19,8 @@ func Position(t TypeRef) token.Position {
 		return x.Position
 	case *InterfaceRef:
 		return x.Position
+	case *TypeParamRef:
+		return x.Position
 	default:
 		panic("not implemented")
 	}

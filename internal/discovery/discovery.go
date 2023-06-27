@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"errors"
-	"github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -10,7 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sabahtalateh/toolboxgen/internal/context"
 	"github.com/sabahtalateh/toolboxgen/internal/convert"
+	"github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
 	"github.com/sabahtalateh/toolboxgen/internal/mod"
 )
 
@@ -59,14 +60,14 @@ func (d *discovery) discoverDir(dir string) error {
 		pkgs, err := parser.ParseDir(files, path, nil, parser.ParseComments)
 		for _, pkg := range pkgs {
 			for filePath, file := range pkg.Files {
-				currentPkgPath := filepath.Dir(filePath)
-				if strings.HasPrefix(currentPkgPath, d.mod.Dir) {
-					currentPkgPath = strings.Replace(currentPkgPath, d.mod.Dir, d.mod.Path, 1)
+				Package := filepath.Dir(filePath)
+				if strings.HasPrefix(Package, d.mod.Dir) {
+					Package = strings.Replace(Package, d.mod.Dir, d.mod.Path, 1)
 				} else {
 					return errors.New("impossibru")
 				}
 
-				err = d.discoverFile(files, file, currentPkgPath)
+				err = d.discoverFile(context.New(Package, file.Imports, files), file)
 				if err != nil {
 					return err
 				}
@@ -79,7 +80,9 @@ func (d *discovery) discoverDir(dir string) error {
 	return err
 }
 
-func (d *discovery) discoverFile(files *token.FileSet, file *ast.File, currPkg string) error {
+// TODO в функциях, которые принимают syntax.TypeRef и др проверять ошибки в этих типах - `.Error()`
+
+func (d *discovery) discoverFile(ctx context.Context, file *ast.File) error {
 	var (
 		insideFunction *ast.FuncDecl // current top level function
 		err            error
@@ -97,75 +100,36 @@ func (d *discovery) discoverFile(files *token.FileSet, file *ast.File, currPkg s
 
 		switch n := node.(type) {
 		case *ast.FuncDecl:
-			fd := syntax.ParseFuncDef(n, files)
-			if err = fd.Error().Err(); err != nil {
-				return false
-			}
-
 			if insideFunction == nil {
 				insideFunction = n
 			}
 
-			return false
+			fd, pErr := d.converter.ConvertFuncDef(ctx.WithImports(file.Imports), n)
+			if pErr != nil {
+				err = pErr.Err()
+				return false
+			}
 
-		// if n.Recv != nil {
-		// tt, pErr := syntax.ParseTypeRef(n.Recv.List[0].TypeRef, files)
-		// if pErr != nil {
-		// 	err = pErr.Err()
-		// 	return false
-		// }
-		//
-		// tpp := make([]tool.TypeParam, 0)
-		// for _, param := range tt.TypeParams {
-		// 	tpp = append(tpp, tool.TypeParam{Name: param.TypeName, Position: param.Position})
-		// }
-		//
-		// t, pErr := d.converter.ConvertTypeRef(tt, file.Imports, currPkg, files, tpp)
-		// if pErr != nil {
-		// 	err = pErr.Err()
-		// }
-		// println(&t)
-		// println(n.Recv.List[0].TypeRef)
-		// }
-
+			println(fd)
 		case *ast.CallExpr:
 			if insideFunction == nil || isInit(insideFunction) {
-				calls := syntax.ParseFuncCalls(n, files)
+				calls := syntax.ParseFuncCalls(n, ctx.Files)
 				for _, call := range calls {
 					if err = call.Error().Err(); err != nil {
 						return false
 					}
 				}
 
+				tool, pErr := d.converter.ToolBox(ctx.WithImports(file.Imports), calls)
+				if pErr != nil {
+					err = pErr.Err()
+					return false
+				}
+
+				println(tool)
+
 				return false
 			}
-
-			// if isInit(n) {
-			// 	for _, stmt := range n.Body.List {
-			// 		switch exprStmt := stmt.(type) {
-			// 		case *ast.ExprStmt:
-			// 			switch expr := exprStmt.X.(type) {
-			// 			case *ast.CallExpr:
-			// 				calls, pErr := syntax.ParseFuncCalls(expr, files)
-			// 				if pErr != nil {
-			// 					err = pErr.Err()
-			// 					return false
-			// 				}
-			//
-			// 				t, cErr := d.converter.TryConvertCallsToTool(calls, file.Imports, currPkg, files)
-			// 				if cErr != nil {
-			// 					err = cErr.Err()
-			// 					return false
-			// 				}
-			//
-			// 				if t != nil {
-			// 					tools = append(tools, t)
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// insideFunction = ""
 		}
 
 		return true

@@ -5,7 +5,6 @@ import "go/token"
 type InterfaceRef struct {
 	Package    string
 	TypeName   string
-	Pointer    bool
 	TypeParams struct {
 		Params    []TypeParam
 		Effective []TypeRef
@@ -19,10 +18,6 @@ func (i *InterfaceRef) typ() {
 func (i *InterfaceRef) Equals(t TypeRef) bool {
 	switch t2 := t.(type) {
 	case *InterfaceRef:
-		if i.Pointer != t2.Pointer {
-			return false
-		}
-
 		if i.Package != t2.Package {
 			return false
 		}
@@ -51,7 +46,7 @@ func (i *InterfaceRef) NthTypeParam(n int) (*TypeParam, error) {
 	return nthTypeParam(&i.TypeParams, n)
 }
 
-func (i *InterfaceRef) NumberOfParams() int {
+func (i *InterfaceRef) NumberOfTypeParams() int {
 	return numberOfParams(&i.TypeParams)
 }
 

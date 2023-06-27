@@ -25,7 +25,7 @@ func (p *PositionedErr) Err() error {
 	return fmt.Errorf("%w\n\tat %s", p.err, p.pos)
 }
 
-func Validate(ff ...func() *PositionedErr) *PositionedErr {
+func Check(ff ...func() *PositionedErr) *PositionedErr {
 	for _, f := range ff {
 		if err := f(); err != nil {
 			return err

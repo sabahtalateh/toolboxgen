@@ -1,6 +1,7 @@
 package di
 
 import (
+	"github.com/life4/genesis/slices"
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/tool"
 	"github.com/sabahtalateh/toolboxgen/internal/validation"
@@ -9,19 +10,19 @@ import (
 type Component struct {
 	Name       string
 	Type       tool.TypeRef
-	Values     []*Value
+	With       map[string][]*With
 	Parameters []tool.TypeRef
 	WithError  bool
-	Function   *tool.FunctionRef
+	Function   *tool.FuncRef
 }
 
 func (c *Component) Tool() {
 }
 
-func (c *Component) EnrichWithFunction(f *tool.FunctionRef) *errors.PositionedErr {
-	if err := errors.Validate(
-		func() *errors.PositionedErr { return validation.FunctionHasMinimumNResults(f, 1) },
-		func() *errors.PositionedErr { return validation.FunctionHasMaximumNResults(f, 2) },
+func (c *Component) EnrichWithFunction(f *tool.FuncRef) *errors.PositionedErr {
+	if err := errors.Check(
+		func() *errors.PositionedErr { return validation.FuncDefHasAtMinimumNResults(f.Def, 1) },
+		func() *errors.PositionedErr { return validation.FuncDefHasAtMaximumNResults(f.Def, 2) },
 	); err != nil {
 		return err
 	}
@@ -36,7 +37,7 @@ func (c *Component) EnrichWithFunction(f *tool.FunctionRef) *errors.PositionedEr
 		}
 	}
 	c.Type = firstResult
-	c.Parameters = f.Parameters
+	c.Parameters = slices.Map(f.Parameters, func(el tool.FuncParam) tool.TypeRef { return el.Type })
 
 	if len(f.Results) == 2 {
 		secondResult := f.Results[1]
@@ -56,37 +57,9 @@ func (c *Component) EnrichWithFunction(f *tool.FunctionRef) *errors.PositionedEr
 	return nil
 }
 
-type Value struct {
+type With struct {
+	Key       string
 	Type      tool.TypeRef
 	WithError bool
-	Function  *tool.FunctionRef
-}
-
-func ValueFromFunction(f *tool.FunctionRef) (*Value, *errors.PositionedErr) {
-	if err := errors.Validate(
-		func() *errors.PositionedErr { return validation.FunctionHasNoParams(f) },
-		func() *errors.PositionedErr { return validation.FunctionHasMinimumNResults(f, 1) },
-		func() *errors.PositionedErr { return validation.FunctionHasMaximumNResults(f, 2) },
-	); err != nil {
-		return nil, err
-	}
-
-	v := &Value{
-		Function: f,
-		Type:     f.Results[0],
-	}
-
-	if len(f.Results) == 2 {
-		switch res := f.Results[1].(type) {
-		case *tool.BuiltinRef:
-			if !res.IsError() {
-				return nil, errors.ErrorExpectedErr(res.Position)
-			}
-			v.WithError = true
-		default:
-			return nil, errors.ErrorExpectedErr(tool.Position(res))
-		}
-	}
-
-	return v, nil
+	Function  *tool.FuncRef
 }

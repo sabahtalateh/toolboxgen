@@ -2,6 +2,7 @@ package convert
 
 import (
 	"fmt"
+	"github.com/sabahtalateh/toolboxgen/internal/context"
 	"go/ast"
 	"path/filepath"
 	"strings"
@@ -14,9 +15,8 @@ import (
 )
 
 type Converter struct {
+	pkgDir    *pkgdir.PkgDir
 	component *component
-	types     *types
-	funcs     *funcs
 }
 
 func New(mod *mod.Module) (*Converter, error) {
@@ -24,28 +24,21 @@ func New(mod *mod.Module) (*Converter, error) {
 	if err != nil {
 		return nil, err
 	}
-	t := &types{mod: mod, pkgDir: pkgDir}
-
-	c := &Converter{
-		types: t,
-		funcs: &funcs{
-			mod:    mod,
-			types:  t,
-			pkgDir: pkgDir,
-		},
-	}
-	c.funcs.converter = c
+	c := &Converter{pkgDir: pkgDir}
 	c.component = &component{converter: c}
 
 	return c, nil
 }
 
-func (c *Converter) packagePath(alias string, currPkg string, imports []*ast.ImportSpec) (pakage string, err error) {
+func (c *Converter) packagePath(
+	ctx context.Context,
+	alias string,
+) (pakage string, err error) {
 	if alias == "" {
-		pakage = currPkg
+		pakage = ctx.Package
 	} else {
 		var imp *ast.ImportSpec
-		for _, spec := range imports {
+		for _, spec := range ctx.Imports {
 			if spec.Name != nil {
 				if spec.Name.Name == alias {
 					imp = spec

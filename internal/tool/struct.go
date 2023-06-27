@@ -51,7 +51,7 @@ func (s *StructRef) NthTypeParam(n int) (*TypeParam, error) {
 	return nthTypeParam(&s.TypeParams, n)
 }
 
-func (s *StructRef) NumberOfParams() int {
+func (s *StructRef) NumberOfTypeParams() int {
 	return numberOfParams(&s.TypeParams)
 }
 

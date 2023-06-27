@@ -5,11 +5,15 @@ import (
 	"github.com/sabahtalateh/toolboxgen/internal/tool"
 )
 
-func FunctionHasNoParams(f *tool.FunctionRef) *errors.PositionedErr {
-	return FunctionHasMaximumNParams(f, 0)
+func FuncDefHasExactlyNParams(f *tool.FuncDef, n int) *errors.PositionedErr {
+	if len(f.Parameters) != n {
+		return errors.Errorf(f.Position, "function should have exactly `%d` parameters", n)
+	}
+
+	return nil
 }
 
-func FunctionHasMaximumNParams(f *tool.FunctionRef, n int) *errors.PositionedErr {
+func FuncDefHasAtMaximumNParams(f *tool.FuncDef, n int) *errors.PositionedErr {
 	if len(f.Parameters) > n {
 		return errors.Errorf(f.Position, "function should have at maximum `%d` parameters", n)
 	}
@@ -17,7 +21,7 @@ func FunctionHasMaximumNParams(f *tool.FunctionRef, n int) *errors.PositionedErr
 	return nil
 }
 
-func FunctionHasMinimumNParams(f *tool.FunctionRef, n int) *errors.PositionedErr {
+func FuncDefHasAtMinimumNParams(f *tool.FuncDef, n int) *errors.PositionedErr {
 	if len(f.Parameters) < n {
 		return errors.Errorf(f.Position, "function should have at minimum `%d` parameters", n)
 	}
@@ -25,7 +29,7 @@ func FunctionHasMinimumNParams(f *tool.FunctionRef, n int) *errors.PositionedErr
 	return nil
 }
 
-func FunctionHasMaximumNResults(f *tool.FunctionRef, n int) *errors.PositionedErr {
+func FuncDefHasAtMaximumNResults(f *tool.FuncDef, n int) *errors.PositionedErr {
 	if len(f.Results) > n {
 		return errors.Errorf(f.Position, "function should have at maximum `%d` results", n)
 	}
@@ -33,7 +37,7 @@ func FunctionHasMaximumNResults(f *tool.FunctionRef, n int) *errors.PositionedEr
 	return nil
 }
 
-func FunctionHasMinimumNResults(f *tool.FunctionRef, n int) *errors.PositionedErr {
+func FuncDefHasAtMinimumNResults(f *tool.FuncDef, n int) *errors.PositionedErr {
 	if len(f.Results) < n {
 		return errors.Errorf(f.Position, "function should have at minimum `%d` results", n)
 	}
