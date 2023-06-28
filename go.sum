@@ -1,6 +1,8 @@
 github.com/life4/genesis v1.2.0 h1:IzKae4UcL6NdkALzCCYdMz/MASQdBAizGJOThP5xDd8=
 github.com/life4/genesis v1.2.0/go.mod h1:jhY+sEN403+0uE54fjVAdVCYY8SCIrKioAatOlVJoGo=
 github.com/matryer/is v1.4.0 h1:sosSmIWwkYITGrxZ25ULNDeKiMNzFSr4V/eqBQP0PeE=
+golang.design/x/reflect v0.0.0-20220504060917-02c43be63f3b h1:lkOPTy76R9NZ6FeDQWkDj3NsLtD8Csc9AAFYEl3kiME=
+golang.design/x/reflect v0.0.0-20220504060917-02c43be63f3b/go.mod h1:QXG482h3unP32W/YwIPOc+09bvY447B7T+iLjC/JPcA=
 golang.org/x/mod v0.10.0 h1:lFO9qtOdlre5W1jxS3r/4szv2/6iXxScdzjoBMXNhYk=
 golang.org/x/mod v0.10.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
 golang.org/x/sync v0.1.0 h1:wsuoTGHzEhffawBOhz5CYhcrV4IdKZbEyZjBMuTp12o=

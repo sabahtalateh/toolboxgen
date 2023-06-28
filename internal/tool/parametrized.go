@@ -18,31 +18,31 @@ type ParametrizedRef interface {
 	SetEffectiveParam(paramName string, typ TypeRef)
 }
 
-func setTypeParamRecursive(typeParams *struct {
+func setEffectiveTypeParam(typeParams *struct {
 	Params    []TypeParam
 	Effective []TypeRef
-}, param string, effective TypeRef) {
+}, typeParamName string, effective TypeRef) {
 	idx := -1
 	for i, tp := range typeParams.Params {
-		if tp.Name == param {
+		if tp.Name == typeParamName {
 			idx = i
 			break
 		}
 	}
+
 	if idx != -1 {
+		// if typeParams.Effective[idx] != nil {
+		// 	return
+		// }
 		typeParams.Effective[idx] = effective
 	}
 
-	if typeParams.Params == nil {
-		return
-	}
-
-	for _, t := range typeParams.Effective {
-		tt, ok := t.(ParametrizedRef)
-		if ok {
-			tt.SetEffectiveParam(param, effective)
-		}
-	}
+	// for _, t := range typeParams.Effective {
+	// 	tt, ok := t.(ParametrizedRef)
+	// 	if ok {
+	// 		tt.SetEffectiveParam(typeParamName, effective)
+	// 	}
+	// }
 }
 
 func nthTypeParam(typeParams *struct {

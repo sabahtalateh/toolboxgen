@@ -27,14 +27,14 @@ func (c *component) convert(
 	comp = &di.Component{With: map[string][]*di.With{}}
 	arg := firstCall.Args[0]
 	var funcRef *tool.FuncRef
-	switch val := arg.(type) {
+	switch val := arg.Val.(type) {
 	case *syntax.Ref:
 		funcRef, err = c.converter.convFuncRef(ctx, *val)
 		if err != nil {
 			return nil, err
 		}
 	default:
-		return nil, errors.FunctionRefExpectedErr(arg.Position())
+		return nil, errors.FunctionRefExpectedErr(arg.Val.Position())
 	}
 
 	if err = comp.EnrichWithFunction(funcRef); err != nil {
@@ -69,19 +69,19 @@ func (c *component) setName(comp *di.Component, nameCall syntax.FunctionCall) *e
 	}
 
 	nameArg := nameCall.Args[0]
-	switch name := nameArg.(type) {
+	switch name := nameArg.Val.(type) {
 	case *syntax.String:
 		if name.Val == "" {
-			return errors.Errorf(nameArg.Position(), "component name should not be empty")
+			return errors.Errorf(nameArg.Val.Position(), "component name should not be empty")
 		}
 		if comp.Name != "" {
-			return errors.Errorf(nameArg.Position(), "component name already set")
+			return errors.Errorf(nameArg.Val.Position(), "component name already set")
 		}
 
 		comp.Name = name.Val
 		return nil
 	default:
-		return errors.Errorf(nameArg.Position(), "string literal expected")
+		return errors.StringLitExpectedErr(nameArg.Val.Position())
 	}
 }
 
@@ -95,7 +95,7 @@ func (c *component) convertWith(
 		return "", nil, err
 	}
 
-	key, err := convertWithKey(call.Args[0])
+	key, err := convertWithKey(call.Args[0].Val)
 	if err != nil {
 		return "", nil, err
 	}
@@ -103,7 +103,7 @@ func (c *component) convertWith(
 	var res []*di.With
 
 	for _, arg := range call.Args[1:] {
-		switch ref := arg.(type) {
+		switch ref := arg.Val.(type) {
 		case *syntax.Ref:
 			fRef, err := c.converter.convFuncRef(ctx, *ref)
 			if err != nil {
@@ -118,14 +118,14 @@ func (c *component) convertWith(
 
 			res = append(res, w)
 		default:
-			return "", nil, errors.FunctionRefExpectedErr(arg.Position())
+			return "", nil, errors.FunctionRefExpectedErr(arg.Val.Position())
 		}
 	}
 
 	return key, res, nil
 }
 
-func convertWithKey(arg syntax.FunctionCallArgument) (string, *errors.PositionedErr) {
+func convertWithKey(arg syntax.FunctionCallArgValue) (string, *errors.PositionedErr) {
 	switch ka := arg.(type) {
 	case *syntax.String:
 		if ka.Val == "" {

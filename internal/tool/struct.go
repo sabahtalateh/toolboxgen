@@ -56,7 +56,7 @@ func (s *StructRef) NumberOfTypeParams() int {
 }
 
 func (s *StructRef) SetEffectiveParam(param string, typ TypeRef) {
-	setTypeParamRecursive(&s.TypeParams, param, typ)
+	setEffectiveTypeParam(&s.TypeParams, param, typ)
 }
 
 func (s *StructRef) RenameTypeParam(old string, new string) {

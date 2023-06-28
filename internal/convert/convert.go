@@ -59,7 +59,7 @@ func (c *Converter) packagePath(
 		}
 
 		if imp == nil {
-			err = fmt.Errorf("import `%s` not resolved", alias)
+			err = fmt.Errorf("package `%s` not resolved", alias)
 		} else {
 			pakage = imp.Path.Value
 		}

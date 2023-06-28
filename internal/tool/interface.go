@@ -51,7 +51,7 @@ func (i *InterfaceRef) NumberOfTypeParams() int {
 }
 
 func (i *InterfaceRef) SetEffectiveParam(param string, typ TypeRef) {
-	setTypeParamRecursive(&i.TypeParams, param, typ)
+	setEffectiveTypeParam(&i.TypeParams, param, typ)
 }
 
 func (i *InterfaceRef) RenameTypeParam(old string, new string) {

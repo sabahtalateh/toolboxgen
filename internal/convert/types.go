@@ -57,7 +57,9 @@ func (c *Converter) TypeRef(
 	case *tool.StructRef:
 		x.Pointer = astTypeRef.Star
 	case *tool.InterfaceRef:
-		return nil, errors.Errorf(astTypeRef.Position, "interface reference not allowed")
+		if astTypeRef.Star {
+			return nil, errors.Errorf(astTypeRef.Position, "interface reference not allowed")
+		}
 	default:
 		panic("not implemented")
 	}

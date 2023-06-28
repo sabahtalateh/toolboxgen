@@ -58,6 +58,9 @@ func (d *discovery) discoverDir(dir string) error {
 
 		files := token.NewFileSet()
 		pkgs, err := parser.ParseDir(files, path, nil, parser.ParseComments)
+		if err != nil {
+			return err
+		}
 		for _, pkg := range pkgs {
 			for filePath, file := range pkg.Files {
 				Package := filepath.Dir(filePath)

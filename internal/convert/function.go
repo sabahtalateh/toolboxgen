@@ -106,7 +106,7 @@ func (c *Converter) convFuncDefRecv(ctx context.Context, f *ast.FuncDecl) (tool.
 	)
 
 	if f.Recv != nil {
-		recv.WithReceiver = true
+		recv.Presented = true
 		recv.Position = ctx.Position(f.Recv.List[0].Pos())
 		astTypeRef := syntax.ParseTypeRef(f.Recv.List[0].Type, ctx.Files)
 		if err = astTypeRef.Error(); err != nil {

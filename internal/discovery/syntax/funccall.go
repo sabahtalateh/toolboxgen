@@ -14,7 +14,7 @@ type FunctionCall struct {
 	PkgAlias   string
 	FuncName   string
 	TypeParams []TypeRef
-	Args       []FunctionCallArgument
+	Args       []FunctionCallArg
 	Err        *errors.PositionedErr
 	Position   token.Position
 }
@@ -78,7 +78,7 @@ func (s *calls) addSelector(pos token.Pos, sel string) {
 	}
 }
 
-func (s *calls) addArg(a FunctionCallArgument) {
+func (s *calls) addArg(a FunctionCallArg) {
 	s.stack[0].Args = append(s.stack[0].Args, a)
 }
 
@@ -88,6 +88,7 @@ func (s *calls) addTypeParam(t TypeRef) {
 
 func (s *calls) visitCallExpr(callExpr *ast.CallExpr) {
 	s.push(callExpr)
+	defer s.pop()
 
 	switch fun := callExpr.Fun.(type) {
 	case *ast.Ident:
@@ -105,8 +106,6 @@ func (s *calls) visitCallExpr(callExpr *ast.CallExpr) {
 	for _, arg := range callExpr.Args {
 		s.addArg(ParseCallArg(s.files, arg))
 	}
-
-	s.pop()
 }
 
 func (s *calls) visitIdent(id *ast.Ident) {
