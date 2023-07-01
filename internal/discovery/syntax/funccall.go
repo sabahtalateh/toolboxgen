@@ -1,6 +1,7 @@
 package syntax
 
 import (
+	"github.com/sabahtalateh/toolboxgen/internal/utils/code"
 	"go/ast"
 	"go/token"
 	"strings"
@@ -45,7 +46,7 @@ func newCalls(files *token.FileSet) *calls {
 
 func (s *calls) push(expr *ast.CallExpr) {
 	c := FunctionCall{CallExpr: expr}
-	c.Code, c.Err = code(expr, s.files.Position(expr.Pos()))
+	c.Code, c.Err = code.OfNodeE(expr, s.files.Position(expr.Pos()))
 	s.stack = append([]FunctionCall{c}, s.stack...)
 }
 

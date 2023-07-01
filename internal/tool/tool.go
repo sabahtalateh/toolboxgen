@@ -1,27 +1,30 @@
 package tool
 
-import "go/token"
+import "github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
 
 type Tool interface {
 	Tool()
 }
 
-type TypeRef interface {
-	typ()
-	Equals(t TypeRef) bool
+type TypeDef interface {
+	typDef()
 }
 
-func Position(t TypeRef) token.Position {
-	switch x := t.(type) {
-	case *BuiltinRef:
-		return x.Position
-	case *StructRef:
-		return x.Position
-	case *InterfaceRef:
-		return x.Position
-	case *TypeParamRef:
-		return x.Position
+type TypeRef interface {
+	typRef()
+	Equals(t TypeRef) bool
+	Modifiers() []syntax.TypeRefModifier
+}
+
+func TypeRefFromDef(d TypeDef) TypeRef {
+	switch dd := d.(type) {
+	case *BuiltinDef:
+		return BuiltinRefFromDef(dd)
+	case *StructDef:
+		return StructRefFromDef(dd)
+	case *InterfaceDef:
+		return InterfaceRefFromDef(dd)
 	default:
-		panic("not implemented")
+		panic("not supported")
 	}
 }

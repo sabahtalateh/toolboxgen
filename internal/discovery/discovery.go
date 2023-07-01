@@ -96,7 +96,7 @@ func (d *discovery) discoverFile(ctx context.Context, file *ast.File) error {
 			return false
 		}
 
-		// reset insideFunction
+		// reset insideFunction variable
 		if node != nil && insideFunction != nil && node.Pos() >= insideFunction.End() {
 			insideFunction = nil
 		}
@@ -113,7 +113,12 @@ func (d *discovery) discoverFile(ctx context.Context, file *ast.File) error {
 				return false
 			}
 
-			println(fd)
+			if fd.Receiver.Presented {
+				println(fd)
+			}
+
+			// TODO собрать методы с ресиверами для определения интерфейсов
+
 		case *ast.CallExpr:
 			if insideFunction == nil || isInit(insideFunction) {
 				calls := syntax.ParseFuncCalls(n, ctx.Files)

@@ -1,6 +1,7 @@
 package syntax
 
 import (
+	"github.com/sabahtalateh/toolboxgen/internal/utils/code"
 	"github.com/sabahtalateh/toolboxgen/internal/utils/strings"
 	"go/ast"
 	"go/token"
@@ -166,7 +167,7 @@ func (a *FunctionCallArg) addCallArgRefSelector(pos token.Pos, sel string) {
 
 func newCallArg(files *token.FileSet, expr ast.Expr) *FunctionCallArg {
 	c := &FunctionCallArg{files: files, expr: expr}
-	c.Code, c.Err = code(expr, files.Position(expr.Pos()))
+	c.Code, c.Err = code.OfNodeE(expr, files.Position(expr.Pos()))
 	return c
 }
 

@@ -15,34 +15,41 @@ type ParametrizedRef interface {
 	NumberOfTypeParams() int
 	NthTypeParam(n int) (*TypeParam, error)
 	RenameTypeParam(old string, new string)
-	SetEffectiveParam(paramName string, typ TypeRef)
+	RenameTypeParamRecursive(old string, new string)
+	SetEffectiveParamRecursive(paramName string, typ TypeRef)
 }
 
-func setEffectiveTypeParam(typeParams *struct {
+func setEffectiveTypeParamRec(typeParams *struct {
 	Params    []TypeParam
 	Effective []TypeRef
 }, typeParamName string, effective TypeRef) {
-	idx := -1
+	typeParamIdx := -1
 	for i, tp := range typeParams.Params {
 		if tp.Name == typeParamName {
-			idx = i
+			typeParamIdx = i
 			break
 		}
 	}
 
-	if idx != -1 {
-		// if typeParams.Effective[idx] != nil {
+	if typeParamIdx != -1 {
+		// if typeParams.Effective[typeParamIdx] != nil {
 		// 	return
 		// }
-		typeParams.Effective[idx] = effective
+		if typeParams.Effective[typeParamIdx] != nil {
+			effective = prependModifiers(typeParams.Effective[typeParamIdx].Modifiers(), effective)
+		}
+		typeParams.Effective[typeParamIdx] = effective
 	}
 
-	// for _, t := range typeParams.Effective {
-	// 	tt, ok := t.(ParametrizedRef)
-	// 	if ok {
-	// 		tt.SetEffectiveParam(typeParamName, effective)
-	// 	}
-	// }
+	for i, t := range typeParams.Effective {
+		if typeParamIdx == i {
+			continue
+		}
+		tt, ok := t.(ParametrizedRef)
+		if ok {
+			tt.SetEffectiveParamRecursive(typeParamName, effective)
+		}
+	}
 }
 
 func nthTypeParam(typeParams *struct {
@@ -71,6 +78,31 @@ func renameTypeParam(typeParams *struct {
 			typeParams.Params[i] = TypeParam{
 				Name:     new,
 				Position: p.Position,
+			}
+		}
+	}
+}
+
+func renameTypeParamRecursive(typeParams *struct {
+	Params    []TypeParam
+	Effective []TypeRef
+}, old string, new string) {
+	for i, p := range typeParams.Params {
+		if p.Name == old {
+			typeParams.Params[i] = TypeParam{
+				Name:     new,
+				Position: p.Position,
+			}
+		}
+	}
+
+	for _, eff := range typeParams.Effective {
+		switch t := eff.(type) {
+		case ParametrizedRef:
+			t.RenameTypeParamRecursive(old, new)
+		case *TypeParamRef:
+			if t.Name == old {
+				t.Name = new
 			}
 		}
 	}

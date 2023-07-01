@@ -1,10 +1,27 @@
 package tool
 
-import "go/token"
+import (
+	"go/token"
 
-type InterfaceRef struct {
+	"github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
+)
+
+type InterfaceDef struct {
+	Code       string
 	Package    string
 	TypeName   string
+	Modifiers  []syntax.TypeRefModifier
+	TypeParams []TypeParam
+	Position   token.Position
+}
+
+func (i InterfaceDef) typDef() {}
+
+type InterfaceRef struct {
+	Code       string
+	Package    string
+	TypeName   string
+	Mods       []syntax.TypeRefModifier
 	TypeParams struct {
 		Params    []TypeParam
 		Effective []TypeRef
@@ -12,12 +29,36 @@ type InterfaceRef struct {
 	Position token.Position
 }
 
-func (i *InterfaceRef) typ() {
+func InterfaceRefFromDef(d *InterfaceDef) *InterfaceRef {
+	r := &InterfaceRef{
+		Code:     d.Code,
+		Package:  d.Package,
+		TypeName: d.TypeName,
+		Mods:     d.Modifiers,
+		TypeParams: struct {
+			Params    []TypeParam
+			Effective []TypeRef
+		}{},
+		Position: d.Position,
+	}
+
+	for _, param := range d.TypeParams {
+		r.TypeParams.Params = append(r.TypeParams.Params, param)
+		r.TypeParams.Effective = append(r.TypeParams.Effective, nil)
+	}
+
+	return r
 }
+
+func (i *InterfaceRef) typRef() {}
 
 func (i *InterfaceRef) Equals(t TypeRef) bool {
 	switch t2 := t.(type) {
 	case *InterfaceRef:
+		if !syntax.ModifiersEquals(i.Modifiers(), t2.Modifiers()) {
+			return false
+		}
+
 		if i.Package != t2.Package {
 			return false
 		}
@@ -42,6 +83,10 @@ func (i *InterfaceRef) Equals(t TypeRef) bool {
 	}
 }
 
+func (i *InterfaceRef) Modifiers() []syntax.TypeRefModifier {
+	return i.Mods
+}
+
 func (i *InterfaceRef) NthTypeParam(n int) (*TypeParam, error) {
 	return nthTypeParam(&i.TypeParams, n)
 }
@@ -50,10 +95,14 @@ func (i *InterfaceRef) NumberOfTypeParams() int {
 	return numberOfParams(&i.TypeParams)
 }
 
-func (i *InterfaceRef) SetEffectiveParam(param string, typ TypeRef) {
-	setEffectiveTypeParam(&i.TypeParams, param, typ)
+func (i *InterfaceRef) SetEffectiveParamRecursive(param string, typ TypeRef) {
+	setEffectiveTypeParamRec(&i.TypeParams, param, typ)
 }
 
 func (i *InterfaceRef) RenameTypeParam(old string, new string) {
 	renameTypeParam(&i.TypeParams, old, new)
+}
+
+func (i *InterfaceRef) RenameTypeParamRecursive(old string, new string) {
+	renameTypeParamRecursive(&i.TypeParams, old, new)
 }

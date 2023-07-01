@@ -5,6 +5,7 @@ import (
 	"go/token"
 
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
+	"github.com/sabahtalateh/toolboxgen/internal/utils/code"
 )
 
 type TypeRef struct {
@@ -14,7 +15,7 @@ type TypeRef struct {
 	Code       string
 	PkgAlias   string
 	TypeName   string
-	Star       bool
+	Modifiers  []TypeRefModifier
 	TypeParams []TypeRef
 	Position   token.Position
 	Err        *errors.PositionedErr
@@ -32,7 +33,7 @@ func ParseTypeRef(expr ast.Expr, files *token.FileSet) TypeRef {
 
 func newTypeRef(files *token.FileSet, expr ast.Expr) *TypeRef {
 	t := &TypeRef{files: files, Expr: expr}
-	t.Code, t.Err = code(expr, files.Position(expr.Pos()))
+	t.Code, t.Err = code.OfNodeE(expr, files.Position(expr.Pos()))
 	return t
 }
 
@@ -60,6 +61,8 @@ func (t *TypeRef) visitExpr(expr ast.Expr) {
 		t.visitIdent(e)
 	case *ast.StarExpr:
 		t.visitStarExpr(e)
+	case *ast.ArrayType:
+		t.visitArrayType(e)
 	case *ast.SelectorExpr:
 		t.visitSelectorExpr(e)
 	case *ast.IndexExpr:
@@ -76,8 +79,18 @@ func (t *TypeRef) visitIdent(id *ast.Ident) {
 }
 
 func (t *TypeRef) visitStarExpr(se *ast.StarExpr) {
-	t.Star = true
+	t.Modifiers = append(t.Modifiers, new(Pointer))
 	t.visitExpr(se.X)
+}
+
+func (t *TypeRef) visitArrayType(ae *ast.ArrayType) {
+	arr := new(Array)
+	if ae.Len != nil {
+		arr.Sized = true
+	}
+
+	t.Modifiers = append(t.Modifiers, arr)
+	t.visitExpr(ae.Elt)
 }
 
 func (t *TypeRef) visitSelectorExpr(sel *ast.SelectorExpr) {

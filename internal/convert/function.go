@@ -1,13 +1,14 @@
 package convert
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/context"
+	"github.com/sabahtalateh/toolboxgen/internal/utils/code"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"strings"
 
 	"github.com/sabahtalateh/toolboxgen/internal/builtin"
+	"github.com/sabahtalateh/toolboxgen/internal/context"
 	"github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/tool"
@@ -15,6 +16,7 @@ import (
 
 func (c *Converter) ConvertFuncDef(ctx context.Context, f *ast.FuncDecl) (*tool.FuncDef, *errors.PositionedErr) {
 	funcDef := &tool.FuncDef{
+		Code:     code.OfNode(f),
 		Package:  ctx.Package,
 		FuncName: f.Name.Name,
 		Position: ctx.Position(f.Pos()),
@@ -28,15 +30,30 @@ func (c *Converter) ConvertFuncDef(ctx context.Context, f *ast.FuncDecl) (*tool.
 
 	funcDef.TypeParams = c.convFuncDefTypeParams(ctx, f)
 
-	funcDef.Parameters, err = c.convFuncDefParams(ctx, f, append(funcDef.TypeParams, funcDef.Receiver.TypeParams...))
+	// after receiver and type params parsed we can compose normalize list
+	normalizeParamsList := makeNormalizeTypeParametersList(funcDef)
+
+	funcDef.Parameters, err = c.convFuncDefParams(
+		ctx,
+		f,
+		append(funcDef.TypeParams, funcDef.Receiver.TypeParams...),
+		normalizeParamsList,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	funcDef.Results, err = c.convFuncDefResults(ctx, f, append(funcDef.TypeParams, funcDef.Receiver.TypeParams...))
+	funcDef.Results, err = c.convFuncDefResults(
+		ctx,
+		f,
+		append(funcDef.TypeParams, funcDef.Receiver.TypeParams...),
+		normalizeParamsList,
+	)
 	if err != nil {
 		return nil, err
 	}
+
+	normalizeDefinedTypeParams(funcDef)
 
 	return funcDef, nil
 }
@@ -116,7 +133,7 @@ func (c *Converter) convFuncDefRecv(ctx context.Context, f *ast.FuncDecl) (tool.
 		for _, tp := range astTypeRef.TypeParams {
 			recv.TypeParams = append(recv.TypeParams, tool.TypeParam{Name: tp.TypeName, Position: tp.Position})
 		}
-		recv.Type, err = c.TypeRef(ctx, astTypeRef, recv.TypeParams)
+		recv.Type, err = c.TypeRef(ctx, astTypeRef, recv.TypeParams, nil)
 		if err != nil {
 			return recv, err
 		}
@@ -147,18 +164,20 @@ func (c *Converter) convFuncDefParams(
 	ctx context.Context,
 	f *ast.FuncDecl,
 	defTypeParams []tool.TypeParam,
+	normalize map[string]string,
 ) (res []tool.FuncParam, err *errors.PositionedErr) {
 	if f.Type.Params != nil {
 		for _, funcParam := range f.Type.Params.List {
 			for _, name := range funcParam.Names {
-				paramType, err := c.TypeRef(ctx, syntax.ParseTypeRef(funcParam.Type, ctx.Files), defTypeParams)
+				paramType, err := c.TypeRef(ctx, syntax.ParseTypeRef(funcParam.Type, ctx.Files), defTypeParams, normalize)
 				if err != nil {
 					return nil, err
 				}
 				res = append(res, tool.FuncParam{
 					Name:     name.Name,
 					Type:     paramType,
-					Position: ctx.Position(funcParam.Pos())})
+					Position: ctx.Position(funcParam.Pos()),
+				})
 			}
 		}
 	}
@@ -169,10 +188,11 @@ func (c *Converter) convFuncDefResults(
 	ctx context.Context,
 	f *ast.FuncDecl,
 	defTypeParams []tool.TypeParam,
+	normalize map[string]string,
 ) (res []tool.TypeRef, err *errors.PositionedErr) {
 	if f.Type.Results != nil {
 		for _, funcRes := range f.Type.Results.List {
-			resType, err := c.TypeRef(ctx, syntax.ParseTypeRef(funcRes.Type, ctx.Files), defTypeParams)
+			resType, err := c.TypeRef(ctx, syntax.ParseTypeRef(funcRes.Type, ctx.Files), defTypeParams, normalize)
 			if err != nil {
 				return nil, err
 			}
@@ -203,17 +223,18 @@ func (c *Converter) convFuncRef(ctx context.Context, ref syntax.Ref) (*tool.Func
 	}
 
 	fRef := tool.FuncRefFromDef(ref.Position(), fDef)
+	fRef.Code = ref.Code()
 	for i, tParam := range ref.TypeParams {
 		param, pErr := fRef.NthTypeParam(i)
 		if err != nil {
 			return nil, errors.Error(param.Position, pErr)
 		}
 
-		effective, err := c.TypeRef(ctx, tParam, nil)
+		effective, err := c.TypeRef(ctx, tParam, nil, nil)
 		if err != nil {
 			return nil, err
 		}
-		fRef.SetEffectiveParam(param.Name, effective)
+		fRef.SetEffectiveParamRecursive(param.Name, effective)
 	}
 
 	return fRef, nil

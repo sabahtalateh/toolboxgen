@@ -18,6 +18,33 @@ func (c *Converter) TypeRef(
 	ctx context.Context,
 	astTypeRef syntax.TypeRef,
 	definedTypeParams []tool.TypeParam,
+	renameTypeParams map[string]string,
+) (tool.TypeRef, *errors.PositionedErr) {
+	tr, err := c.typeRefRec(ctx, astTypeRef, definedTypeParams)
+	if err != nil {
+		return nil, err
+	}
+
+	switch t := tr.(type) {
+	case tool.ParametrizedRef:
+		if renameTypeParams != nil {
+			for from, to := range renameTypeParams {
+				t.RenameTypeParamRecursive(from, to)
+			}
+		}
+	case *tool.TypeParamRef:
+		if newName, ok := renameTypeParams[t.Name]; ok {
+			t.Name = newName
+		}
+	}
+
+	return tr, nil
+}
+
+func (c *Converter) typeRefRec(
+	ctx context.Context,
+	astTypeRef syntax.TypeRef,
+	definedTypeParams []tool.TypeParam,
 ) (tool.TypeRef, *errors.PositionedErr) {
 	if err := astTypeRef.Error(); err != nil {
 		return nil, err
@@ -30,7 +57,7 @@ func (c *Converter) TypeRef(
 		if _, ok := definedTypeParamsNames[astTypeRef.TypeName]; ok {
 			return &tool.TypeParamRef{
 				Name:     astTypeRef.TypeName,
-				Pointer:  astTypeRef.Star,
+				Mods:     astTypeRef.Modifiers,
 				Position: astTypeRef.Position,
 			}, nil
 		}
@@ -46,25 +73,14 @@ func (c *Converter) TypeRef(
 		}
 	}
 
-	foundType, err := c.findTypeRef(ctx.WithPackage(pkg), astTypeRef.TypeName, astTypeRef.Position)
+	typeDef, err := c.findTypeDef(ctx.WithPackage(pkg), astTypeRef)
 	if err != nil {
 		return nil, err
 	}
 
-	switch x := foundType.(type) {
-	case *tool.BuiltinRef:
-		x.Pointer = astTypeRef.Star
-	case *tool.StructRef:
-		x.Pointer = astTypeRef.Star
-	case *tool.InterfaceRef:
-		if astTypeRef.Star {
-			return nil, errors.Errorf(astTypeRef.Position, "interface reference not allowed")
-		}
-	default:
-		panic("not implemented")
-	}
+	typeRef := tool.TypeRefFromDef(typeDef)
 
-	if parametrized, ok := foundType.(tool.ParametrizedRef); ok {
+	if parametrized, ok := typeRef.(tool.ParametrizedRef); ok {
 		if parametrized.NumberOfTypeParams() != len(astTypeRef.TypeParams) {
 			return nil, errors.InconsistentTypeParamsErr(astTypeRef.Position)
 		}
@@ -76,46 +92,42 @@ func (c *Converter) TypeRef(
 				return nil, errors.Error(actualTypeParam.Position, err)
 			}
 
-			definedParam := false
+			definedTypeParam := false
 			if actualTypeParam.PkgAlias == "" {
-				_, definedParam = definedTypeParamsNames[actualTypeParam.TypeName]
+				_, definedTypeParam = definedTypeParamsNames[actualTypeParam.TypeName]
 			}
 
-			if definedParam {
+			if definedTypeParam {
 				oldParam, err := parametrized.NthTypeParam(i)
 				if err != nil {
 					return nil, errors.InconsistentTypeParamsErr(astTypeRef.Position)
 				}
 				parametrized.RenameTypeParam(oldParam.Name, actualTypeParam.TypeName)
-			} else {
-				effective, pErr := c.TypeRef(ctx, astTypeRef.TypeParams[i], definedTypeParams)
-				if err != nil {
-					return nil, pErr
-				}
-				parametrized.SetEffectiveParam(param.Name, effective)
 			}
+
+			effective, pErr := c.typeRefRec(ctx, actualTypeParam, definedTypeParams)
+			if err != nil {
+				return nil, pErr
+			}
+			parametrized.SetEffectiveParamRecursive(param.Name, effective)
 		}
 	}
 
-	return foundType, nil
+	return typeRef, nil
 }
 
-func (c *Converter) findTypeRef(
-	ctx context.Context,
-	typeName string,
-	pos token.Position,
-) (tool.TypeRef, *errors.PositionedErr) {
+func (c *Converter) findTypeDef(ctx context.Context, ref syntax.TypeRef) (tool.TypeDef, *errors.PositionedErr) {
 	var (
-		typ  tool.TypeRef
+		typ  tool.TypeDef
 		pErr *errors.PositionedErr
 	)
 
-	if ctx.Package == "" && builtin.Type(typeName) {
-		typ = &tool.BuiltinRef{TypeName: typeName, Position: pos}
+	if ctx.Package == "" && builtin.Type(ref.TypeName) {
+		typ = &tool.BuiltinDef{TypeName: ref.TypeName, Position: ref.Position}
 	} else {
 		pkgDir, err := c.pkgDir.Dir(ctx.Package)
 		if err != nil {
-			return nil, errors.Error(pos, err)
+			return nil, errors.Error(ref.Position, err)
 		}
 
 		fset := token.NewFileSet()
@@ -132,54 +144,54 @@ func (c *Converter) findTypeRef(
 
 					switch n := node.(type) {
 					case *ast.TypeSpec:
-						if n.Name.Name == typeName {
+						if n.Name.Name == ref.TypeName {
 							switch n.Type.(type) {
 							case *ast.StructType:
-								strukt := &tool.StructRef{
+								strukt := &tool.StructDef{
+									Code:     ref.Code,
 									Package:  ctx.Package,
-									TypeName: typeName,
-									Position: pos,
+									TypeName: ref.TypeName,
+									Position: ref.Position,
 								}
 								if n.TypeParams != nil {
 									for _, tp := range n.TypeParams.List {
 										for _, name := range tp.Names {
-											strukt.TypeParams.Params = append(
-												strukt.TypeParams.Params,
+											strukt.TypeParams = append(
+												strukt.TypeParams,
 												tool.TypeParam{
 													Name:     name.Name,
 													Position: ctx.Position(tp.Pos()),
 												},
 											)
-											strukt.TypeParams.Effective = append(strukt.TypeParams.Effective, nil)
 										}
 									}
 								}
 								typ = strukt
 								return false
 							case *ast.InterfaceType:
-								iface := &tool.InterfaceRef{
+								iface := &tool.InterfaceDef{
+									Code:     ref.Code,
 									Package:  ctx.Package,
-									TypeName: typeName,
-									Position: pos,
+									TypeName: ref.TypeName,
+									Position: ref.Position,
 								}
 								if n.TypeParams != nil {
 									for _, tp := range n.TypeParams.List {
 										for _, name := range tp.Names {
-											iface.TypeParams.Params = append(
-												iface.TypeParams.Params,
+											iface.TypeParams = append(
+												iface.TypeParams,
 												tool.TypeParam{
 													Name:     name.Name,
 													Position: ctx.Position(tp.Pos()),
 												},
 											)
-											iface.TypeParams.Effective = append(iface.TypeParams.Effective, nil)
 										}
 									}
 								}
 								typ = iface
 								return false
 							default:
-								pErr = errors.Errorf(pos, "unsupported type")
+								pErr = errors.Errorf(ref.Position, "unsupported type")
 								return false
 							}
 						}
@@ -195,7 +207,18 @@ func (c *Converter) findTypeRef(
 	}
 
 	if typ == nil {
-		return nil, errors.Errorf(pos, "type `%s` not found at `%s` package", typeName, ctx.Package)
+		return nil, errors.Errorf(ref.Position, "type `%s` not found at `%s` package", ref.TypeName, ctx.Package)
+	}
+
+	switch x := typ.(type) {
+	case *tool.BuiltinDef:
+		x.Modifiers = ref.Modifiers
+	case *tool.StructDef:
+		x.Modifiers = ref.Modifiers
+	case *tool.InterfaceDef:
+		x.Modifiers = ref.Modifiers
+	default:
+		return nil, errors.Errorf(ref.Position, "not implemented")
 	}
 
 	return typ, nil
