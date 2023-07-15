@@ -13,8 +13,8 @@ import (
 // Package is currently parsing file package
 // Imports is currently parsing file imports block
 // Files is currently parsing package file set
-// Pos is current parsing structure position
-// Defined is actual type params values
+// Pos is current parsing ast.Node position
+// Defined is defined type params
 type Context struct {
 	Package string
 	Imports []*ast.ImportSpec
