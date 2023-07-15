@@ -3,11 +3,16 @@ package errors
 import "go/token"
 
 const (
+	notSupported           = "not supported"
 	inconsistentTypeParams = "inconsistent type params"
 	stringLitExpected      = "string literal expected"
 	errorExpected          = "error expected"
 	functionRefExpected    = "function reference expected"
 )
+
+func NotSupportedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, notSupported)
+}
 
 func InconsistentTypeParamsErr(pos token.Position) *PositionedErr {
 	return Errorf(pos, inconsistentTypeParams)

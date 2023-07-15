@@ -1,12 +1,19 @@
 package pkgdir
 
 import (
-	"fmt"
-	"github.com/life4/genesis/slices"
-	"github.com/sabahtalateh/toolboxgen/internal/mod"
-	"golang.org/x/tools/go/packages"
+	"errors"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/tools/go/packages"
+
+	"github.com/life4/genesis/slices"
+	"github.com/sabahtalateh/toolboxgen/internal/mod"
+)
+
+var (
+	ErrDirNotFound    = errors.New("package dir not found")
+	ErrStdDirNotFound = errors.New("standard library package dir not found")
 )
 
 type PkgDir struct {
@@ -14,15 +21,15 @@ type PkgDir struct {
 	std map[string]*packages.Package
 }
 
-func New(mod *mod.Module) (*PkgDir, error) {
-	pkgs, err := packages.Load(nil, "std")
-	if err != nil {
-		return nil, err
-	}
-
+func Init(mod *mod.Module) (*PkgDir, error) {
 	pd := &PkgDir{
 		mod: mod,
 		std: map[string]*packages.Package{},
+	}
+
+	pkgs, err := packages.Load(nil, "std")
+	if err != nil {
+		return nil, err
 	}
 	for _, pkg := range pkgs {
 		pd.std[pkg.ID] = pkg
@@ -45,7 +52,8 @@ func (p *PkgDir) Dir(pakage string) (string, error) {
 		d := filepath.Join(append([]string{p.mod.Dir}, suffParts...)...)
 		return d, nil
 	}
-	return "", fmt.Errorf("failed to determine directory for `%s` package", pakage)
+
+	return "", errors.Join(ErrDirNotFound, errors.New(pakage))
 }
 
 func (p *PkgDir) stdPackageDir(pkg *packages.Package) (string, error) {
@@ -62,5 +70,5 @@ func (p *PkgDir) stdPackageDir(pkg *packages.Package) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("failed determine `%s` stdlib package dir", pkg.ID)
+	return "", errors.Join(ErrStdDirNotFound, errors.New(pkg.ID))
 }

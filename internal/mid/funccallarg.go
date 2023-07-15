@@ -1,13 +1,16 @@
-package syntax
+// package mid is a short-word for intermediate
+// includes functions to parse ast into more convenient types
+
+package mid
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/utils/code"
-	"github.com/sabahtalateh/toolboxgen/internal/utils/strings"
 	"go/ast"
 	"go/token"
 	"strconv"
 
+	"github.com/sabahtalateh/toolboxgen/internal/code"
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
+	"github.com/sabahtalateh/toolboxgen/internal/utils"
 )
 
 type FunctionCallArg struct {
@@ -36,34 +39,34 @@ type FunctionCallArgValue interface {
 	Error() *errors.PositionedErr
 }
 
-type Ref struct {
-	PkgAlias   string
-	FuncName   string
-	TypeParams []TypeRef
-	code       string
-	position   token.Position
-	err        *errors.PositionedErr
+type FuncCallRef struct {
+	PkgAlias string
+	FuncName string
+	// TypeParams []*ParseTypeRef
+	code     string
+	position token.Position
+	err      *errors.PositionedErr
 }
 
-func (c *Ref) functionCallArgument() {}
+func (c *FuncCallRef) functionCallArgument() {}
 
-func (c *Ref) setPosition(p token.Position) {
+func (c *FuncCallRef) setPosition(p token.Position) {
 	c.position = p
 }
 
-func (c *Ref) setCode(code string) {
+func (c *FuncCallRef) setCode(code string) {
 	c.code = code
 }
 
-func (c *Ref) setErr(err *errors.PositionedErr) {
+func (c *FuncCallRef) setErr(err *errors.PositionedErr) {
 	c.err = err
 }
 
-func (c *Ref) Code() string {
+func (c *FuncCallRef) Code() string {
 	return c.code
 }
 
-func (c *Ref) Position() token.Position {
+func (c *FuncCallRef) Position() token.Position {
 	return c.position
 }
 
@@ -130,7 +133,7 @@ func ParseCallArg(files *token.FileSet, expr ast.Expr) FunctionCallArg {
 	a.visitExpr(expr)
 
 	switch v := a.Val.(type) {
-	case *Ref:
+	case *FuncCallRef:
 		if v.FuncName == "" {
 			v.FuncName = v.PkgAlias
 			v.PkgAlias = ""
@@ -148,7 +151,7 @@ func ParseCallArg(files *token.FileSet, expr ast.Expr) FunctionCallArg {
 
 func (a *FunctionCallArg) addCallArgRefSelector(pos token.Pos, sel string) {
 	switch ref := a.Val.(type) {
-	case *Ref:
+	case *FuncCallRef:
 		if ref.PkgAlias == "" {
 			ref.PkgAlias = sel
 		} else if ref.FuncName == "" {
@@ -167,7 +170,7 @@ func (a *FunctionCallArg) addCallArgRefSelector(pos token.Pos, sel string) {
 
 func newCallArg(files *token.FileSet, expr ast.Expr) *FunctionCallArg {
 	c := &FunctionCallArg{files: files, expr: expr}
-	c.Code, c.Err = code.OfNodeE(expr, files.Position(expr.Pos()))
+	c.Code = code.OfNode(expr)
 	return c
 }
 
@@ -222,7 +225,7 @@ func (a *FunctionCallArg) visitBasicLit(lit *ast.BasicLit) {
 		}
 		switch stringArg := a.Val.(type) {
 		case *String:
-			stringArg.Val = strings.Unquote(lit.Value)
+			stringArg.Val = utils.Unquote(lit.Value)
 		default:
 			a.errorf(lit.Pos(), "not supported")
 		}
@@ -233,11 +236,11 @@ func (a *FunctionCallArg) visitBasicLit(lit *ast.BasicLit) {
 
 func (a *FunctionCallArg) visitIdent(id *ast.Ident) {
 	if a.Val == nil {
-		a.Val = new(Ref)
+		a.Val = new(FuncCallRef)
 	}
 
 	switch a.Val.(type) {
-	case *Ref:
+	case *FuncCallRef:
 		a.addCallArgRefSelector(id.Pos(), id.Name)
 	default:
 		a.errorf(id.Pos(), "not supported")
@@ -246,7 +249,7 @@ func (a *FunctionCallArg) visitIdent(id *ast.Ident) {
 
 func (a *FunctionCallArg) visitSelectorExpr(sel *ast.SelectorExpr) {
 	if a.Val == nil {
-		a.Val = new(Ref)
+		a.Val = new(FuncCallRef)
 	}
 
 	switch x := sel.X.(type) {
@@ -259,7 +262,7 @@ func (a *FunctionCallArg) visitSelectorExpr(sel *ast.SelectorExpr) {
 	}
 
 	switch a.Val.(type) {
-	case *Ref:
+	case *FuncCallRef:
 		a.addCallArgRefSelector(sel.Sel.Pos(), sel.Sel.Name)
 	default:
 		a.errorf(sel.Pos(), "not supported")
@@ -276,12 +279,12 @@ func (a *FunctionCallArg) visitIndexExpr(ind *ast.IndexExpr) {
 		a.errorf(x.Pos(), "not supported")
 	}
 
-	switch refArg := a.Val.(type) {
-	case *Ref:
-		refArg.TypeParams = append(refArg.TypeParams, ParseTypeRef(ind.Index, a.files))
-	default:
-		a.errorf(ind.Pos(), "not supported")
-	}
+	// switch refArg := a.Val.(type) {
+	// case *FuncCallRef:
+	// refArg.TypeParams = append(refArg.TypeParams, ParseTypeRef(a.files, ind.Index))
+	// default:
+	// 	a.errorf(ind.Pos(), "not supported")
+	// }
 }
 
 func (a *FunctionCallArg) visitIndexListExpr(ind *ast.IndexListExpr) {
@@ -294,12 +297,12 @@ func (a *FunctionCallArg) visitIndexListExpr(ind *ast.IndexListExpr) {
 		a.errorf(x.Pos(), "not supported")
 	}
 
-	switch refArg := a.Val.(type) {
-	case *Ref:
-		for _, index := range ind.Indices {
-			refArg.TypeParams = append(refArg.TypeParams, ParseTypeRef(index, a.files))
-		}
-	default:
-		a.errorf(ind.Pos(), "not supported")
-	}
+	// switch refArg := a.Val.(type) {
+	// case *FuncCallRef:
+	// 	for _, index := range ind.Indices {
+	// 		refArg.TypeParams = append(refArg.TypeParams, ParseTypeRef(a.files, index))
+	// 	}
+	// default:
+	// 	a.errorf(ind.Pos(), "not supported")
+	// }
 }

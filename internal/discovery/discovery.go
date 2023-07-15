@@ -9,10 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sabahtalateh/toolboxgen/internal/context"
 	"github.com/sabahtalateh/toolboxgen/internal/convert"
-	"github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
 	"github.com/sabahtalateh/toolboxgen/internal/mod"
+	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
 func Discover(rootDir string) (tt *Tools, err error) {
@@ -70,7 +69,8 @@ func (d *discovery) discoverDir(dir string) error {
 					return errors.New("impossibru")
 				}
 
-				err = d.discoverFile(context.New(Package, file.Imports, files), file)
+				ctx := convert.NewContext().WithPackage(Package).WithImports(file.Imports).WithFiles(files)
+				err = d.discoverFile(ctx, file)
 				if err != nil {
 					return err
 				}
@@ -83,9 +83,9 @@ func (d *discovery) discoverDir(dir string) error {
 	return err
 }
 
-// TODO в функциях, которые принимают syntax.TypeRef и др проверять ошибки в этих типах - `.Error()`
+// TODO в функциях, которые принимают syntax.TypeRef и др проверять ошибки в этих типах - `.ParseError()`
 
-func (d *discovery) discoverFile(ctx context.Context, file *ast.File) error {
+func (d *discovery) discoverFile(ctx convert.Context, file *ast.File) error {
 	var (
 		insideFunction *ast.FuncDecl // current top level function
 		err            error
@@ -107,34 +107,30 @@ func (d *discovery) discoverFile(ctx context.Context, file *ast.File) error {
 				insideFunction = n
 			}
 
-			fd, pErr := d.converter.ConvertFuncDef(ctx.WithImports(file.Imports), n)
-			if pErr != nil {
-				err = pErr.Err()
+			var fd *types.Function
+			fd, err = d.converter.Function(ctx.WithImports(file.Imports).WithPos(n.Pos()), n)
+			if err != nil {
 				return false
 			}
 
-			if fd.Receiver.Presented {
+			if fd.Receiver != nil {
 				println(fd)
 			}
-
-			// TODO собрать методы с ресиверами для определения интерфейсов
-
 		case *ast.CallExpr:
 			if insideFunction == nil || isInit(insideFunction) {
-				calls := syntax.ParseFuncCalls(n, ctx.Files)
-				for _, call := range calls {
-					if err = call.Error().Err(); err != nil {
-						return false
-					}
-				}
-
-				tool, pErr := d.converter.ToolBox(ctx.WithImports(file.Imports), calls)
-				if pErr != nil {
-					err = pErr.Err()
-					return false
-				}
-
-				println(tool)
+				// calls := parse.ParseFuncCalls(n, ctx.Files)
+				// for _, call := range calls {
+				// 	if err = call.Error(); err != nil {
+				// 		return false
+				// 	}
+				// }
+				//
+				// tool, err := d.converter.ToolBox(ctx.WithImports(file.Imports), calls)
+				// if err != nil {
+				// 	return false
+				// }
+				//
+				// println(tool)
 
 				return false
 			}

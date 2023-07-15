@@ -1,241 +1,65 @@
 package convert
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/utils/code"
+	"github.com/sabahtalateh/toolboxgen/internal/maps"
+	// "github.com/sabahtalateh/toolboxgen/internal/mid"
 	"go/ast"
-	"go/parser"
-	"go/token"
-	"strings"
 
-	"github.com/sabahtalateh/toolboxgen/internal/builtin"
-	"github.com/sabahtalateh/toolboxgen/internal/context"
-	"github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
-	"github.com/sabahtalateh/toolboxgen/internal/errors"
-	"github.com/sabahtalateh/toolboxgen/internal/tool"
+	"github.com/sabahtalateh/toolboxgen/internal/code"
+	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
-func (c *Converter) ConvertFuncDef(ctx context.Context, f *ast.FuncDecl) (*tool.FuncDef, *errors.PositionedErr) {
-	funcDef := &tool.FuncDef{
-		Code:     code.OfNode(f),
+func (c *Converter) Function(ctx Context, f *ast.FuncDecl) (*types.Function, error) {
+	var (
+		function *types.Function
+		err      error
+	)
+
+	function = &types.Function{
+		Declared: code.OfNode(f),
 		Package:  ctx.Package,
 		FuncName: f.Name.Name,
 		Position: ctx.Position(f.Pos()),
 	}
 
-	var err *errors.PositionedErr
-	funcDef.Receiver, err = c.convFuncDefRecv(ctx, f)
+	// function.Receiver, err = c.receiver(ctx, f.Recv)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	function.TypeParams = TypeParams(ctx, f.Type.TypeParams)
+	defined := maps.FromSlice(function.TypeParams, func(v *types.TypeParam) string { return v.Original })
+	ctx = ctx.WithDefined(defined)
+
+	function.Parameters, err = c.Fields(ctx.WithPos(f.Type.Params.Pos()), f.Type.Params)
 	if err != nil {
 		return nil, err
 	}
 
-	funcDef.TypeParams = c.convFuncDefTypeParams(ctx, f)
+	// function.Results, err = c.Fields(ctx.WithPos(f.Type.Results.Pos()), f.Type.Results)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// after receiver and type params parsed we can compose normalize list
-	normalizeParamsList := makeNormalizeTypeParametersList(funcDef)
-
-	funcDef.Parameters, err = c.convFuncDefParams(
-		ctx,
-		f,
-		append(funcDef.TypeParams, funcDef.Receiver.TypeParams...),
-		normalizeParamsList,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	funcDef.Results, err = c.convFuncDefResults(
-		ctx,
-		f,
-		append(funcDef.TypeParams, funcDef.Receiver.TypeParams...),
-		normalizeParamsList,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	normalizeDefinedTypeParams(funcDef)
-
-	return funcDef, nil
+	return function, err
 }
 
-func (c *Converter) findFuncDef(
-	Package string,
-	funcName string,
-	pos token.Position,
-) (*tool.FuncDef, *errors.PositionedErr) {
-	if Package == "" && builtin.Type(funcName) {
-		return nil, errors.BuiltinFunctionErr(pos, funcName)
-	}
-
-	pkgDir, err := c.pkgDir.Dir(Package)
-	if err != nil {
-		return nil, errors.Error(pos, err)
-	}
-
-	files := token.NewFileSet()
-	pkgs, err := parser.ParseDir(files, pkgDir, nil, parser.ParseComments)
-	if err != nil {
-		return nil, errors.Error(pos, err)
+func (c *Converter) receiver(ctx Context, r *ast.FieldList) (*types.Field, error) {
+	if r == nil || len(r.List) == 0 {
+		return nil, nil
 	}
 
 	var (
-		funcDef *tool.FuncDef
-		pErr    *errors.PositionedErr
-	)
-	for pkgName, pkg := range pkgs {
-		if strings.HasSuffix(pkgName, "_test") {
-			continue
-		}
-		for _, file := range pkg.Files {
-			ast.Inspect(file, func(node ast.Node) bool {
-				if pErr != nil || funcDef != nil {
-					return false
-				}
-
-				switch n := node.(type) {
-				case *ast.FuncDecl:
-					if n.Name.Name == funcName {
-						funcDef, pErr = c.ConvertFuncDef(context.New(Package, file.Imports, files), n)
-					}
-					return false
-				}
-
-				return true
-			})
-		}
-	}
-
-	if pErr != nil {
-		return nil, pErr
-	}
-
-	if funcDef == nil {
-		return nil, errors.Errorf(pos, "function `%s` not found at `%s` package", funcName, Package)
-	}
-
-	return funcDef, nil
-}
-
-func (c *Converter) convFuncDefRecv(ctx context.Context, f *ast.FuncDecl) (tool.Receiver, *errors.PositionedErr) {
-	var (
-		recv tool.Receiver
-		err  *errors.PositionedErr
+		recv *types.Field
+		err  error
 	)
 
-	if f.Recv != nil {
-		recv.Presented = true
-		recv.Position = ctx.Position(f.Recv.List[0].Pos())
-		astTypeRef := syntax.ParseTypeRef(f.Recv.List[0].Type, ctx.Files)
-		if err = astTypeRef.Error(); err != nil {
-			return recv, err
-		}
-
-		for _, tp := range astTypeRef.TypeParams {
-			recv.TypeParams = append(recv.TypeParams, tool.TypeParam{Name: tp.TypeName, Position: tp.Position})
-		}
-		recv.Type, err = c.TypeRef(ctx, astTypeRef, recv.TypeParams, nil)
-		if err != nil {
-			return recv, err
-		}
-	}
-
-	return recv, err
-}
-
-func (c *Converter) convFuncDefTypeParams(
-	ctx context.Context,
-	f *ast.FuncDecl,
-) (res []tool.TypeParam) {
-	if f.Type.TypeParams != nil {
-		for _, tp := range f.Type.TypeParams.List {
-			for _, name := range tp.Names {
-				res = append(res, tool.TypeParam{
-					Name:     name.Name,
-					Position: ctx.Position(tp.Pos()),
-				})
-			}
-		}
-	}
-
-	return res
-}
-
-func (c *Converter) convFuncDefParams(
-	ctx context.Context,
-	f *ast.FuncDecl,
-	defTypeParams []tool.TypeParam,
-	normalize map[string]string,
-) (res []tool.FuncParam, err *errors.PositionedErr) {
-	if f.Type.Params != nil {
-		for _, funcParam := range f.Type.Params.List {
-			for _, name := range funcParam.Names {
-				paramType, err := c.TypeRef(ctx, syntax.ParseTypeRef(funcParam.Type, ctx.Files), defTypeParams, normalize)
-				if err != nil {
-					return nil, err
-				}
-				res = append(res, tool.FuncParam{
-					Name:     name.Name,
-					Type:     paramType,
-					Position: ctx.Position(funcParam.Pos()),
-				})
-			}
-		}
-	}
-
-	return res, err
-}
-func (c *Converter) convFuncDefResults(
-	ctx context.Context,
-	f *ast.FuncDecl,
-	defTypeParams []tool.TypeParam,
-	normalize map[string]string,
-) (res []tool.TypeRef, err *errors.PositionedErr) {
-	if f.Type.Results != nil {
-		for _, funcRes := range f.Type.Results.List {
-			resType, err := c.TypeRef(ctx, syntax.ParseTypeRef(funcRes.Type, ctx.Files), defTypeParams, normalize)
-			if err != nil {
-				return nil, err
-			}
-			res = append(res, resType)
-		}
-	}
-
-	return res, err
-}
-
-func (c *Converter) convFuncRef(ctx context.Context, ref syntax.Ref) (*tool.FuncRef, *errors.PositionedErr) {
-	if ref.PkgAlias == "" && builtin.Func(ref.FuncName) {
-		return nil, errors.BuiltinFunctionErr(ref.Position(), ref.FuncName)
-	}
-
-	pkg, pathErr := c.packagePath(ctx, ref.PkgAlias)
-	if pathErr != nil {
-		return nil, errors.Error(ref.Position(), pathErr)
-	}
-
-	fDef, err := c.findFuncDef(pkg, ref.FuncName, ref.Position())
+	recvField := r.List[0]
+	// TODO actual type params
+	fields, err := c.Field(ctx, recvField)
 	if err != nil {
-		return nil, err
+		return recv, err
 	}
 
-	if len(ref.TypeParams) != len(fDef.TypeParams) {
-		return nil, errors.InconsistentTypeParamsErr(ref.Position())
-	}
-
-	fRef := tool.FuncRefFromDef(ref.Position(), fDef)
-	fRef.Code = ref.Code()
-	for i, tParam := range ref.TypeParams {
-		param, pErr := fRef.NthTypeParam(i)
-		if err != nil {
-			return nil, errors.Error(param.Position, pErr)
-		}
-
-		effective, err := c.TypeRef(ctx, tParam, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-		fRef.SetEffectiveParamRecursive(param.Name, effective)
-	}
-
-	return fRef, nil
+	return fields[0], err
 }

@@ -1,8 +1,6 @@
-package strings
+package utils
 
-import (
-	"strings"
-)
+import "strings"
 
 func Unquote(x string) string {
 	x = strings.Trim(x, "\"")

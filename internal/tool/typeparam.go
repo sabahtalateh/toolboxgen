@@ -1,36 +1,35 @@
 package tool
 
-import (
-	"github.com/sabahtalateh/toolboxgen/internal/discovery/syntax"
-	"go/token"
-)
-
-type TypeParamRef struct {
-	Name     string
-	Mods     []syntax.TypeRefModifier
-	Position token.Position
-}
-
-func (s *TypeParamRef) typRef() {
-}
-
-func (s *TypeParamRef) Equals(t TypeRef) bool {
-	switch t2 := t.(type) {
-	case *TypeParamRef:
-		if !syntax.ModifiersEquals(s.Modifiers(), t2.Modifiers()) {
-			return false
-		}
-
-		if s.Name != t2.Name {
-			return false
-		}
-
-		return true
-	default:
-		return false
-	}
-}
-
-func (s *TypeParamRef) Modifiers() []syntax.TypeRefModifier {
-	return s.Mods
-}
+// type TypeParamRef struct {
+// 	Name     string
+// 	// Mods     []parse.TypeRefModifier
+// 	Position token.Position
+// }
+//
+// func (t *TypeParamRef) Params(name string) {
+// 	t.Name = name
+// }
+//
+// func (t *TypeParamRef) typRef() {
+// }
+//
+// func (t *TypeParamRef) Equals(tp TypeRef) bool {
+// 	switch t2 := tp.(type) {
+// 	case *TypeParamRef:
+// 		if !parse.ModifiersEquals(t.Modifiers(), t2.Modifiers()) {
+// 			return false
+// 		}
+//
+// 		if t.Name != t2.Name {
+// 			return false
+// 		}
+//
+// 		return true
+// 	default:
+// 		return false
+// 	}
+// }
+//
+// func (t *TypeParamRef) Modifiers() []parse.TypeRefModifier {
+// 	return t.Mods
+// }

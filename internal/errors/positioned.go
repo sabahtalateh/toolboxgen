@@ -18,11 +18,17 @@ func Error(pos token.Position, err error) *PositionedErr {
 	return &PositionedErr{pos: pos, err: err}
 }
 
-func (p *PositionedErr) Err() error {
+func (p *PositionedErr) Error() string {
 	if p == nil {
-		return nil
+		return ""
 	}
-	return fmt.Errorf("%w\n\tat %s", p.err, p.pos)
+
+	res := fmt.Sprintf("%s", p.err)
+	if p.pos.IsValid() {
+		res += fmt.Sprintf("\n\tat %s", p.pos)
+	}
+
+	return res
 }
 
 func Check(ff ...func() *PositionedErr) *PositionedErr {

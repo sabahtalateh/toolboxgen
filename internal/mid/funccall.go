@@ -1,23 +1,26 @@
-package syntax
+// package mid is a short-word for intermediate
+// includes functions to parse ast into more convenient types
+
+package mid
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/utils/code"
 	"go/ast"
 	"go/token"
 	"strings"
 
+	"github.com/sabahtalateh/toolboxgen/internal/code"
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 )
 
 type FunctionCall struct {
-	CallExpr   *ast.CallExpr
-	Code       string
-	PkgAlias   string
-	FuncName   string
-	TypeParams []TypeRef
-	Args       []FunctionCallArg
-	Err        *errors.PositionedErr
-	Position   token.Position
+	CallExpr *ast.CallExpr
+	Code     string
+	PkgAlias string
+	FuncName string
+	// TypeParams []*ParseTypeRef
+	Args     []FunctionCallArg
+	Err      *errors.PositionedErr
+	Position token.Position
 }
 
 func ParseFuncCalls(ce *ast.CallExpr, files *token.FileSet) []FunctionCall {
@@ -46,7 +49,7 @@ func newCalls(files *token.FileSet) *calls {
 
 func (s *calls) push(expr *ast.CallExpr) {
 	c := FunctionCall{CallExpr: expr}
-	c.Code, c.Err = code.OfNodeE(expr, s.files.Position(expr.Pos()))
+	c.Code = code.OfNode(expr)
 	s.stack = append([]FunctionCall{c}, s.stack...)
 }
 
@@ -83,9 +86,9 @@ func (s *calls) addArg(a FunctionCallArg) {
 	s.stack[0].Args = append(s.stack[0].Args, a)
 }
 
-func (s *calls) addTypeParam(t TypeRef) {
-	s.stack[0].TypeParams = append(s.stack[0].TypeParams, t)
-}
+// func (s *calls) addTypeParam(t *ParseTypeRef) {
+// 	s.stack[0].TypeParams = append(s.stack[0].TypeParams, t)
+// }
 
 func (s *calls) visitCallExpr(callExpr *ast.CallExpr) {
 	s.push(callExpr)
@@ -123,9 +126,9 @@ func (s *calls) visitIndexListExpr(ind *ast.IndexListExpr) {
 		s.errorf(x.Pos(), "not supported")
 	}
 
-	for _, index := range ind.Indices {
-		s.addTypeParam(ParseTypeRef(index, s.files))
-	}
+	// for _, index := range ind.Indices {
+	// s.addTypeParam(ParseTypeRef(s.files, index))
+	// }
 }
 
 func (s *calls) visitIndexExpr(ind *ast.IndexExpr) {
@@ -137,7 +140,7 @@ func (s *calls) visitIndexExpr(ind *ast.IndexExpr) {
 	default:
 		s.errorf(x.Pos(), "not supported")
 	}
-	s.addTypeParam(ParseTypeRef(ind.Index, s.files))
+	// s.addTypeParam(ParseTypeRef(s.files, ind.Index))
 }
 
 func (s *calls) visitSelectorExpr(sel *ast.SelectorExpr) {
