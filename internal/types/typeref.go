@@ -10,10 +10,11 @@ type (
 	}
 
 	BuiltinRef struct {
-		Declared  string
-		Modifiers Modifiers
-		TypeName  string
-		Position  token.Position
+		Declared   string
+		Modifiers  Modifiers
+		TypeName   string
+		Definition *Builtin
+		Position   token.Position
 	}
 
 	StructRef struct {
@@ -22,6 +23,7 @@ type (
 		Package    string
 		TypeName   string
 		TypeParams []TypeRef
+		Definition *Struct
 		Position   token.Position
 	}
 
@@ -31,6 +33,7 @@ type (
 		Package    string
 		TypeName   string
 		TypeParams []TypeRef
+		Definition *Interface
 		Position   token.Position
 	}
 
@@ -41,6 +44,7 @@ type (
 		TypeName   string
 		Type       TypeRef
 		TypeParams []TypeRef
+		Definition *TypeDef
 		Position   token.Position
 	}
 
@@ -90,26 +94,3 @@ func (x *ChanRef) typRef()      {}
 func (x *FuncTypeRef) typRef()  {}
 func (x *TypeParamRef) typRef() {}
 func (x *TypeAliasRef) typRef() {}
-
-func TypeRefPosition(t TypeRef) token.Position {
-	switch tt := t.(type) {
-	case *BuiltinRef:
-		return tt.Position
-	case *StructRef:
-		return tt.Position
-	case *InterfaceRef:
-		return tt.Position
-	case *MapRef:
-		return tt.Position
-	case *ChanRef:
-		return tt.Position
-	case *FuncTypeRef:
-		return tt.Position
-	case *TypeParamRef:
-		return tt.Position
-	case *TypeAliasRef:
-		return tt.Position
-	default:
-		panic("unknown type")
-	}
-}

@@ -3,7 +3,7 @@ package tool
 // type FuncParam struct {
 // 	Name     string
 // 	Type     TypeRef
-// 	Position token.Position
+// 	NodePosition token.NodePosition
 // }
 //
 // type Receiver struct {
@@ -11,7 +11,7 @@ package tool
 // 	Name      string
 // 	// Type      parse.TypeRef
 // 	// TypeParams []convert.DefinedTypeParam
-// 	Position token.Position
+// 	NodePosition token.NodePosition
 // }
 //
 // func (r *Receiver) String() string {
@@ -26,11 +26,11 @@ package tool
 //
 // type FuncDef struct {
 // 	Code       string
-// 	Package    string
+// 	pakage    string
 // 	FuncName   string
 // 	Receiver   Receiver
 // 	TypeParams []TypeParam
 // 	Parameters []FuncParam
 // 	Results    []TypeRef
-// 	Position   token.Position
+// 	NodePosition   token.NodePosition
 // }

@@ -2,7 +2,7 @@ package validation
 
 // func FuncDefHasExactlyNParams(f *tool.FuncDef, n int) *errors.PositionedErr {
 // 	if len(f.Parameters) != n {
-// 		return errors.Errorf(f.Position, "function should have exactly `%d` parameters", n)
+// 		return errors.Errorf(f.NodePosition, "function should have exactly `%d` parameters", n)
 // 	}
 //
 // 	return nil
@@ -10,7 +10,7 @@ package validation
 //
 // func FuncDefHasAtMaximumNParams(f *tool.FuncDef, n int) *errors.PositionedErr {
 // 	if len(f.Parameters) > n {
-// 		return errors.Errorf(f.Position, "function should have at maximum `%d` parameters", n)
+// 		return errors.Errorf(f.NodePosition, "function should have at maximum `%d` parameters", n)
 // 	}
 //
 // 	return nil
@@ -18,7 +18,7 @@ package validation
 //
 // func FuncDefHasAtMinimumNParams(f *tool.FuncDef, n int) *errors.PositionedErr {
 // 	if len(f.Parameters) < n {
-// 		return errors.Errorf(f.Position, "function should have at minimum `%d` parameters", n)
+// 		return errors.Errorf(f.NodePosition, "function should have at minimum `%d` parameters", n)
 // 	}
 //
 // 	return nil
@@ -26,7 +26,7 @@ package validation
 //
 // func FuncDefHasAtMaximumNResults(f *tool.FuncDef, n int) *errors.PositionedErr {
 // 	if len(f.Results) > n {
-// 		return errors.Errorf(f.Position, "function should have at maximum `%d` results", n)
+// 		return errors.Errorf(f.NodePosition, "function should have at maximum `%d` results", n)
 // 	}
 //
 // 	return nil
@@ -34,7 +34,7 @@ package validation
 //
 // func FuncDefHasAtMinimumNResults(f *tool.FuncDef, n int) *errors.PositionedErr {
 // 	if len(f.Results) < n {
-// 		return errors.Errorf(f.Position, "function should have at minimum `%d` results", n)
+// 		return errors.Errorf(f.NodePosition, "function should have at minimum `%d` results", n)
 // 	}
 //
 // 	return nil

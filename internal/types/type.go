@@ -7,6 +7,7 @@ import (
 type (
 	Type interface {
 		typ()
+		Equal(Type) bool
 	}
 
 	Builtin struct {
@@ -19,6 +20,7 @@ type (
 		Package    string
 		TypeName   string
 		TypeParams TypeParams
+		Fields     []*Field
 		Position   token.Position
 	}
 
@@ -48,25 +50,48 @@ type (
 	}
 )
 
-func (x *Builtin) typ()   {}
-func (x *Struct) typ()    {}
-func (x *Interface) typ() {}
-func (x *TypeDef) typ()   {}
-func (x *TypeAlias) typ() {}
+func (t *Builtin) typ()   {}
+func (t *Struct) typ()    {}
+func (t *Interface) typ() {}
+func (t *TypeDef) typ()   {}
+func (t *TypeAlias) typ() {}
 
-func TypePosition(t Type) token.Position {
-	switch tt := t.(type) {
+func (t *Builtin) Equal(t2 Type) bool {
+	switch tt2 := t2.(type) {
 	case *Builtin:
-		return token.Position{}
-	case *Struct:
-		return tt.Position
-	case *Interface:
-		return tt.Position
-	case *TypeDef:
-		return tt.Position
-	case *TypeAlias:
-		return tt.Position
+		return t.TypeName == tt2.TypeName
 	default:
-		panic("unknown type")
+		return false
 	}
+}
+
+func (t *Struct) Equal(t2 Type) bool {
+	switch tt2 := t2.(type) {
+	case *Struct:
+		if t.Package != tt2.Package {
+			return false
+		}
+
+		if t.TypeName != tt2.TypeName {
+			return false
+		}
+
+		if !t.TypeParams.Equal(tt2.TypeParams) {
+			return false
+		}
+
+		return true
+	default:
+		return false
+	}
+}
+
+func (t *Interface) Equal(t2 Type) bool {
+	return false
+}
+func (t *TypeDef) Equal(t2 Type) bool {
+	return false
+}
+func (t *TypeAlias) Equal(t2 Type) bool {
+	return false
 }

@@ -3,7 +3,7 @@ package tool
 //
 // type TypeParam struct {
 // 	Name     string
-// 	Position token.Position
+// 	NodePosition token.NodePosition
 // }
 //
 // func (t *TypeParam) Params(name string) {
@@ -79,7 +79,7 @@ package tool
 // 		if p.Name == old {
 // 			typeParams.Params[i] = TypeParam{
 // 				Name:     new,
-// 				Position: p.Position,
+// 				NodePosition: p.NodePosition,
 // 			}
 // 		}
 // 	}
@@ -93,7 +93,7 @@ package tool
 // 		if p.Name == old {
 // 			typeParams.Params[i] = TypeParam{
 // 				Name:     new,
-// 				Position: p.Position,
+// 				NodePosition: p.NodePosition,
 // 			}
 // 		}
 // 	}

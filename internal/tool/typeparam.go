@@ -3,7 +3,7 @@ package tool
 // type TypeParamRef struct {
 // 	Name     string
 // 	// Mods     []parse.TypeRefModifier
-// 	Position token.Position
+// 	NodePosition token.NodePosition
 // }
 //
 // func (t *TypeParamRef) Params(name string) {

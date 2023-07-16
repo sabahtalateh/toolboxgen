@@ -1,14 +1,16 @@
 package convert
 
 import (
+	"go/ast"
+
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/mid"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
-	"go/ast"
+	"github.com/sabahtalateh/toolboxgen/internal/types/position"
 )
 
 func (c *Converter) TypeRef(ctx Context, expr ast.Expr) (types.TypeRef, error) {
-	ref := mid.ParseTypeRef(ctx.Files, expr)
+	ref := mid.ParseTypeRef(ctx.Files(), expr)
 	if err := ref.ParseError(); err != nil {
 		return nil, err
 	}
@@ -19,7 +21,7 @@ func (c *Converter) TypeRef(ctx Context, expr ast.Expr) (types.TypeRef, error) {
 func (c *Converter) convertMidTypeRef(ctx Context, ref mid.TypeRef) (types.TypeRef, error) {
 	switch r := ref.(type) {
 	case *mid.Type:
-		return c.convertMidType(ctx, r)
+		return c.convertMidType(ctx.WithPosition(r.Position), r)
 	case *mid.Chan:
 		println(ref)
 	}
@@ -29,7 +31,7 @@ func (c *Converter) convertMidTypeRef(ctx Context, ref mid.TypeRef) (types.TypeR
 
 func (c *Converter) convertMidType(ctx Context, midType *mid.Type) (types.TypeRef, error) {
 	if midType.Package == "" {
-		if def, ok := ctx.Defined[midType.TypeName]; ok {
+		if def, ok := ctx.Defined(midType.TypeName); ok {
 			return &types.TypeParamRef{
 				Declared:  midType.Declared,
 				Original:  midType.TypeName,
@@ -40,7 +42,7 @@ func (c *Converter) convertMidType(ctx Context, midType *mid.Type) (types.TypeRe
 		}
 	}
 
-	typ, err := c.findType(ctx, ctx.PackageFromAlias(midType.Package), midType.TypeName)
+	typ, err := c.findType(ctx, ctx.ResolvePackage(midType.Package), midType.TypeName)
 	if err != nil {
 		return nil, err
 	}
@@ -57,16 +59,17 @@ func (c *Converter) convertMidType(ctx Context, midType *mid.Type) (types.TypeRe
 	case *types.TypeAlias:
 		return c.typeAliasRef(midType, t), nil
 	default:
-		return nil, errors.Errorf(types.TypePosition(t), "unknown type %T", t)
+		return nil, errors.Errorf(position.OfType(t), "unknown type %T", t)
 	}
 }
 
 func (c *Converter) builtinRef(midType *mid.Type, typ *types.Builtin) *types.BuiltinRef {
 	return &types.BuiltinRef{
-		Declared:  midType.Declared,
-		Modifiers: Modifiers(midType.Modifiers),
-		TypeName:  typ.TypeName,
-		Position:  midType.Position,
+		Declared:   midType.Declared,
+		Modifiers:  Modifiers(midType.Modifiers),
+		TypeName:   typ.TypeName,
+		Definition: typ,
+		Position:   midType.Position,
 	}
 }
 
@@ -77,11 +80,12 @@ func (c *Converter) structRef(ctx Context, midType *mid.Type, typ *types.Struct)
 	)
 
 	ref = &types.StructRef{
-		Declared:  midType.Declared,
-		Modifiers: Modifiers(midType.Modifiers),
-		Package:   typ.Package,
-		TypeName:  typ.TypeName,
-		Position:  midType.Position,
+		Declared:   midType.Declared,
+		Modifiers:  Modifiers(midType.Modifiers),
+		Package:    typ.Package,
+		TypeName:   typ.TypeName,
+		Definition: typ,
+		Position:   midType.Position,
 	}
 
 	ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams)
@@ -99,11 +103,12 @@ func (c *Converter) interfaceRef(ctx Context, midType *mid.Type, typ *types.Inte
 	)
 
 	ref = &types.InterfaceRef{
-		Declared:  midType.Declared,
-		Modifiers: Modifiers(midType.Modifiers),
-		Package:   typ.Package,
-		TypeName:  typ.TypeName,
-		Position:  midType.Position,
+		Declared:   midType.Declared,
+		Modifiers:  Modifiers(midType.Modifiers),
+		Package:    typ.Package,
+		TypeName:   typ.TypeName,
+		Definition: typ,
+		Position:   midType.Position,
 	}
 
 	ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams)
@@ -121,12 +126,13 @@ func (c *Converter) typeDefRef(ctx Context, midType *mid.Type, typ *types.TypeDe
 	)
 
 	ref = &types.TypeDefRef{
-		Declared:  midType.Declared,
-		Modifiers: Modifiers(midType.Modifiers),
-		Package:   typ.Package,
-		TypeName:  typ.TypeName,
-		Type:      typ.Type,
-		Position:  midType.Position,
+		Declared:   midType.Declared,
+		Modifiers:  Modifiers(midType.Modifiers),
+		Package:    typ.Package,
+		TypeName:   typ.TypeName,
+		Type:       typ.Type,
+		Definition: typ,
+		Position:   midType.Position,
 	}
 
 	ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams)
@@ -134,19 +140,11 @@ func (c *Converter) typeDefRef(ctx Context, midType *mid.Type, typ *types.TypeDe
 		return nil, err
 	}
 
-	forwardActual(ref)
+	if err = forwardActual(ctx.WithDefined(ref.Definition.TypeParams), ref); err != nil {
+		return nil, err
+	}
 
 	return ref, nil
-}
-
-func forwardActual(typeDef *types.TypeDefRef) {
-	switch t := typeDef.Type.(type) {
-	case *types.TypeDefRef:
-		for i, param := range typeDef.TypeParams {
-			t.TypeParams[i] = param
-		}
-		forwardActual(t)
-	}
 }
 
 func (c *Converter) typeAliasRef(midType *mid.Type, typ *types.TypeAlias) *types.TypeAliasRef {
@@ -166,7 +164,7 @@ func (c *Converter) refTypeParams(
 	actual []mid.TypeRef,
 ) ([]types.TypeRef, error) {
 	if len(defined) != len(actual) {
-		return nil, errors.Errorf(ctx.CurrentPosition(), "got %d type param but %d required", len(actual), len(defined))
+		return nil, errors.Errorf(ctx.Position(), "got %d type param but %d required", len(actual), len(defined))
 	}
 
 	var res []types.TypeRef
@@ -178,4 +176,67 @@ func (c *Converter) refTypeParams(
 		res = append(res, conv)
 	}
 	return res, nil
+}
+
+func forwardActual(ctx Context, outer *types.TypeDefRef) error {
+	var (
+		outerParams  = refTypeParams(outer)
+		inner        = outer.Type
+		innerParams  []types.TypeRef
+		innerDefined types.TypeParams
+	)
+
+	switch in := inner.(type) {
+	case *types.StructRef:
+		innerParams = in.TypeParams
+		innerDefined = in.Definition.TypeParams
+	case *types.InterfaceRef:
+		innerParams = in.TypeParams
+		innerDefined = in.Definition.TypeParams
+	case *types.TypeDefRef:
+		innerParams = in.TypeParams
+		innerDefined = in.Definition.TypeParams
+	default:
+		return nil
+	}
+
+	reverts := map[int]string{}
+	for i, param := range innerParams {
+		switch p := param.(type) {
+		case *types.TypeParamRef:
+			reverts[i] = innerDefined[i].Original
+			innerDefined[i].Original = p.Original
+
+			def, ok := ctx.Defined(p.Original)
+			if !ok || len(outerParams)-1 < def.Order {
+				return errors.Errorf(ctx.Position(), "inconsistent type params")
+			}
+			actual := outerParams[def.Order]
+			innerParams[i] = actual
+		}
+	}
+
+	switch in := inner.(type) {
+	case *types.TypeDefRef:
+		return forwardActual(ctx.WithDefined(innerDefined).WithPosition(position.OfTypeRef(inner)), in)
+	}
+
+	for i, orig := range reverts {
+		innerDefined[i].Original = orig
+	}
+
+	return nil
+}
+
+func refTypeParams(ref types.TypeRef) []types.TypeRef {
+	switch r := ref.(type) {
+	case *types.StructRef:
+		return r.TypeParams
+	case *types.InterfaceRef:
+		return r.TypeParams
+	case *types.TypeDefRef:
+		return r.TypeParams
+	default:
+		return nil
+	}
 }

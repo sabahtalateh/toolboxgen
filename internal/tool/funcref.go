@@ -3,7 +3,7 @@ package tool
 // type FuncRef struct {
 // 	Code       string
 // 	Def        *FuncDef
-// 	Package    string
+// 	pakage    string
 // 	FuncName   string
 // 	TypeParams struct {
 // 		Params    []TypeParam
@@ -11,15 +11,15 @@ package tool
 // 	}
 // 	Parameters []FuncParam
 // 	Results    []TypeRef
-// 	Position   token.Position
+// 	NodePosition   token.NodePosition
 // }
 //
 // // FuncRefFromDef
 // // Deep-copying fields to keep original function definition when set effective type parameters
-// func FuncRefFromDef(pos token.Position, def *FuncDef) *FuncRef {
+// func FuncRefFromDef(pos token.NodePosition, def *FuncDef) *FuncRef {
 // 	fr := &FuncRef{
 // 		Def:      def,
-// 		Package:  def.Package,
+// 		pakage:  def.pakage,
 // 		FuncName: def.FuncName,
 // 		TypeParams: struct {
 // 			Params    []TypeParam
@@ -30,7 +30,7 @@ package tool
 // 		},
 // 		Parameters: reflect.DeepCopy[[]FuncParam](def.Parameters),
 // 		Results:    reflect.DeepCopy[[]TypeRef](def.Results),
-// 		Position:   pos,
+// 		NodePosition:   pos,
 // 	}
 //
 // 	return fr

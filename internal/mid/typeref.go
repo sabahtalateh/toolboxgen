@@ -404,20 +404,3 @@ func (x *FuncType) ParseError() error {
 func (x *StructType) ParseError() error {
 	return x.Error
 }
-
-func Position(tr TypeRef) token.Position {
-	switch x := tr.(type) {
-	case *Type:
-		return x.Position
-	case *Map:
-		return x.Position
-	case *Chan:
-		return x.Position
-	case *FuncType:
-		return x.Position
-	case *StructType:
-		return x.Position
-	default:
-		panic("unknown type reference")
-	}
-}

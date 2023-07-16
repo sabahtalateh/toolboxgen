@@ -1,15 +1,15 @@
 package tool
 
-// func Position(t TypeRef) token.Position {
+// func NodePosition(t TypeRef) token.NodePosition {
 // 	switch x := t.(type) {
 // 	case *BuiltinRef:
-// 		return x.Position
+// 		return x.NodePosition
 // 	case *StructRef:
-// 		return x.Position
+// 		return x.NodePosition
 // 	case *InterfaceRef:
-// 		return x.Position
+// 		return x.NodePosition
 // 	case *TypeParamRef:
-// 		return x.Position
+// 		return x.NodePosition
 // 	default:
 // 		panic("not implemented")
 // 	}

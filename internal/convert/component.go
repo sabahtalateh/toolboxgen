@@ -25,7 +25,7 @@ type component struct {
 // 			return nil, err
 // 		}
 // 	default:
-// 		return nil, errors.FunctionRefExpectedErr(arg.Val.Position())
+// 		return nil, errors.FunctionRefExpectedErr(arg.Val.NodePosition())
 // 	}
 //
 // 	if err = comp.EnrichWithFunction(funcRef); err != nil {
@@ -45,7 +45,7 @@ type component struct {
 // 			}
 // 			comp.With[key] = ww
 // 		default:
-// 			return nil, errors.Errorf(call.Position, "unsupported function")
+// 			return nil, errors.Errorf(call.NodePosition, "unsupported function")
 // 		}
 // 	}
 //
@@ -63,16 +63,16 @@ type component struct {
 // 	switch name := nameArg.Val.(type) {
 // 	case *parse.String:
 // 		if name.Val == "" {
-// 			return errors.Errorf(nameArg.Val.Position(), "component name should not be empty")
+// 			return errors.Errorf(nameArg.Val.NodePosition(), "component name should not be empty")
 // 		}
 // 		if comp.Name != "" {
-// 			return errors.Errorf(nameArg.Val.Position(), "component name already set")
+// 			return errors.Errorf(nameArg.Val.NodePosition(), "component name already set")
 // 		}
 //
 // 		comp.Name = name.Val
 // 		return nil
 // 	default:
-// 		return errors.StringLitExpectedErr(nameArg.Val.Position())
+// 		return errors.StringLitExpectedErr(nameArg.Val.NodePosition())
 // 	}
 // }
 //
@@ -109,7 +109,7 @@ type component struct {
 //
 // 			res = append(res, w)
 // 		default:
-// 			return "", nil, errors.FunctionRefExpectedErr(arg.Val.Position())
+// 			return "", nil, errors.FunctionRefExpectedErr(arg.Val.NodePosition())
 // 		}
 // 	}
 //
@@ -120,12 +120,12 @@ type component struct {
 // 	switch ka := arg.(type) {
 // 	case *parse.String:
 // 		if ka.Val == "" {
-// 			return "", errors.Errorf(ka.Position(), "`With` key can not be empty")
+// 			return "", errors.Errorf(ka.NodePosition(), "`With` key can not be empty")
 // 		}
 //
 // 		return ka.Val, nil
 // 	default:
-// 		return "", errors.Errorf(ka.Position(), "`With` key should be string literal")
+// 		return "", errors.Errorf(ka.NodePosition(), "`With` key should be string literal")
 // 	}
 // }
 //
@@ -142,11 +142,11 @@ type component struct {
 // 		switch res := f.Results[1].(type) {
 // 		case *tool.BuiltinRef:
 // 			if !res.IsError() {
-// 				return nil, errors.ErrorExpectedErr(res.Position)
+// 				return nil, errors.ErrorExpectedErr(res.NodePosition)
 // 			}
 // 			w.WithError = true
 // 		default:
-// 			return nil, errors.ErrorExpectedErr(tool.Position(res))
+// 			return nil, errors.ErrorExpectedErr(tool.NodePosition(res))
 // 		}
 // 	}
 //

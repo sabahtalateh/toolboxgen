@@ -24,9 +24,9 @@ package di
 // 	switch res := firstResult.(type) {
 // 	case *tool.BuiltinRef:
 // 		if res.IsError() {
-// 			return errors.Errorf(res.Position, "first return value can not be error")
+// 			return errors.Errorf(res.NodePosition, "first return value can not be error")
 // 		} else {
-// 			return errors.Errorf(res.Position, "builtin type can not be a component")
+// 			return errors.Errorf(res.NodePosition, "builtin type can not be a component")
 // 		}
 // 	}
 // 	c.Type = firstResult
@@ -37,10 +37,10 @@ package di
 // 		switch res := secondResult.(type) {
 // 		case *tool.BuiltinRef:
 // 			if !res.IsError() {
-// 				return errors.ErrorExpectedErr(res.Position)
+// 				return errors.ErrorExpectedErr(res.NodePosition)
 // 			}
 // 		default:
-// 			return errors.Errorf(tool.Position(secondResult), "second return value should be error")
+// 			return errors.Errorf(tool.NodePosition(secondResult), "second return value should be error")
 // 		}
 // 		c.WithError = true
 // 	}

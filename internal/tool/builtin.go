@@ -3,7 +3,7 @@ package tool
 // type BuiltinDef struct {
 // 	TypeName  string
 // 	Modifiers []parse.TypeRefModifier
-// 	Position  token.Position
+// 	NodePosition  token.NodePosition
 // }
 //
 // func (b BuiltinDef) typDef() {}
@@ -11,14 +11,14 @@ package tool
 // type BuiltinRef struct {
 // 	TypeName string
 // 	Mods     []parse.TypeRefModifier
-// 	Position token.Position
+// 	NodePosition token.NodePosition
 // }
 //
 // func BuiltinRefFromDef(d *BuiltinDef) *BuiltinRef {
 // 	return &BuiltinRef{
 // 		TypeName: d.TypeName,
 // 		Mods:     d.Modifiers,
-// 		Position: d.Position,
+// 		NodePosition: d.NodePosition,
 // 	}
 // }
 //

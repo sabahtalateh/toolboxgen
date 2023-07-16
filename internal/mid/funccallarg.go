@@ -283,7 +283,7 @@ func (a *FunctionCallArg) visitIndexExpr(ind *ast.IndexExpr) {
 	// case *FuncCallRef:
 	// refArg.TypeParams = append(refArg.TypeParams, ParseTypeRef(a.files, ind.Index))
 	// default:
-	// 	a.errorf(ind.Pos(), "not supported")
+	// 	a.errorf(ind.position(), "not supported")
 	// }
 }
 
@@ -303,6 +303,6 @@ func (a *FunctionCallArg) visitIndexListExpr(ind *ast.IndexListExpr) {
 	// 		refArg.TypeParams = append(refArg.TypeParams, ParseTypeRef(a.files, index))
 	// 	}
 	// default:
-	// 	a.errorf(ind.Pos(), "not supported")
+	// 	a.errorf(ind.position(), "not supported")
 	// }
 }

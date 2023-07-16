@@ -36,10 +36,10 @@ func New(mod *mod.Module) (*Converter, error) {
 
 func packagePath(ctx Context, alias string) (pakage string, err error) {
 	if alias == "" {
-		pakage = ctx.Package
+		pakage = ctx.Package()
 	} else {
 		var imp *ast.ImportSpec
-		for _, spec := range ctx.Imports {
+		for _, spec := range ctx.Imports() {
 			if spec.Name != nil {
 				if spec.Name.Name == alias {
 					imp = spec

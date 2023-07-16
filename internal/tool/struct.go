@@ -2,38 +2,38 @@ package tool
 
 // type StructDef struct {
 // 	Code     string
-// 	Package  string
+// 	pakage  string
 // 	TypeName string
 // 	// Modifiers  []parse.TypeRefModifier
 // 	TypeParams []TypeParam
-// 	Position   token.Position
+// 	NodePosition   token.NodePosition
 // }
 //
 // func (s StructDef) typDef() {}
 //
 // type StructRef struct {
 // 	Code     string
-// 	Package  string
+// 	pakage  string
 // 	TypeName string
 // 	// Mods       []parse.TypeRefModifier
 // 	TypeParams struct {
 // 		Params    []TypeParam
 // 		Effective []TypeRef
 // 	}
-// 	Position token.Position
+// 	NodePosition token.NodePosition
 // }
 //
 // // func StructRefFromDef(d *StructDef) *StructRef {
 // // 	r := &StructRef{
 // // 		Code:     d.Code,
-// // 		Package:  d.Package,
+// // 		pakage:  d.pakage,
 // // 		TypeName: d.TypeName,
 // // 		Mods:     d.Modifiers,
 // // 		TypeParams: struct {
 // // 			Params    []TypeParam
 // // 			Effective []TypeRef
 // // 		}{},
-// // 		Position: d.Position,
+// // 		NodePosition: d.NodePosition,
 // // 	}
 // //
 // // 	for _, param := range d.TypeParams {
@@ -53,7 +53,7 @@ package tool
 // 			return false
 // 		}
 //
-// 		if s.Package != t2.Package {
+// 		if s.pakage != t2.pakage {
 // 			return false
 // 		}
 //

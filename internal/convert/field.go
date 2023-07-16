@@ -16,7 +16,7 @@ func (c *Converter) Field(ctx Context, field *ast.Field) ([]*types.Field, error)
 	}
 
 	if len(field.Names) == 0 {
-		return []*types.Field{{Declared: code.OfNode(field.Type), Type: tr, Position: ctx.Position(field.Pos())}}, nil
+		return []*types.Field{{Declared: code.OfNode(field.Type), Type: tr, Position: ctx.NodePosition(field)}}, nil
 	}
 
 	var res []*types.Field
@@ -25,7 +25,7 @@ func (c *Converter) Field(ctx Context, field *ast.Field) ([]*types.Field, error)
 			Declared: fmt.Sprintf("%s %s", name.Name, code.OfNode(field.Type)),
 			Name:     name.Name,
 			Type:     tr,
-			Position: ctx.Position(name.Pos()),
+			Position: ctx.NodePosition(name),
 		})
 	}
 

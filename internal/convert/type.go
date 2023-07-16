@@ -1,7 +1,6 @@
 package convert
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/maps"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -13,9 +12,9 @@ import (
 )
 
 func (c *Converter) Type(ctx Context, t *ast.TypeSpec) (types.Type, error) {
-	switch t.Type.(type) {
+	switch typ := t.Type.(type) {
 	case *ast.StructType:
-		return structFromSpec(ctx, t), nil
+		return c.structFromSpec(ctx, t, typ)
 	case *ast.InterfaceType:
 		return interfaceFromSpec(ctx, t), nil
 	default:
@@ -31,7 +30,7 @@ func (c *Converter) Type(ctx Context, t *ast.TypeSpec) (types.Type, error) {
 func (c *Converter) findType(ctx Context, Package, Type string) (types.Type, error) {
 	pkgDir, err := c.pkgDir.Dir(Package)
 	if err != nil {
-		return nil, errors.Error(ctx.CurrentPosition(), err)
+		return nil, errors.Error(ctx.Position(), err)
 	}
 
 	files := token.NewFileSet()
@@ -71,40 +70,49 @@ func (c *Converter) findType(ctx Context, Package, Type string) (types.Type, err
 		return nil, err
 	}
 
-	if spec == nil && Package == ctx.Package {
+	if spec == nil && Package == ctx.Package() {
 		if t, ok := c.builtin.Types[Type]; ok {
 			return &types.Builtin{Declared: t.Declared, TypeName: Type}, nil
 		}
 	}
 
 	if spec == nil {
-		return nil, errors.Errorf(ctx.CurrentPosition(), "type %s not found at %s", Type, Package)
+		return nil, errors.Errorf(ctx.Position(), "type %s not found at %s", Type, Package)
 	}
 
 	ctx = ctx.WithPackage(Package).WithImports(imports).WithFiles(files).WithPos(spec.Pos())
 	return c.Type(ctx, spec)
 }
 
-func structFromSpec(ctx Context, t *ast.TypeSpec) *types.Struct {
-	typ := &types.Struct{
-		Declared:   code.OfNode(t),
-		Package:    ctx.Package,
-		TypeName:   t.Name.Name,
-		TypeParams: TypeParams(ctx, t.TypeParams),
-		Position:   ctx.Position(t.Pos()),
-	}
-	typ.TypeParams = TypeParams(ctx, t.TypeParams)
+func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.StructType) (*types.Struct, error) {
+	var (
+		res *types.Struct
+		err error
+	)
 
-	return typ
+	res = &types.Struct{
+		Declared:   code.OfNode(spec),
+		Package:    ctx.Package(),
+		TypeName:   spec.Name.Name,
+		TypeParams: TypeParams(ctx, spec.TypeParams),
+		Position:   ctx.NodePosition(spec),
+	}
+	res.TypeParams = TypeParams(ctx, spec.TypeParams)
+	res.Fields, err = c.Fields(ctx, typ.Fields)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func interfaceFromSpec(ctx Context, t *ast.TypeSpec) *types.Interface {
 	typ := &types.Interface{
 		Declared:   code.OfNode(t),
-		Package:    ctx.Package,
+		Package:    ctx.Package(),
 		TypeName:   t.Name.Name,
 		TypeParams: TypeParams(ctx, t.TypeParams),
-		Position:   ctx.Position(t.Pos()),
+		Position:   ctx.NodePosition(t),
 	}
 
 	return typ
@@ -118,14 +126,13 @@ func (c *Converter) typeDefFromSpec(ctx Context, t *ast.TypeSpec) (*types.TypeDe
 
 	typ = &types.TypeDef{
 		Declared:   code.OfNode(t),
-		Package:    ctx.Package,
+		Package:    ctx.Package(),
 		TypeName:   t.Name.Name,
 		TypeParams: TypeParams(ctx, t.TypeParams),
-		Position:   ctx.Position(t.Pos()),
+		Position:   ctx.NodePosition(t),
 	}
 
-	defined := maps.FromSlice(typ.TypeParams, func(v *types.TypeParam) string { return v.Original })
-	typ.Type, err = c.TypeRef(ctx.WithDefined(defined), t.Type)
+	typ.Type, err = c.TypeRef(ctx.WithDefined(typ.TypeParams), t.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -141,9 +148,9 @@ func (c *Converter) typeAliasFromSpec(ctx Context, t *ast.TypeSpec) (*types.Type
 
 	typ = &types.TypeAlias{
 		Declared: code.OfNode(t),
-		Package:  ctx.Package,
+		Package:  ctx.Package(),
 		TypeName: t.Name.Name,
-		Position: ctx.Position(t.Pos()),
+		Position: ctx.NodePosition(t),
 	}
 
 	typ.Type, err = c.TypeRef(ctx, t.Type)

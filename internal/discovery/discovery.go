@@ -69,8 +69,7 @@ func (d *discovery) discoverDir(dir string) error {
 					return errors.New("impossibru")
 				}
 
-				ctx := convert.NewContext().WithPackage(Package).WithImports(file.Imports).WithFiles(files)
-				err = d.discoverFile(ctx, file)
+				err = d.discoverFile(file, Package, files)
 				if err != nil {
 					return err
 				}
@@ -85,7 +84,7 @@ func (d *discovery) discoverDir(dir string) error {
 
 // TODO в функциях, которые принимают syntax.TypeRef и др проверять ошибки в этих типах - `.ParseError()`
 
-func (d *discovery) discoverFile(ctx convert.Context, file *ast.File) error {
+func (d *discovery) discoverFile(file *ast.File, Package string, files *token.FileSet) error {
 	var (
 		insideFunction *ast.FuncDecl // current top level function
 		err            error
@@ -108,7 +107,8 @@ func (d *discovery) discoverFile(ctx convert.Context, file *ast.File) error {
 			}
 
 			var fd *types.Function
-			fd, err = d.converter.Function(ctx.WithImports(file.Imports).WithPos(n.Pos()), n)
+			ctx := convert.NewContext(Package, file.Imports, files, files.Position(n.Pos()), nil)
+			fd, err = d.converter.Function(ctx, n)
 			if err != nil {
 				return false
 			}
@@ -118,14 +118,14 @@ func (d *discovery) discoverFile(ctx convert.Context, file *ast.File) error {
 			}
 		case *ast.CallExpr:
 			if insideFunction == nil || isInit(insideFunction) {
-				// calls := parse.ParseFuncCalls(n, ctx.Files)
+				// calls := parse.ParseFuncCalls(n, ctx.files)
 				// for _, call := range calls {
 				// 	if err = call.Error(); err != nil {
 				// 		return false
 				// 	}
 				// }
 				//
-				// tool, err := d.converter.ToolBox(ctx.WithImports(file.Imports), calls)
+				// tool, err := d.converter.ToolBox(ctx.WithImports(file.imports), calls)
 				// if err != nil {
 				// 	return false
 				// }

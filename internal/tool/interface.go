@@ -2,38 +2,38 @@ package tool
 
 // type InterfaceDef struct {
 // 	Code     string
-// 	Package  string
+// 	pakage  string
 // 	TypeName string
 // 	// Modifiers  []parse.TypeRefModifier
 // 	TypeParams []TypeParam
-// 	Position   token.Position
+// 	NodePosition   token.NodePosition
 // }
 //
 // func (i InterfaceDef) typDef() {}
 //
 // type InterfaceRef struct {
 // 	Code     string
-// 	Package  string
+// 	pakage  string
 // 	TypeName string
 // 	// Mods       []parse.TypeRefModifier
 // 	TypeParams struct {
 // 		Params    []TypeParam
 // 		Effective []TypeRef
 // 	}
-// 	Position token.Position
+// 	NodePosition token.NodePosition
 // }
 //
 // func InterfaceRefFromDef(d *InterfaceDef) *InterfaceRef {
 // 	r := &InterfaceRef{
 // 		Code:     d.Code,
-// 		Package:  d.Package,
+// 		pakage:  d.pakage,
 // 		TypeName: d.TypeName,
 // 		Mods:     d.Modifiers,
 // 		TypeParams: struct {
 // 			Params    []TypeParam
 // 			Effective []TypeRef
 // 		}{},
-// 		Position: d.Position,
+// 		NodePosition: d.NodePosition,
 // 	}
 //
 // 	for _, param := range d.TypeParams {
@@ -53,7 +53,7 @@ package tool
 // 			return false
 // 		}
 //
-// 		if i.Package != t2.Package {
+// 		if i.pakage != t2.pakage {
 // 			return false
 // 		}
 //
