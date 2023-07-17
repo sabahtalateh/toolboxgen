@@ -246,8 +246,7 @@ func FromGoMod(goModPath string, withVendored bool) (*Module, error) {
 			return nil, err
 		}
 
-		mod.VendoredPkgs, err = vendoredPkgsFromModulesTxt(mod.Dir, "vendor", "modules.txt")
-		if err != nil {
+		if mod.VendoredPkgs, err = vendoredPkgsFromModulesTxt(mod.Dir, "vendor", "modules.txt"); err != nil {
 			return nil, err
 		}
 	}

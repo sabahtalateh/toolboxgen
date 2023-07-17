@@ -25,8 +25,7 @@ func (c *Converter) Function(ctx Context, f *ast.FuncDecl) (*types.Function, err
 		Position: ctx.NodePosition(f),
 	}
 
-	function.Receiver, defined, err = c.receiver(ctx, f.Recv)
-	if err != nil {
+	if function.Receiver, defined, err = c.receiver(ctx, f.Recv); err != nil {
 		return nil, err
 	}
 
@@ -37,13 +36,11 @@ func (c *Converter) Function(ctx Context, f *ast.FuncDecl) (*types.Function, err
 
 	ctx = ctx.WithDefined(defined)
 
-	function.Parameters, err = c.Fields(ctx, f.Type.Params)
-	if err != nil {
+	if function.Parameters, err = c.Fields(ctx, f.Type.Params); err != nil {
 		return nil, err
 	}
 
-	function.Results, err = c.Fields(ctx, f.Type.Results)
-	if err != nil {
+	if function.Results, err = c.Fields(ctx, f.Type.Results); err != nil {
 		return nil, err
 	}
 
@@ -58,11 +55,17 @@ func (c *Converter) receiver(ctx Context, r *ast.FieldList) (*types.Field, types
 	var err error
 
 	recvField := r.List[0]
+
 	midType := mid.ParseTypeRef(ctx.Files(), recvField.Type)
-	if err = midType.ParseError(); err != nil {
+	if err = midType.Error(); err != nil {
 		return nil, nil, err
 	}
+
 	defined, err := receiverTypeParams(midType)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	fields, err := c.Field(ctx.WithDefined(defined), recvField)
 	if err != nil {
 		return nil, nil, err

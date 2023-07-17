@@ -11,8 +11,8 @@ type (
 		FuncName   string
 		Receiver   *Field
 		TypeParams TypeParams
-		Parameters []*Field
-		Results    []*Field
+		Parameters Fields
+		Results    Fields
 		Position   token.Position
 	}
 )

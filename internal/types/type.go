@@ -20,7 +20,7 @@ type (
 		Package    string
 		TypeName   string
 		TypeParams TypeParams
-		Fields     []*Field
+		Fields     Fields
 		Position   token.Position
 	}
 
@@ -29,6 +29,7 @@ type (
 		Package    string
 		TypeName   string
 		TypeParams TypeParams
+		Methods    Fields
 		Position   token.Position
 	}
 

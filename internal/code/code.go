@@ -16,6 +16,9 @@ import (
 func OfNode(n ast.Node) string {
 	switch field := n.(type) {
 	case *ast.Field:
+		if len(field.Names) == 0 {
+			return OfNode(field.Type)
+		}
 		names := slices.Map(field.Names, func(el *ast.Ident) string { return OfNode(el) })
 		return fmt.Sprintf("%s %s", strings.Join(names, ", "), OfNode(field.Type))
 	case *ast.BlockStmt:

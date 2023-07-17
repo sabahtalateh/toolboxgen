@@ -25,8 +25,7 @@ func New(mod *mod.Module) (*Converter, error) {
 		err error
 	)
 
-	c.pkgDir, err = pkgdir.Init(mod)
-	if err != nil {
+	if c.pkgDir, err = pkgdir.Init(mod); err != nil {
 		return nil, err
 	}
 

@@ -9,4 +9,6 @@ type (
 		Type     TypeRef
 		Position token.Position
 	}
+
+	Fields []*Field
 )

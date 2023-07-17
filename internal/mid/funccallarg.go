@@ -211,8 +211,7 @@ func (a *FunctionCallArg) visitBasicLit(lit *ast.BasicLit) {
 		switch intArg := a.Val.(type) {
 		case *Int:
 			var err error
-			intArg.Val, err = strconv.Atoi(lit.Value)
-			if err != nil {
+			if intArg.Val, err = strconv.Atoi(lit.Value); err != nil {
 				a.errorf(lit.Pos(), "error converting int")
 			}
 		default:

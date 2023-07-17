@@ -9,7 +9,7 @@ import (
 )
 
 // Field returns at least 1 element
-func (c *Converter) Field(ctx Context, field *ast.Field) ([]*types.Field, error) {
+func (c *Converter) Field(ctx Context, field *ast.Field) (types.Fields, error) {
 	tr, err := c.TypeRef(ctx.WithPos(field.Type.Pos()), field.Type)
 	if err != nil {
 		return nil, err
@@ -19,7 +19,7 @@ func (c *Converter) Field(ctx Context, field *ast.Field) ([]*types.Field, error)
 		return []*types.Field{{Declared: code.OfNode(field.Type), Type: tr, Position: ctx.NodePosition(field)}}, nil
 	}
 
-	var res []*types.Field
+	var res types.Fields
 	for _, name := range field.Names {
 		res = append(res, &types.Field{
 			Declared: fmt.Sprintf("%s %s", name.Name, code.OfNode(field.Type)),
@@ -32,13 +32,13 @@ func (c *Converter) Field(ctx Context, field *ast.Field) ([]*types.Field, error)
 	return res, nil
 }
 
-func (c *Converter) Fields(ctx Context, ff *ast.FieldList) ([]*types.Field, error) {
+func (c *Converter) Fields(ctx Context, ff *ast.FieldList) (types.Fields, error) {
 	if ff == nil {
 		return nil, nil
 	}
 
 	var (
-		res []*types.Field
+		res types.Fields
 	)
 
 	for _, field := range ff.List {

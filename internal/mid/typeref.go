@@ -4,6 +4,7 @@
 package mid
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 	"strings"
@@ -15,7 +16,7 @@ import (
 type (
 	TypeRef interface {
 		ref()
-		ParseError() error
+		Error() error
 	}
 
 	Type struct {
@@ -25,7 +26,7 @@ type (
 		TypeName   string
 		TypeParams []TypeRef
 		Position   token.Position
-		Error      error
+		error      error
 	}
 
 	Map struct {
@@ -34,7 +35,7 @@ type (
 		Key       TypeRef
 		Value     TypeRef
 		Position  token.Position
-		Error     error
+		error     error
 	}
 
 	Chan struct {
@@ -42,24 +43,24 @@ type (
 		Modifiers Modifiers
 		Value     TypeRef
 		Position  token.Position
-		Error     error
+		error     error
 	}
 
 	FuncType struct {
 		Declared  string
 		Modifiers Modifiers
-		Params    []TypeRef
-		Results   []TypeRef
+		Params    Fields
+		Results   Fields
 		Position  token.Position
-		Error     error
+		error     error
 	}
 
 	StructType struct {
 		Declared  string
 		Modifiers Modifiers
-		Fields    map[string]TypeRef
+		Fields    Fields
 		Position  token.Position
-		Error     error
+		error     error
 	}
 )
 
@@ -68,6 +69,18 @@ func (x *Map) ref()        {}
 func (x *Chan) ref()       {}
 func (x *FuncType) ref()   {}
 func (x *StructType) ref() {}
+
+type (
+	Field struct {
+		Declared string
+		Name     string
+		Type     TypeRef
+		Position token.Position
+		error    error
+	}
+
+	Fields []*Field
+)
 
 type (
 	Modifier interface {
@@ -134,7 +147,7 @@ func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
 			TypeName:   typeName,
 			TypeParams: v.typeParams,
 			Position:   files.Position(e.Pos()),
-			Error:      v.err,
+			error:      v.err,
 		}
 	case kMap:
 		return &Map{
@@ -143,7 +156,7 @@ func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
 			Key:       ParseTypeRef(files, v.key),
 			Value:     ParseTypeRef(files, v.value),
 			Position:  files.Position(e.Pos()),
-			Error:     v.err,
+			error:     v.err,
 		}
 	case kChan:
 		return &Chan{
@@ -151,7 +164,7 @@ func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
 			Modifiers: v.modifiers,
 			Value:     ParseTypeRef(files, v.value),
 			Position:  files.Position(e.Pos()),
-			Error:     v.err,
+			error:     v.err,
 		}
 	case kFuncType:
 		return &FuncType{
@@ -160,21 +173,16 @@ func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
 			Params:    v.params,
 			Results:   v.results,
 			Position:  files.Position(e.Pos()),
-			Error:     v.err,
+			error:     v.err,
 		}
 	case kStructType:
-		structType := &StructType{
+		return &StructType{
 			Declared:  code.OfNode(e),
 			Modifiers: v.modifiers,
-			Fields:    map[string]TypeRef{},
+			Fields:    v.fields,
 			Position:  files.Position(e.Pos()),
-			Error:     v.err,
+			error:     v.err,
 		}
-		for fName, expr := range v.fields {
-			structType.Fields[fName] = ParseTypeRef(files, expr)
-		}
-
-		return structType
 	default:
 		panic("unsupported ref type")
 	}
@@ -192,8 +200,8 @@ type refVisitor struct {
 	typeParams []TypeRef
 
 	// kFuncType only
-	params  []TypeRef
-	results []TypeRef
+	params  Fields
+	results Fields
 
 	// kMap only
 	key ast.Expr
@@ -201,14 +209,14 @@ type refVisitor struct {
 	value ast.Expr
 
 	// kStructType
-	fields map[string]ast.Expr
+	fields Fields
 
 	files *token.FileSet
 	err   error
 }
 
 func newRefVisitor(files *token.FileSet) *refVisitor {
-	return &refVisitor{kind: kUnknown, files: files, fields: map[string]ast.Expr{}}
+	return &refVisitor{kind: kUnknown, files: files}
 }
 
 // visitExpr
@@ -311,25 +319,42 @@ func (v *refVisitor) visitIndexListExpr(e *ast.IndexListExpr) {
 
 // visitFuncType final step
 func (v *refVisitor) visitFuncType(e *ast.FuncType) {
-	if e.Params != nil && e.Params.List != nil {
-		for _, par := range e.Params.List {
-			v.params = append(v.params, ParseTypeRef(v.files, par.Type))
-		}
-	}
-
-	if e.Results != nil && e.Results.List != nil {
-		for _, res := range e.Results.List {
-			v.results = append(v.results, ParseTypeRef(v.files, res.Type))
-		}
-	}
+	v.params = v.fieldList(e.Params)
+	v.results = v.fieldList(e.Results)
 
 	v.kind = kFuncType
+}
+
+func (v *refVisitor) fieldList(fields *ast.FieldList) Fields {
+	if fields == nil {
+		return nil
+	}
+
+	var res Fields
+
+	for _, f := range fields.List {
+		tr := ParseTypeRef(v.files, f.Type)
+		position := v.files.Position(f.Pos())
+
+		if len(f.Names) == 0 {
+			res = append(res, &Field{Declared: code.OfNode(f), Name: "", Type: tr, Position: position})
+			continue
+		}
+
+		for _, name := range f.Names {
+			declared := fmt.Sprintf("%s %s", name.Name, code.OfNode(f.Type))
+			res = append(res, &Field{Declared: declared, Name: name.Name, Type: tr, Position: position})
+		}
+	}
+
+	return res
 }
 
 // visitMapType final step
 func (v *refVisitor) visitMapType(ex *ast.MapType) {
 	v.key = ex.Key
 	v.value = ex.Value
+
 	v.kind = kMap
 }
 
@@ -341,13 +366,7 @@ func (v *refVisitor) visitChanType(ex *ast.ChanType) {
 
 // visitStructType final step
 func (v *refVisitor) visitStructType(ex *ast.StructType) {
-	if ex.Fields != nil {
-		for _, field := range ex.Fields.List {
-			for _, name := range field.Names {
-				v.fields[name.Name] = field.Type
-			}
-		}
-	}
+	v.fields = v.fieldList(ex.Fields)
 	v.kind = kStructType
 }
 
@@ -355,52 +374,70 @@ func (v *refVisitor) errorf(pos token.Pos, format string, a ...any) {
 	v.err = errors.Errorf(v.files.Position(pos), format, a...)
 }
 
-func (x *Type) ParseError() error {
+func (x *Type) Error() error {
 	for _, param := range x.TypeParams {
-		if err := param.ParseError(); err != nil {
+		if err := param.Error(); err != nil {
 			return err
 		}
 	}
 
-	return x.Error
+	return x.error
 }
 
-func (x *Map) ParseError() error {
-	if err := x.Key.ParseError(); err != nil {
+func (x *Map) Error() error {
+	if err := x.Key.Error(); err != nil {
 		return err
 	}
 
-	if err := x.Value.ParseError(); err != nil {
+	if err := x.Value.Error(); err != nil {
 		return err
 	}
 
-	return x.Error
+	return x.error
 }
 
-func (x *Chan) ParseError() error {
-	if err := x.Value.ParseError(); err != nil {
+func (x *Chan) Error() error {
+	if err := x.Value.Error(); err != nil {
 		return err
 	}
 
-	return x.Error
+	return x.error
 }
 
-func (x *FuncType) ParseError() error {
+func (x *FuncType) Error() error {
 	for _, p := range x.Params {
-		if err := p.ParseError(); err != nil {
+		if err := p.Error(); err != nil {
 			return err
 		}
 	}
 
 	for _, r := range x.Results {
-		if err := r.ParseError(); err != nil {
+		if err := r.Error(); err != nil {
 			return err
 		}
 	}
 
-	return x.Error
+	return x.error
 }
 
-func (x *StructType) ParseError() error {
-	return x.Error
+func (x *StructType) Error() error {
+	return x.error
+}
+
+func (x *Field) Error() error {
+	if err := x.Type.Error(); err != nil {
+		return err
+	}
+
+	return x.error
+}
+
+func (x Fields) Error() error {
+	for _, field := range x {
+		if err := field.Error(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

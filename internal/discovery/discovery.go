@@ -17,13 +17,11 @@ import (
 func Discover(rootDir string) (tt *Tools, err error) {
 	d := new(discovery)
 
-	d.mod, err = mod.LookupDir(rootDir, true)
-	if err != nil {
+	if d.mod, err = mod.LookupDir(rootDir, true); err != nil {
 		return nil, err
 	}
 
-	d.converter, err = convert.New(d.mod)
-	if err != nil {
+	if d.converter, err = convert.New(d.mod); err != nil {
 		return nil, err
 	}
 
@@ -120,7 +118,7 @@ func (d *discovery) discoverFile(file *ast.File, Package string, files *token.Fi
 			if insideFunction == nil || isInit(insideFunction) {
 				// calls := parse.ParseFuncCalls(n, ctx.files)
 				// for _, call := range calls {
-				// 	if err = call.Error(); err != nil {
+				// 	if err = call.error(); err != nil {
 				// 		return false
 				// 	}
 				// }

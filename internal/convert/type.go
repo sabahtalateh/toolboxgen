@@ -16,7 +16,7 @@ func (c *Converter) Type(ctx Context, t *ast.TypeSpec) (types.Type, error) {
 	case *ast.StructType:
 		return c.structFromSpec(ctx, t, typ)
 	case *ast.InterfaceType:
-		return interfaceFromSpec(ctx, t), nil
+		return c.interfaceFromSpec(ctx, t, typ)
 	default:
 		switch t.Assign {
 		case token.NoPos:
@@ -97,25 +97,35 @@ func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.Str
 		TypeParams: TypeParams(ctx, spec.TypeParams),
 		Position:   ctx.NodePosition(spec),
 	}
+
 	res.TypeParams = TypeParams(ctx, spec.TypeParams)
-	res.Fields, err = c.Fields(ctx, typ.Fields)
-	if err != nil {
+
+	if res.Fields, err = c.Fields(ctx, typ.Fields); err != nil {
 		return nil, err
 	}
 
 	return res, nil
 }
 
-func interfaceFromSpec(ctx Context, t *ast.TypeSpec) *types.Interface {
-	typ := &types.Interface{
-		Declared:   code.OfNode(t),
+func (c *Converter) interfaceFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.InterfaceType) (*types.Interface, error) {
+	var (
+		res *types.Interface
+		err error
+	)
+
+	res = &types.Interface{
+		Declared:   code.OfNode(spec),
 		Package:    ctx.Package(),
-		TypeName:   t.Name.Name,
-		TypeParams: TypeParams(ctx, t.TypeParams),
-		Position:   ctx.NodePosition(t),
+		TypeName:   spec.Name.Name,
+		TypeParams: TypeParams(ctx, spec.TypeParams),
+		Position:   ctx.NodePosition(spec),
 	}
 
-	return typ
+	if res.Methods, err = c.Fields(ctx, typ.Methods); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func (c *Converter) typeDefFromSpec(ctx Context, t *ast.TypeSpec) (*types.TypeDef, error) {
@@ -132,8 +142,7 @@ func (c *Converter) typeDefFromSpec(ctx Context, t *ast.TypeSpec) (*types.TypeDe
 		Position:   ctx.NodePosition(t),
 	}
 
-	typ.Type, err = c.TypeRef(ctx.WithDefined(typ.TypeParams), t.Type)
-	if err != nil {
+	if typ.Type, err = c.TypeRef(ctx.WithDefined(typ.TypeParams), t.Type); err != nil {
 		return nil, err
 	}
 
@@ -153,8 +162,7 @@ func (c *Converter) typeAliasFromSpec(ctx Context, t *ast.TypeSpec) (*types.Type
 		Position: ctx.NodePosition(t),
 	}
 
-	typ.Type, err = c.TypeRef(ctx, t.Type)
-	if err != nil {
+	if typ.Type, err = c.TypeRef(ctx, t.Type); err != nil {
 		return nil, err
 	}
 

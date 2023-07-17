@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -46,11 +45,12 @@ func convertFile(file string) convertOut {
 					t, err := conv.Type(ctx.WithPos(n.Pos()), n)
 					check(err)
 					res.types[typeID(t)] = t
-				case *ast.FuncDecl:
-					f, err := conv.Function(ctx.WithPos(n.Pos()), n)
-					check(err)
-					res.funcs[fmt.Sprintf("%s.%s", f.Package, f.FuncName)] = f
-					println(f)
+					return false
+					// case *ast.FuncDecl:
+					// 	f, err := conv.Function(ctx.WithPos(n.Pos()), n)
+					// 	check(err)
+					// 	res.funcs[fmt.Sprintf("%s.%s", f.Package, f.FuncName)] = f
+					// 	println(f)
 				}
 				return true
 			})
@@ -68,29 +68,31 @@ func TestConvert(t *testing.T) {
 	}
 	tests := []testCase{
 		{
-			name: "empty-struct-1",
-			dir:  "testmod/empty_struct_1",
+			name: "struct-1",
+			dir:  "testmod/struct_1",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/empty_struct_1.A": &types.Struct{
-						Package:  "testmod/empty_struct_1",
+					"testmod/struct_1.A": &types.Struct{
+						Package:  "testmod/struct_1",
 						TypeName: "A",
 					},
 				},
 			},
 		},
 		{
-			name: "empty-struct-2",
-			dir:  "testmod/empty_struct_2",
+			name: "interface-1",
+			dir:  "testmod/interface_1",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/empty_struct_2.A": &types.Struct{
-						Package:  "testmod/empty_struct_2",
+					"testmod/struct_1.A": &types.Interface{
+						Package:  "testmod/interface_1",
 						TypeName: "A",
-					},
-					"testmod/empty_struct_2.B": &types.Struct{
-						Package:  "testmod/empty_struct_2",
-						TypeName: "B",
+						Methods: []*types.Field{
+							{
+								Name: "Method",
+								Type: nil,
+							},
+						},
 					},
 				},
 			},

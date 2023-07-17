@@ -1,17 +1,16 @@
 package convert
 
 import (
-	"go/ast"
-
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/mid"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 	"github.com/sabahtalateh/toolboxgen/internal/types/position"
+	"go/ast"
 )
 
 func (c *Converter) TypeRef(ctx Context, expr ast.Expr) (types.TypeRef, error) {
 	ref := mid.ParseTypeRef(ctx.Files(), expr)
-	if err := ref.ParseError(); err != nil {
+	if err := ref.Error(); err != nil {
 		return nil, err
 	}
 
@@ -24,6 +23,8 @@ func (c *Converter) convertMidTypeRef(ctx Context, ref mid.TypeRef) (types.TypeR
 		return c.convertMidType(ctx.WithPosition(r.Position), r)
 	case *mid.Chan:
 		println(ref)
+	case *mid.FuncType:
+		return c.convertMidFuncType(ctx.WithPosition(r.Position), r)
 	}
 
 	return nil, nil
@@ -63,6 +64,51 @@ func (c *Converter) convertMidType(ctx Context, midType *mid.Type) (types.TypeRe
 	}
 }
 
+func (c *Converter) convertMidFuncType(ctx Context, midType *mid.FuncType) (*types.FuncTypeRef, error) {
+	var (
+		res *types.FuncTypeRef
+		err error
+	)
+
+	res = &types.FuncTypeRef{
+		Declared: midType.Declared,
+		Position: midType.Position,
+	}
+
+	if res.Params, err = c.convertMidFields(ctx, midType.Params...); err != nil {
+		return nil, err
+	}
+
+	if res.Results, err = c.convertMidFields(ctx, midType.Results...); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Converter) convertMidFields(ctx Context, fields ...*mid.Field) (types.Fields, error) {
+	var (
+		res     types.Fields
+		typeRef types.TypeRef
+		err     error
+	)
+
+	for _, field := range fields {
+		typeRef, err = c.convertMidTypeRef(ctx, field.Type)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, &types.Field{
+			Declared: field.Declared,
+			Name:     field.Name,
+			Type:     typeRef,
+			Position: field.Position,
+		})
+	}
+
+	return res, nil
+}
+
 func (c *Converter) builtinRef(midType *mid.Type, typ *types.Builtin) *types.BuiltinRef {
 	return &types.BuiltinRef{
 		Declared:   midType.Declared,
@@ -88,8 +134,7 @@ func (c *Converter) structRef(ctx Context, midType *mid.Type, typ *types.Struct)
 		Position:   midType.Position,
 	}
 
-	ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams)
-	if err != nil {
+	if ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
 		return nil, err
 	}
 
@@ -111,8 +156,7 @@ func (c *Converter) interfaceRef(ctx Context, midType *mid.Type, typ *types.Inte
 		Position:   midType.Position,
 	}
 
-	ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams)
-	if err != nil {
+	if ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
 		return nil, err
 	}
 
@@ -135,8 +179,7 @@ func (c *Converter) typeDefRef(ctx Context, midType *mid.Type, typ *types.TypeDe
 		Position:   midType.Position,
 	}
 
-	ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams)
-	if err != nil {
+	if ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
 		return nil, err
 	}
 

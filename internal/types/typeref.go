@@ -73,6 +73,9 @@ type (
 	}
 
 	FuncTypeRef struct {
+		Declared string
+		Params   Fields
+		Results  Fields
 		Position token.Position
 	}
 
