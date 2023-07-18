@@ -8,8 +8,6 @@ type (
 		Equal(m Modifier) bool
 	}
 
-	Modifiers []Modifier
-
 	Pointer struct {
 		Position token.Position
 	}
@@ -22,6 +20,8 @@ type (
 	Ellipsis struct {
 		Position token.Position
 	}
+
+	Modifiers []Modifier
 )
 
 func (m *Pointer) modifier()  {}
