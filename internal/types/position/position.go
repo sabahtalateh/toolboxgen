@@ -33,15 +33,17 @@ func OfTypeRef(t types.TypeRef) token.Position {
 		return tt.Position
 	case *types.TypeDefRef:
 		return tt.Position
+	case *types.TypeAliasRef:
+		return tt.Position
 	case *types.MapRef:
 		return tt.Position
 	case *types.ChanRef:
 		return tt.Position
 	case *types.FuncTypeRef:
 		return tt.Position
-	case *types.TypeParamRef:
+	case *types.StructTypeRef:
 		return tt.Position
-	case *types.TypeAliasRef:
+	case *types.TypeParamRef:
 		return tt.Position
 	default:
 		panic("unknown type")
