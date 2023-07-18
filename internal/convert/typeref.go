@@ -29,6 +29,7 @@ func (c *Converter) midTypeRef(ctx Context, ref mid.TypeRef) (types.TypeRef, err
 		return c.midFuncType(ctx.WithPosition(r.Position), r)
 	case *mid.StructType:
 		return c.midStructType(ctx.WithPosition(r.Position), r)
+	case *mid.InterfaceType:
 	}
 
 	return nil, nil

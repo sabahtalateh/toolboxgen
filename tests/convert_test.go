@@ -404,6 +404,11 @@ func TestConvert(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "complex-1",
+			dir:  "testmod/convert/complex_1",
+			want: convertOut{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

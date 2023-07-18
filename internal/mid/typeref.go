@@ -62,13 +62,22 @@ type (
 		Position  token.Position
 		error     error
 	}
+
+	InterfaceType struct {
+		Declared  string
+		Modifiers Modifiers
+		Fields    Fields
+		Position  token.Position
+		error     error
+	}
 )
 
-func (x *Type) typeRef()       {}
-func (x *Map) typeRef()        {}
-func (x *Chan) typeRef()       {}
-func (x *FuncType) typeRef()   {}
-func (x *StructType) typeRef() {}
+func (x *Type) typeRef()          {}
+func (x *Map) typeRef()           {}
+func (x *Chan) typeRef()          {}
+func (x *FuncType) typeRef()      {}
+func (x *StructType) typeRef()    {}
+func (x *InterfaceType) typeRef() {}
 
 type (
 	Field struct {
@@ -116,6 +125,7 @@ const (
 	kChan
 	kFuncType
 	kStructType
+	kInterfaceType
 )
 
 func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
@@ -183,6 +193,16 @@ func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
 			Position:  files.Position(e.Pos()),
 			error:     v.err,
 		}
+	case kInterfaceType:
+		println(123)
+		// return &StructType{
+		// 	Declared:  code.OfNode(e),
+		// 	Modifiers: v.modifiers,
+		// 	Fields:    v.fields,
+		// 	Position:  files.Position(e.Pos()),
+		// 	error:     v.err,
+		// }
+		panic("unsupported ref type")
 	default:
 		panic("unsupported ref type")
 	}
@@ -208,7 +228,7 @@ type refVisitor struct {
 	// kMap + kChan
 	value ast.Expr
 
-	// kStructType
+	// kStructType + kInterfaceType
 	fields Fields
 
 	files *token.FileSet
@@ -241,7 +261,7 @@ func newRefVisitor(files *token.FileSet) *refVisitor {
 // + ArrayType			ex: []int
 // + StructType			ex: struct {a: string}
 // + FuncType			ex: func(x string)
-// - InterfaceType		ex: interface {Method()}
+// + InterfaceType		ex: interface {Method()}
 // + MapType			ex: map[..]..
 // + ChanType			ex: chan ..
 func (v *refVisitor) visitExpr(e ast.Expr) {
@@ -268,6 +288,8 @@ func (v *refVisitor) visitExpr(e ast.Expr) {
 		v.visitChanType(ex)
 	case *ast.StructType:
 		v.visitStructType(ex)
+	case *ast.InterfaceType:
+		v.visitInterfaceType(ex)
 	default:
 		v.errorf(e.Pos(), "type ref can not be %s", code.OfNode(e))
 	}
@@ -370,6 +392,12 @@ func (v *refVisitor) visitStructType(ex *ast.StructType) {
 	v.kind = kStructType
 }
 
+// visitInterfaceType final step
+func (v *refVisitor) visitInterfaceType(ex *ast.InterfaceType) {
+	v.fields = v.fieldList(ex.Methods)
+	v.kind = kInterfaceType
+}
+
 func (v *refVisitor) errorf(pos token.Pos, format string, a ...any) {
 	v.err = errors.Errorf(v.files.Position(pos), format, a...)
 }
@@ -421,6 +449,26 @@ func (x *FuncType) Error() error {
 }
 
 func (x *StructType) Error() error {
+	for _, field := range x.Fields {
+		if err := field.Type.Error(); err != nil {
+			return err
+		}
+		if field.Error() != nil {
+			return field.error
+		}
+	}
+	return x.error
+}
+
+func (x *InterfaceType) Error() error {
+	for _, field := range x.Fields {
+		if err := field.Type.Error(); err != nil {
+			return err
+		}
+		if field.Error() != nil {
+			return field.error
+		}
+	}
 	return x.error
 }
 
