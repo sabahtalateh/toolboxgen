@@ -69,11 +69,11 @@ func TestConvert(t *testing.T) {
 	tests := []testCase{
 		{
 			name: "struct-1",
-			dir:  "testmod/struct_1",
+			dir:  "testmod/convert/struct_1",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/struct_1.A": &types.Struct{
-						Package:  "testmod/struct_1",
+					"testmod/convert/struct_1.A": &types.Struct{
+						Package:  "testmod/convert/struct_1",
 						TypeName: "A",
 					},
 				},
@@ -81,16 +81,51 @@ func TestConvert(t *testing.T) {
 		},
 		{
 			name: "interface-1",
-			dir:  "testmod/interface_1",
+			dir:  "testmod/convert/interface_1",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/struct_1.A": &types.Interface{
-						Package:  "testmod/interface_1",
+					"testmod/convert/interface_1.A": &types.Interface{
+						Package:  "testmod/convert/interface_1",
+						TypeName: "A",
+						Methods: []*types.Field{{
+							Name: "Method",
+							Type: &types.FuncTypeRef{
+								Params:  []*types.Field{{Type: &types.BuiltinRef{TypeName: "string"}}},
+								Results: []*types.Field{{Type: &types.BuiltinRef{TypeName: "string"}}},
+							}},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "interface-2",
+			dir:  "testmod/convert/interface_2",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/interface_2.A": &types.Interface{
+						Package:  "testmod/convert/interface_2",
 						TypeName: "A",
 						Methods: []*types.Field{
 							{
-								Name: "Method",
-								Type: nil,
+								Name: "Method1",
+								Type: &types.FuncTypeRef{
+									Params: []*types.Field{{Name: "a", Type: &types.BuiltinRef{TypeName: "string"}}},
+									Results: []*types.Field{
+										{Name: "b", Type: &types.BuiltinRef{TypeName: "string"}},
+										{Name: "c", Type: &types.BuiltinRef{TypeName: "error"}},
+									},
+								},
+							},
+							{
+								Name: "Method2",
+								Type: &types.FuncTypeRef{
+									Params: []*types.Field{{Name: "d", Type: &types.BuiltinRef{TypeName: "string"}}},
+									Results: []*types.Field{
+										{Name: "e", Type: &types.BuiltinRef{TypeName: "string"}},
+										{Name: "f", Type: &types.BuiltinRef{TypeName: "error"}},
+									},
+								},
 							},
 						},
 					},
@@ -98,9 +133,229 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "xyz",
-			dir:  "testmod/xyz",
-			want: convertOut{},
+			name: "typedef-1",
+			dir:  "testmod/convert/typedef_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/typedef_1.A": &types.TypeDef{
+						Package:  "testmod/convert/typedef_1",
+						TypeName: "A",
+						Type:     &types.BuiltinRef{TypeName: "int"},
+					},
+				},
+			},
+		},
+		{
+			name: "typealias-1",
+			dir:  "testmod/convert/typealias_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/typealias_1.A": &types.TypeAlias{
+						Package:  "testmod/convert/typealias_1",
+						TypeName: "A",
+						Type:     &types.BuiltinRef{TypeName: "int"},
+					},
+				},
+			},
+		},
+		{
+			name: "builtin-1",
+			dir:  "testmod/convert/builtin_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/builtin_1.Bool": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Bool",
+						Type:     &types.BuiltinRef{TypeName: "bool"},
+					},
+					"testmod/convert/builtin_1.Uint8": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Uint8",
+						Type:     &types.BuiltinRef{TypeName: "uint8"},
+					},
+					"testmod/convert/builtin_1.Uint16": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Uint16",
+						Type:     &types.BuiltinRef{TypeName: "uint16"},
+					},
+					"testmod/convert/builtin_1.Uint32": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Uint32",
+						Type:     &types.BuiltinRef{TypeName: "uint32"},
+					},
+					"testmod/convert/builtin_1.Uint64": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Uint64",
+						Type:     &types.BuiltinRef{TypeName: "uint64"},
+					},
+					"testmod/convert/builtin_1.Int8": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Int8",
+						Type:     &types.BuiltinRef{TypeName: "int8"},
+					},
+					"testmod/convert/builtin_1.Int16": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Int16",
+						Type:     &types.BuiltinRef{TypeName: "int16"},
+					},
+					"testmod/convert/builtin_1.Int32": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Int32",
+						Type:     &types.BuiltinRef{TypeName: "int32"},
+					},
+					"testmod/convert/builtin_1.Int64": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Int64",
+						Type:     &types.BuiltinRef{TypeName: "int64"},
+					},
+					"testmod/convert/builtin_1.Float32": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Float32",
+						Type:     &types.BuiltinRef{TypeName: "float32"},
+					},
+					"testmod/convert/builtin_1.Float64": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Float64",
+						Type:     &types.BuiltinRef{TypeName: "float64"},
+					},
+					"testmod/convert/builtin_1.Complex64": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Complex64",
+						Type:     &types.BuiltinRef{TypeName: "complex64"},
+					},
+					"testmod/convert/builtin_1.Complex128": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Complex128",
+						Type:     &types.BuiltinRef{TypeName: "complex128"},
+					},
+					"testmod/convert/builtin_1.String": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "String",
+						Type:     &types.BuiltinRef{TypeName: "string"},
+					},
+					"testmod/convert/builtin_1.Int": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Int",
+						Type:     &types.BuiltinRef{TypeName: "int"},
+					},
+					"testmod/convert/builtin_1.Uint": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Uint",
+						Type:     &types.BuiltinRef{TypeName: "uint"},
+					},
+					"testmod/convert/builtin_1.Uintptr": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Uintptr",
+						Type:     &types.BuiltinRef{TypeName: "uintptr"},
+					},
+					"testmod/convert/builtin_1.Byte": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Byte",
+						Type:     &types.BuiltinRef{TypeName: "byte"},
+					},
+					"testmod/convert/builtin_1.Rune": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Rune",
+						Type:     &types.BuiltinRef{TypeName: "rune"},
+					},
+					"testmod/convert/builtin_1.Any": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Any",
+						Type:     &types.BuiltinRef{TypeName: "any"},
+					},
+					"testmod/convert/builtin_1.Comparable": &types.TypeDef{
+						Package:  "testmod/convert/builtin_1",
+						TypeName: "Comparable",
+						Type:     &types.BuiltinRef{TypeName: "comparable"},
+					},
+				},
+			},
+		},
+		{
+			name: "map-1",
+			dir:  "testmod/convert/map_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/map_1.A": &types.TypeDef{
+						Package:  "testmod/convert/map_1",
+						TypeName: "A",
+						Type: &types.MapRef{
+							Key:   &types.BuiltinRef{TypeName: "string"},
+							Value: &types.BuiltinRef{TypeName: "string"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "chan-1",
+			dir:  "testmod/convert/chan_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/chan_1.A": &types.TypeDef{
+						Package:  "testmod/convert/chan_1",
+						TypeName: "A",
+						Type:     &types.ChanRef{Value: &types.BuiltinRef{TypeName: "string"}},
+					},
+				},
+			},
+		},
+		{
+			name: "functype-1",
+			dir:  "testmod/convert/functype_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/functype_1.A": &types.TypeDef{
+						Package:  "testmod/convert/functype_1",
+						TypeName: "A",
+						Type: &types.FuncTypeRef{
+							Params:  []*types.Field{{Name: "a", Type: &types.BuiltinRef{TypeName: "int8"}}},
+							Results: []*types.Field{{Type: &types.BuiltinRef{TypeName: "int16"}}},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "structtype-1",
+			dir:  "testmod/convert/structtype_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/structtype_1.A": &types.TypeAlias{
+						Package:  "testmod/convert/structtype_1",
+						TypeName: "A",
+						Type: &types.StructTypeRef{
+							Fields: []*types.Field{{Name: "a", Type: &types.BuiltinRef{TypeName: "string"}}},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "structref-1",
+			dir:  "testmod/convert/structref_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/structref_1.B": &types.TypeDef{
+						Package:  "testmod/convert/structref_1",
+						TypeName: "B",
+						Type:     &types.StructRef{Package: "testmod/convert/structref_1", TypeName: "A"},
+					},
+				},
+			},
+		},
+		{
+			name: "interfaceref-1",
+			dir:  "testmod/convert/interfaceref_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/interfaceref_1.B": &types.TypeDef{
+						Package:  "testmod/convert/interfaceref_1",
+						TypeName: "B",
+						Type:     &types.InterfaceRef{Package: "testmod/convert/interfaceref_1", TypeName: "A"},
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {

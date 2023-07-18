@@ -35,8 +35,30 @@ func OfNode(n ast.Node) string {
 	res := bb.String()
 	switch nn := n.(type) {
 	case *ast.TypeSpec:
-		body := OfNode(nn.Type)
-		res = f.Apply(strings.TrimSuffix(res, body), strings.TrimSpace)
+		suffix := ""
+		_, isStruct := nn.Type.(*ast.StructType)
+		if isStruct {
+			suffix = "struct {...}"
+		}
+		_, isInterface := nn.Type.(*ast.InterfaceType)
+		if isInterface {
+			suffix = "interface {...}"
+		}
+
+		// don't trim body for typedef and type alias
+		if isStruct || isInterface {
+			body := OfNode(nn.Type)
+			res = f.Apply(
+				strings.TrimSuffix(res, body),
+				strings.TrimSpace,
+				func(x string) string {
+					if suffix == "" {
+						return x
+					}
+					return fmt.Sprintf("%s %s", x, suffix)
+				},
+			)
+		}
 	case *ast.FuncDecl:
 		body := OfNode(nn.Body)
 		res = f.Apply(strings.TrimSuffix(res, body), strings.TrimSpace)

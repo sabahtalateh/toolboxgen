@@ -14,7 +14,12 @@ import (
 func (c *Converter) Type(ctx Context, t *ast.TypeSpec) (types.Type, error) {
 	switch typ := t.Type.(type) {
 	case *ast.StructType:
-		return c.structFromSpec(ctx, t, typ)
+		switch t.Assign {
+		case token.NoPos:
+			return c.structFromSpec(ctx, t, typ)
+		default:
+			return c.typeAliasFromSpec(ctx, t)
+		}
 	case *ast.InterfaceType:
 		return c.interfaceFromSpec(ctx, t, typ)
 	default:

@@ -67,3 +67,17 @@ func (m *Ellipsis) Equal(m2 Modifier) bool {
 func (m *Ellipsis) String() string {
 	return "..."
 }
+
+func (m Modifiers) Equal(m2 Modifiers) bool {
+	if len(m) != len(m2) {
+		return false
+	}
+
+	for i, mod := range m {
+		if !mod.Equal(m2[i]) {
+			return false
+		}
+	}
+
+	return true
+}

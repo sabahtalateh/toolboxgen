@@ -20,10 +20,11 @@ func ValuesMap[KeyT, ValT comparable](m map[KeyT]ValT) map[ValT]struct{} {
 	return res
 }
 
-func FromSlice[K comparable, V any](s []V, keyFn func(V) K) map[K]V {
+func FromSlice[K comparable, V, S any](slice []S, kvFn func(S) (K, V)) map[K]V {
 	res := map[K]V{}
-	for _, el := range s {
-		res[keyFn(el)] = el
+	for _, el := range slice {
+		k, v := kvFn(el)
+		res[k] = v
 	}
 	return res
 }

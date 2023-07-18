@@ -15,7 +15,7 @@ import (
 
 type (
 	TypeRef interface {
-		ref()
+		typeRef()
 		Error() error
 	}
 
@@ -64,11 +64,11 @@ type (
 	}
 )
 
-func (x *Type) ref()       {}
-func (x *Map) ref()        {}
-func (x *Chan) ref()       {}
-func (x *FuncType) ref()   {}
-func (x *StructType) ref() {}
+func (x *Type) typeRef()       {}
+func (x *Map) typeRef()        {}
+func (x *Chan) typeRef()       {}
+func (x *FuncType) typeRef()   {}
+func (x *StructType) typeRef() {}
 
 type (
 	Field struct {

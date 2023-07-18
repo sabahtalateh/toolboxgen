@@ -14,23 +14,27 @@ func (c *Converter) TypeRef(ctx Context, expr ast.Expr) (types.TypeRef, error) {
 		return nil, err
 	}
 
-	return c.convertMidTypeRef(ctx, ref)
+	return c.midTypeRef(ctx, ref)
 }
 
-func (c *Converter) convertMidTypeRef(ctx Context, ref mid.TypeRef) (types.TypeRef, error) {
+func (c *Converter) midTypeRef(ctx Context, ref mid.TypeRef) (types.TypeRef, error) {
 	switch r := ref.(type) {
 	case *mid.Type:
-		return c.convertMidType(ctx.WithPosition(r.Position), r)
+		return c.midType(ctx.WithPosition(r.Position), r)
+	case *mid.Map:
+		return c.midMap(ctx.WithPosition(r.Position), r)
 	case *mid.Chan:
-		println(ref)
+		return c.midChan(ctx.WithPosition(r.Position), r)
 	case *mid.FuncType:
-		return c.convertMidFuncType(ctx.WithPosition(r.Position), r)
+		return c.midFuncType(ctx.WithPosition(r.Position), r)
+	case *mid.StructType:
+		return c.midStructType(ctx.WithPosition(r.Position), r)
 	}
 
 	return nil, nil
 }
 
-func (c *Converter) convertMidType(ctx Context, midType *mid.Type) (types.TypeRef, error) {
+func (c *Converter) midType(ctx Context, midType *mid.Type) (types.TypeRef, error) {
 	if midType.Package == "" {
 		if def, ok := ctx.Defined(midType.TypeName); ok {
 			return &types.TypeParamRef{
@@ -64,29 +68,91 @@ func (c *Converter) convertMidType(ctx Context, midType *mid.Type) (types.TypeRe
 	}
 }
 
-func (c *Converter) convertMidFuncType(ctx Context, midType *mid.FuncType) (*types.FuncTypeRef, error) {
+func (c *Converter) midMap(ctx Context, midType *mid.Map) (*types.MapRef, error) {
 	var (
-		res *types.FuncTypeRef
+		res *types.MapRef
 		err error
 	)
 
-	res = &types.FuncTypeRef{
-		Declared: midType.Declared,
-		Position: midType.Position,
+	res = &types.MapRef{
+		Declared:  midType.Declared,
+		Modifiers: Modifiers(midType.Modifiers),
+		Position:  midType.Position,
 	}
 
-	if res.Params, err = c.convertMidFields(ctx, midType.Params...); err != nil {
+	if res.Key, err = c.midTypeRef(ctx, midType.Key); err != nil {
 		return nil, err
 	}
 
-	if res.Results, err = c.convertMidFields(ctx, midType.Results...); err != nil {
+	if res.Value, err = c.midTypeRef(ctx, midType.Value); err != nil {
 		return nil, err
 	}
 
 	return res, nil
 }
 
-func (c *Converter) convertMidFields(ctx Context, fields ...*mid.Field) (types.Fields, error) {
+func (c *Converter) midChan(ctx Context, midType *mid.Chan) (*types.ChanRef, error) {
+	var (
+		res *types.ChanRef
+		err error
+	)
+
+	res = &types.ChanRef{
+		Declared:  midType.Declared,
+		Modifiers: Modifiers(midType.Modifiers),
+		Position:  midType.Position,
+	}
+
+	if res.Value, err = c.midTypeRef(ctx, midType.Value); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Converter) midFuncType(ctx Context, midType *mid.FuncType) (*types.FuncTypeRef, error) {
+	var (
+		res *types.FuncTypeRef
+		err error
+	)
+
+	res = &types.FuncTypeRef{
+		Declared:  midType.Declared,
+		Modifiers: Modifiers(midType.Modifiers),
+		Position:  midType.Position,
+	}
+
+	if res.Params, err = c.midFields(ctx, midType.Params...); err != nil {
+		return nil, err
+	}
+
+	if res.Results, err = c.midFields(ctx, midType.Results...); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Converter) midStructType(ctx Context, midType *mid.StructType) (*types.StructTypeRef, error) {
+	var (
+		res *types.StructTypeRef
+		err error
+	)
+
+	res = &types.StructTypeRef{
+		Declared:  midType.Declared,
+		Modifiers: Modifiers(midType.Modifiers),
+		Position:  midType.Position,
+	}
+
+	if res.Fields, err = c.midFields(ctx, midType.Fields...); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Converter) midFields(ctx Context, fields ...*mid.Field) (types.Fields, error) {
 	var (
 		res     types.Fields
 		typeRef types.TypeRef
@@ -94,7 +160,7 @@ func (c *Converter) convertMidFields(ctx Context, fields ...*mid.Field) (types.F
 	)
 
 	for _, field := range fields {
-		typeRef, err = c.convertMidTypeRef(ctx, field.Type)
+		typeRef, err = c.midTypeRef(ctx, field.Type)
 		if err != nil {
 			return nil, err
 		}
@@ -130,6 +196,7 @@ func (c *Converter) structRef(ctx Context, midType *mid.Type, typ *types.Struct)
 		Modifiers:  Modifiers(midType.Modifiers),
 		Package:    typ.Package,
 		TypeName:   typ.TypeName,
+		Fields:     typ.Fields,
 		Definition: typ,
 		Position:   midType.Position,
 	}
@@ -212,7 +279,7 @@ func (c *Converter) refTypeParams(
 
 	var res []types.TypeRef
 	for _, param := range actual {
-		conv, err := c.convertMidTypeRef(ctx, param)
+		conv, err := c.midTypeRef(ctx, param)
 		if err != nil {
 			return nil, err
 		}

@@ -111,7 +111,7 @@ func (c Context) NodePosition(n ast.Node) token.Position {
 }
 
 func (c Context) WithDefined(defined types.TypeParams) Context {
-	definedMap := maps.FromSlice(defined, func(v *types.TypeParam) string { return v.Original })
+	definedMap := maps.FromSlice(defined, func(v *types.TypeParam) (string, *types.TypeParam) { return v.Original, v })
 
 	return Context{
 		pakage:   c.pakage,
