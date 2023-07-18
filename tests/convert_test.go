@@ -30,7 +30,7 @@ func convertFile(file string) convertOut {
 	pkgs, err := parser.ParseDir(files, filepath.Join(dir, file), nil, parser.ParseComments)
 	check(err)
 
-	res := convertOut{types: map[string]types.Type{}, funcs: map[string]*types.Function{}}
+	res := convertOut{types: map[string]types.Type{}}
 	for _, pkg := range pkgs {
 		for filePath, f := range pkg.Files {
 			Package := filepath.Dir(filePath)

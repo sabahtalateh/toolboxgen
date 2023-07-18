@@ -30,7 +30,6 @@ func typeID(t types.Type) string {
 
 type convertOut struct {
 	types map[string]types.Type
-	funcs map[string]*types.Function
 }
 
 func (c convertOut) equal(c2 convertOut) bool {
