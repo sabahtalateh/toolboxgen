@@ -51,6 +51,16 @@ type (
 		Type     TypeRef
 		Position token.Position
 	}
+
+	TypeParam struct {
+		Declared string
+		Original string
+		Name     string
+		Order    int
+		Position token.Position
+	}
+
+	TypeParams []*TypeParam
 )
 
 func (t *Builtin) typ()   {}
@@ -171,4 +181,22 @@ func (t *TypeAlias) Equal(t2 Type) bool {
 	default:
 		return false
 	}
+}
+
+func (t *TypeParam) Equal(t2 *TypeParam) bool {
+	return t.Name == t2.Name && t.Order == t2.Order
+}
+
+func (t TypeParams) Equal(t2 TypeParams) bool {
+	if len(t) != len(t2) {
+		return false
+	}
+
+	for i, param := range t {
+		if !param.Equal(t2[i]) {
+			return false
+		}
+	}
+
+	return true
 }

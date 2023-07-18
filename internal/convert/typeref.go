@@ -187,11 +187,11 @@ func (c *Converter) builtinRef(midType *mid.Type, typ *types.Builtin) *types.Bui
 
 func (c *Converter) structRef(ctx Context, midType *mid.Type, typ *types.Struct) (*types.StructRef, error) {
 	var (
-		ref *types.StructRef
+		res *types.StructRef
 		err error
 	)
 
-	ref = &types.StructRef{
+	res = &types.StructRef{
 		Declared:   midType.Declared,
 		Modifiers:  Modifiers(midType.Modifiers),
 		Package:    typ.Package,
@@ -201,20 +201,20 @@ func (c *Converter) structRef(ctx Context, midType *mid.Type, typ *types.Struct)
 		Position:   midType.Position,
 	}
 
-	if ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
+	if res.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return res, nil
 }
 
 func (c *Converter) interfaceRef(ctx Context, midType *mid.Type, typ *types.Interface) (*types.InterfaceRef, error) {
 	var (
-		ref *types.InterfaceRef
+		res *types.InterfaceRef
 		err error
 	)
 
-	ref = &types.InterfaceRef{
+	res = &types.InterfaceRef{
 		Declared:   midType.Declared,
 		Modifiers:  Modifiers(midType.Modifiers),
 		Package:    typ.Package,
@@ -223,20 +223,20 @@ func (c *Converter) interfaceRef(ctx Context, midType *mid.Type, typ *types.Inte
 		Position:   midType.Position,
 	}
 
-	if ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
+	if res.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return res, nil
 }
 
 func (c *Converter) typeDefRef(ctx Context, midType *mid.Type, typ *types.TypeDef) (*types.TypeDefRef, error) {
 	var (
-		ref *types.TypeDefRef
+		res *types.TypeDefRef
 		err error
 	)
 
-	ref = &types.TypeDefRef{
+	res = &types.TypeDefRef{
 		Declared:   midType.Declared,
 		Modifiers:  Modifiers(midType.Modifiers),
 		Package:    typ.Package,
@@ -246,15 +246,15 @@ func (c *Converter) typeDefRef(ctx Context, midType *mid.Type, typ *types.TypeDe
 		Position:   midType.Position,
 	}
 
-	if ref.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
+	if res.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
 		return nil, err
 	}
 
-	if err = forwardActual(ctx.WithDefined(ref.Definition.TypeParams), ref); err != nil {
+	if err = forwardActual(ctx.WithDefined(res.Definition.TypeParams), res); err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return res, nil
 }
 
 func (c *Converter) typeAliasRef(midType *mid.Type, typ *types.TypeAlias) *types.TypeAliasRef {

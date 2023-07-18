@@ -12,6 +12,13 @@ import (
 )
 
 func (c *Converter) Type(ctx Context, t *ast.TypeSpec) (types.Type, error) {
+	if builtin, ok := c.builtin.Types[t.Name.Name]; ok {
+		return &types.Builtin{
+			Declared: builtin.Declared,
+			TypeName: builtin.TypeName,
+		}, nil
+	}
+
 	switch typ := t.Type.(type) {
 	case *ast.StructType:
 		switch t.Assign {
@@ -102,8 +109,6 @@ func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.Str
 		TypeParams: TypeParams(ctx, spec.TypeParams),
 		Position:   ctx.NodePosition(spec),
 	}
-
-	res.TypeParams = TypeParams(ctx, spec.TypeParams)
 
 	if res.Fields, err = c.Fields(ctx, typ.Fields); err != nil {
 		return nil, err

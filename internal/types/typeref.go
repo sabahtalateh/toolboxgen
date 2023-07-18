@@ -23,7 +23,7 @@ type (
 		Modifiers  Modifiers
 		Package    string
 		TypeName   string
-		TypeParams []TypeRef
+		TypeParams TypeRefs
 		Fields     Fields
 		Definition *Struct
 		Position   token.Position
@@ -34,9 +34,29 @@ type (
 		Modifiers  Modifiers
 		Package    string
 		TypeName   string
-		TypeParams []TypeRef
+		TypeParams TypeRefs
 		Definition *Interface
 		Position   token.Position
+	}
+
+	TypeDefRef struct {
+		Declared   string
+		Modifiers  Modifiers
+		Package    string
+		TypeName   string
+		Type       TypeRef
+		TypeParams TypeRefs
+		Definition *TypeDef
+		Position   token.Position
+	}
+
+	TypeAliasRef struct {
+		Declared  string
+		Modifiers Modifiers
+		Package   string
+		TypeName  string
+		Type      TypeRef
+		Position  token.Position
 	}
 
 	MapRef struct {
@@ -77,37 +97,19 @@ type (
 		Position  token.Position
 	}
 
-	TypeDefRef struct {
-		Declared   string
-		Modifiers  Modifiers
-		Package    string
-		TypeName   string
-		Type       TypeRef
-		TypeParams []TypeRef
-		Definition *TypeDef
-		Position   token.Position
-	}
-
-	TypeAliasRef struct {
-		Declared  string
-		Modifiers Modifiers
-		Package   string
-		TypeName  string
-		Type      TypeRef
-		Position  token.Position
-	}
+	TypeRefs []TypeRef
 )
 
 func (t *BuiltinRef) typRef()    {}
 func (t *StructRef) typRef()     {}
 func (t *InterfaceRef) typRef()  {}
+func (t *TypeDefRef) typRef()    {}
+func (t *TypeAliasRef) typRef()  {}
 func (t *MapRef) typRef()        {}
 func (t *ChanRef) typRef()       {}
 func (t *FuncTypeRef) typRef()   {}
 func (t *StructTypeRef) typRef() {}
 func (t *TypeParamRef) typRef()  {}
-func (t *TypeDefRef) typRef()    {}
-func (t *TypeAliasRef) typRef()  {}
 
 func (t *BuiltinRef) Equal(t2 TypeRef) bool {
 	switch tt2 := t2.(type) {
@@ -141,6 +143,10 @@ func (t *StructRef) Equal(t2 TypeRef) bool {
 			return false
 		}
 
+		if !t.TypeParams.Equal(tt2.TypeParams) {
+			return false
+		}
+
 		return true
 	default:
 		return false
@@ -150,6 +156,56 @@ func (t *StructRef) Equal(t2 TypeRef) bool {
 func (t *InterfaceRef) Equal(t2 TypeRef) bool {
 	switch tt2 := t2.(type) {
 	case *InterfaceRef:
+		if !t.Modifiers.Equal(tt2.Modifiers) {
+			return false
+		}
+
+		if t.Package != tt2.Package {
+			return false
+		}
+
+		if t.TypeName != tt2.TypeName {
+			return false
+		}
+
+		if !t.TypeParams.Equal(tt2.TypeParams) {
+			return false
+		}
+
+		return true
+	default:
+		return false
+	}
+}
+
+func (t *TypeDefRef) Equal(t2 TypeRef) bool {
+	switch tt2 := t2.(type) {
+	case *TypeDefRef:
+		if !t.Modifiers.Equal(tt2.Modifiers) {
+			return false
+		}
+
+		if t.Package != tt2.Package {
+			return false
+		}
+
+		if t.TypeName != tt2.TypeName {
+			return false
+		}
+
+		if !t.TypeParams.Equal(tt2.TypeParams) {
+			return false
+		}
+
+		return true
+	default:
+		return false
+	}
+}
+
+func (t *TypeAliasRef) Equal(t2 TypeRef) bool {
+	switch tt2 := t2.(type) {
+	case *TypeAliasRef:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -245,13 +301,32 @@ func (t *StructTypeRef) Equal(t2 TypeRef) bool {
 }
 
 func (t *TypeParamRef) Equal(t2 TypeRef) bool {
-	return false
+	switch tt2 := t2.(type) {
+	case *TypeParamRef:
+		if !t.Modifiers.Equal(tt2.Modifiers) {
+			return false
+		}
+
+		if t.Name != tt2.Name {
+			return false
+		}
+
+		return true
+	default:
+		return false
+	}
 }
 
-func (t *TypeDefRef) Equal(t2 TypeRef) bool {
-	return false
-}
+func (t TypeRefs) Equal(t2 TypeRefs) bool {
+	if len(t) != len(t2) {
+		return false
+	}
 
-func (t *TypeAliasRef) Equal(t2 TypeRef) bool {
-	return false
+	for i, ref := range t {
+		if !ref.Equal(t2[i]) {
+			return false
+		}
+	}
+
+	return true
 }

@@ -357,6 +357,53 @@ func TestConvert(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "typedefref-1",
+			dir:  "testmod/convert/typedefref_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/typedefref_1.B": &types.TypeDef{
+						Package:  "testmod/convert/typedefref_1",
+						TypeName: "B",
+						Type:     &types.TypeDefRef{Package: "testmod/convert/typedefref_1", TypeName: "A"},
+					},
+				},
+			},
+		},
+		{
+			name: "typealiasref-1",
+			dir:  "testmod/convert/typealiasref_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/typealiasref_1.B": &types.TypeDef{
+						Package:  "testmod/convert/typealiasref_1",
+						TypeName: "B",
+						Type:     &types.TypeAliasRef{Package: "testmod/convert/typealiasref_1", TypeName: "A"},
+					},
+				},
+			},
+		},
+		{
+			name: "typeparamref-1",
+			dir:  "testmod/convert/typeparamref_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/typeparamref_1.B": &types.TypeDef{
+						Package:  "testmod/convert/typeparamref_1",
+						TypeName: "B",
+						TypeParams: []*types.TypeParam{
+							{Name: "T1", Order: 0},
+							{Name: "T2", Order: 1},
+						},
+						Type: &types.StructRef{
+							Package:    "testmod/convert/typeparamref_1",
+							TypeName:   "A",
+							TypeParams: []types.TypeRef{&types.TypeParamRef{Name: "T2"}},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
