@@ -20,54 +20,54 @@ type (
 	}
 
 	Type struct {
-		Declared   string
 		Modifiers  Modifiers
 		Package    string
 		TypeName   string
 		TypeParams TypeRefs
 		Position   token.Position
+		Declared   string
 		error      error
 	}
 
 	Map struct {
-		Declared  string
 		Modifiers Modifiers
 		Key       TypeRef
 		Value     TypeRef
 		Position  token.Position
+		Declared  string
 		error     error
 	}
 
 	Chan struct {
-		Declared  string
 		Modifiers Modifiers
 		Value     TypeRef
 		Position  token.Position
+		Declared  string
 		error     error
 	}
 
 	FuncType struct {
-		Declared  string
 		Modifiers Modifiers
 		Params    Fields
 		Results   Fields
 		Position  token.Position
+		Declared  string
 		error     error
 	}
 
 	StructType struct {
-		Declared  string
 		Modifiers Modifiers
 		Fields    Fields
 		Position  token.Position
+		Declared  string
 		error     error
 	}
 
 	InterfaceType struct {
-		Declared  string
 		Modifiers Modifiers
 		Fields    Fields
 		Position  token.Position
+		Declared  string
 		error     error
 	}
 
@@ -108,10 +108,10 @@ func (a *Ellipsis) modifier() {}
 
 type (
 	Field struct {
-		Declared string
 		Name     string
 		Type     TypeRef
 		Position token.Position
+		Declared string
 		error    error
 	}
 
@@ -153,54 +153,54 @@ func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
 		}
 
 		return &Type{
-			Declared:   code.OfNode(e),
 			Modifiers:  v.modifiers,
 			Package:    Package,
 			TypeName:   typeName,
 			TypeParams: v.typeParams,
 			Position:   files.Position(e.Pos()),
+			Declared:   code.OfNode(e),
 			error:      v.err,
 		}
 	case kMap:
 		return &Map{
-			Declared:  code.OfNode(e),
 			Modifiers: v.modifiers,
 			Key:       ParseTypeRef(files, v.key),
 			Value:     ParseTypeRef(files, v.value),
 			Position:  files.Position(e.Pos()),
+			Declared:  code.OfNode(e),
 			error:     v.err,
 		}
 	case kChan:
 		return &Chan{
-			Declared:  code.OfNode(e),
 			Modifiers: v.modifiers,
 			Value:     ParseTypeRef(files, v.value),
 			Position:  files.Position(e.Pos()),
+			Declared:  code.OfNode(e),
 			error:     v.err,
 		}
 	case kFuncType:
 		return &FuncType{
-			Declared:  code.OfNode(e),
 			Modifiers: v.modifiers,
 			Params:    v.params,
 			Results:   v.results,
 			Position:  files.Position(e.Pos()),
+			Declared:  code.OfNode(e),
 			error:     v.err,
 		}
 	case kStructType:
 		return &StructType{
-			Declared:  code.OfNode(e),
 			Modifiers: v.modifiers,
 			Fields:    v.fields,
 			Position:  files.Position(e.Pos()),
+			Declared:  code.OfNode(e),
 			error:     v.err,
 		}
 	case kInterfaceType:
 		return &InterfaceType{
-			Declared:  code.OfNode(e),
 			Modifiers: v.modifiers,
 			Fields:    v.fields,
 			Position:  files.Position(e.Pos()),
+			Declared:  code.OfNode(e),
 			error:     v.err,
 		}
 	default:
@@ -359,13 +359,13 @@ func (v *refVisitor) fieldList(fields *ast.FieldList) Fields {
 		position := v.files.Position(f.Pos())
 
 		if len(f.Names) == 0 {
-			res = append(res, &Field{Declared: code.OfNode(f), Name: "", Type: tr, Position: position})
+			res = append(res, &Field{Name: "", Type: tr, Position: position, Declared: code.OfNode(f)})
 			continue
 		}
 
 		for _, name := range f.Names {
 			declared := fmt.Sprintf("%s %s", name.Name, code.OfNode(f.Type))
-			res = append(res, &Field{Declared: declared, Name: name.Name, Type: tr, Position: position})
+			res = append(res, &Field{Name: name.Name, Type: tr, Position: position, Declared: declared})
 		}
 	}
 

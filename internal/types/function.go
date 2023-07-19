@@ -6,7 +6,6 @@ import (
 
 type (
 	Function struct {
-		Declared   string
 		Package    string
 		FuncName   string
 		Receiver   *Field
@@ -14,5 +13,6 @@ type (
 		Parameters Fields
 		Results    Fields
 		Position   token.Position
+		Declared   string
 	}
 )

@@ -19,10 +19,10 @@ func (c *Converter) Function(ctx Context, f *ast.FuncDecl) (*types.Function, err
 	)
 
 	function = &types.Function{
-		Declared: code.OfNode(f),
 		Package:  ctx.Package(),
 		FuncName: f.Name.Name,
 		Position: ctx.NodePosition(f),
+		Declared: code.OfNode(f),
 	}
 
 	if function.Receiver, defined, err = c.receiver(ctx, f.Recv); err != nil {
@@ -91,11 +91,11 @@ func receiverTypeParams(recv mid.TypeRef) (types.TypeParams, error) {
 		switch p := param.(type) {
 		case *mid.Type:
 			res = append(res, &types.TypeParam{
-				Declared: p.Declared,
 				Original: p.TypeName,
 				Name:     fmt.Sprintf("T%d", i+1),
 				Order:    i,
 				Position: p.Position,
+				Declared: p.Declared,
 			})
 		default:
 			return nil, errors.Errorf(position.OfTypeRef(p), "unsupported receiver type param type")

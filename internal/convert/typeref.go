@@ -41,11 +41,11 @@ func (c *Converter) midType(ctx Context, midType *mid.Type) (types.TypeRef, erro
 	if midType.Package == "" {
 		if def, ok := ctx.Defined(midType.TypeName); ok {
 			return &types.TypeParamRef{
-				Declared:  midType.Declared,
 				Original:  midType.TypeName,
 				Name:      def.Name,
 				Modifiers: Modifiers(midType.Modifiers),
 				Position:  midType.Position,
+				Declared:  midType.Declared,
 			}, nil
 		}
 	}
@@ -78,9 +78,9 @@ func (c *Converter) midMap(ctx Context, midType *mid.Map) (*types.MapRef, error)
 	)
 
 	res = &types.MapRef{
-		Declared:  midType.Declared,
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
+		Declared:  midType.Declared,
 	}
 
 	if res.Key, err = c.midTypeRef(ctx, midType.Key); err != nil {
@@ -101,9 +101,9 @@ func (c *Converter) midChan(ctx Context, midType *mid.Chan) (*types.ChanRef, err
 	)
 
 	res = &types.ChanRef{
-		Declared:  midType.Declared,
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
+		Declared:  midType.Declared,
 	}
 
 	if res.Value, err = c.midTypeRef(ctx, midType.Value); err != nil {
@@ -120,9 +120,9 @@ func (c *Converter) midFuncType(ctx Context, midType *mid.FuncType) (*types.Func
 	)
 
 	res = &types.FuncTypeRef{
-		Declared:  midType.Declared,
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
+		Declared:  midType.Declared,
 	}
 
 	if res.Params, err = c.midFields(ctx, midType.Params...); err != nil {
@@ -143,9 +143,9 @@ func (c *Converter) midStructType(ctx Context, midType *mid.StructType) (*types.
 	)
 
 	res = &types.StructTypeRef{
-		Declared:  midType.Declared,
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
+		Declared:  midType.Declared,
 	}
 
 	if res.Fields, err = c.midFields(ctx, midType.Fields...); err != nil {
@@ -162,9 +162,9 @@ func (c *Converter) midInterfaceType(ctx Context, midType *mid.InterfaceType) (*
 	)
 
 	res = &types.InterfaceTypeRef{
-		Declared:  midType.Declared,
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
+		Declared:  midType.Declared,
 	}
 
 	if res.Fields, err = c.midFields(ctx, midType.Fields...); err != nil {
@@ -187,10 +187,10 @@ func (c *Converter) midFields(ctx Context, fields ...*mid.Field) (types.Fields, 
 			return nil, err
 		}
 		res = append(res, &types.Field{
-			Declared: field.Declared,
 			Name:     field.Name,
 			Type:     typeRef,
 			Position: field.Position,
+			Declared: field.Declared,
 		})
 	}
 
@@ -199,11 +199,11 @@ func (c *Converter) midFields(ctx Context, fields ...*mid.Field) (types.Fields, 
 
 func (c *Converter) builtinRef(midType *mid.Type, typ *types.Builtin) *types.BuiltinRef {
 	return &types.BuiltinRef{
-		Declared:   midType.Declared,
 		Modifiers:  Modifiers(midType.Modifiers),
 		TypeName:   typ.TypeName,
 		Definition: typ,
 		Position:   midType.Position,
+		Declared:   midType.Declared,
 	}
 }
 
@@ -214,13 +214,13 @@ func (c *Converter) structRef(ctx Context, midType *mid.Type, typ *types.Struct)
 	)
 
 	res = &types.StructRef{
-		Declared:   midType.Declared,
 		Modifiers:  Modifiers(midType.Modifiers),
 		Package:    typ.Package,
 		TypeName:   typ.TypeName,
 		Fields:     typ.Fields,
 		Definition: typ,
 		Position:   midType.Position,
+		Declared:   midType.Declared,
 	}
 
 	if res.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
@@ -237,12 +237,12 @@ func (c *Converter) interfaceRef(ctx Context, midType *mid.Type, typ *types.Inte
 	)
 
 	res = &types.InterfaceRef{
-		Declared:   midType.Declared,
 		Modifiers:  Modifiers(midType.Modifiers),
 		Package:    typ.Package,
 		TypeName:   typ.TypeName,
 		Definition: typ,
 		Position:   midType.Position,
+		Declared:   midType.Declared,
 	}
 
 	if res.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
@@ -259,13 +259,13 @@ func (c *Converter) typeDefRef(ctx Context, midType *mid.Type, typ *types.TypeDe
 	)
 
 	res = &types.TypeDefRef{
-		Declared:   midType.Declared,
 		Modifiers:  Modifiers(midType.Modifiers),
 		Package:    typ.Package,
 		TypeName:   typ.TypeName,
 		Type:       typ.Type,
 		Definition: typ,
 		Position:   midType.Position,
+		Declared:   midType.Declared,
 	}
 
 	if res.TypeParams, err = c.refTypeParams(ctx, typ.TypeParams, midType.TypeParams); err != nil {
@@ -281,12 +281,12 @@ func (c *Converter) typeDefRef(ctx Context, midType *mid.Type, typ *types.TypeDe
 
 func (c *Converter) typeAliasRef(midType *mid.Type, typ *types.TypeAlias) *types.TypeAliasRef {
 	return &types.TypeAliasRef{
-		Declared:  midType.Declared,
 		Modifiers: Modifiers(midType.Modifiers),
 		Package:   typ.Package,
 		TypeName:  typ.TypeName,
 		Type:      typ.Type,
 		Position:  midType.Position,
+		Declared:  midType.Declared,
 	}
 }
 

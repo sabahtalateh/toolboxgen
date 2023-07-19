@@ -11,15 +11,14 @@ type (
 	}
 
 	BuiltinRef struct {
-		Declared   string
 		Modifiers  Modifiers
 		TypeName   string
 		Definition *Builtin
 		Position   token.Position
+		Declared   string
 	}
 
 	StructRef struct {
-		Declared   string
 		Modifiers  Modifiers
 		Package    string
 		TypeName   string
@@ -27,6 +26,7 @@ type (
 		Fields     Fields
 		Definition *Struct
 		Position   token.Position
+		Declared   string
 	}
 
 	InterfaceRef struct {
@@ -40,7 +40,6 @@ type (
 	}
 
 	TypeDefRef struct {
-		Declared   string
 		Modifiers  Modifiers
 		Package    string
 		TypeName   string
@@ -48,60 +47,61 @@ type (
 		TypeParams TypeRefs
 		Definition *TypeDef
 		Position   token.Position
+		Declared   string
 	}
 
 	TypeAliasRef struct {
-		Declared  string
 		Modifiers Modifiers
 		Package   string
 		TypeName  string
 		Type      TypeRef
 		Position  token.Position
+		Declared  string
 	}
 
 	MapRef struct {
-		Declared  string
 		Modifiers Modifiers
 		Key       TypeRef
 		Value     TypeRef
 		Position  token.Position
+		Declared  string
 	}
 
 	ChanRef struct {
-		Declared  string
 		Modifiers Modifiers
 		Value     TypeRef
 		Position  token.Position
+		Declared  string
 	}
 
 	FuncTypeRef struct {
-		Declared  string
 		Modifiers Modifiers
 		Params    Fields
 		Results   Fields
 		Position  token.Position
+		Declared  string
 	}
 
 	StructTypeRef struct {
-		Declared  string
 		Modifiers Modifiers
 		Fields    Fields
 		Position  token.Position
+		Declared  string
 	}
 
 	InterfaceTypeRef struct {
-		Declared  string
 		Modifiers Modifiers
 		Fields    Fields
 		Position  token.Position
+		Declared  string
 	}
 
 	TypeParamRef struct {
-		Declared  string
 		Original  string
 		Name      string
 		Modifiers Modifiers
 		Position  token.Position
+		Declared  string
 	}
 
 	TypeRefs []TypeRef

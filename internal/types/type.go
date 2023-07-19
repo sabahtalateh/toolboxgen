@@ -13,51 +13,51 @@ type (
 	}
 
 	Builtin struct {
-		Declared string
 		TypeName string
+		Declared string
 	}
 
 	Struct struct {
-		Declared   string
 		Package    string
 		TypeName   string
 		TypeParams TypeParams
 		Fields     Fields
 		Position   token.Position
+		Declared   string
 	}
 
 	Interface struct {
-		Declared   string
 		Package    string
 		TypeName   string
 		TypeParams TypeParams
 		Methods    Fields
 		Position   token.Position
+		Declared   string
 	}
 
 	TypeDef struct {
-		Declared   string
 		Package    string
 		TypeName   string
 		TypeParams TypeParams
 		Type       TypeRef
 		Position   token.Position
+		Declared   string
 	}
 
 	TypeAlias struct {
-		Declared string
 		Package  string
 		TypeName string
 		Type     TypeRef
 		Position token.Position
+		Declared string
 	}
 
 	TypeParam struct {
-		Declared string
 		Original string
 		Name     string
 		Order    int
 		Position token.Position
+		Declared string
 	}
 
 	TypeParams []*TypeParam

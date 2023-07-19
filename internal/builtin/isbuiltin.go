@@ -42,7 +42,7 @@ func (b *Builtin) init() {
 	ast.Inspect(f, func(node ast.Node) bool {
 		switch n := node.(type) {
 		case *ast.TypeSpec:
-			b.Types[n.Name.Name] = &types.Builtin{Declared: code.OfNode(n), TypeName: n.Name.Name}
+			b.Types[n.Name.Name] = &types.Builtin{TypeName: n.Name.Name, Declared: code.OfNode(n)}
 			return false
 		case *ast.FuncDecl:
 			b.Functions[n.Name.Name] = Function{Declared: code.OfNode(n)}

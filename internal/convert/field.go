@@ -16,16 +16,16 @@ func (c *Converter) Field(ctx Context, field *ast.Field) (types.Fields, error) {
 	}
 
 	if len(field.Names) == 0 {
-		return []*types.Field{{Declared: code.OfNode(field.Type), Type: tr, Position: ctx.NodePosition(field)}}, nil
+		return []*types.Field{{Type: tr, Position: ctx.NodePosition(field), Declared: code.OfNode(field.Type)}}, nil
 	}
 
 	var res types.Fields
 	for _, name := range field.Names {
 		res = append(res, &types.Field{
-			Declared: fmt.Sprintf("%s %s", name.Name, code.OfNode(field.Type)),
 			Name:     name.Name,
 			Type:     tr,
 			Position: ctx.NodePosition(name),
+			Declared: fmt.Sprintf("%s %s", name.Name, code.OfNode(field.Type)),
 		})
 	}
 

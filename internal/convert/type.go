@@ -14,8 +14,8 @@ import (
 func (c *Converter) Type(ctx Context, t *ast.TypeSpec) (types.Type, error) {
 	if builtin, ok := c.builtin.Types[t.Name.Name]; ok {
 		return &types.Builtin{
-			Declared: builtin.Declared,
 			TypeName: builtin.TypeName,
+			Declared: builtin.Declared,
 		}, nil
 	}
 
@@ -89,7 +89,7 @@ func (c *Converter) findType(ctx Context, Package, Type string) (types.Type, err
 
 	if spec == nil && Package == ctx.Package() {
 		if t, ok := c.builtin.Types[Type]; ok {
-			return &types.Builtin{Declared: t.Declared, TypeName: Type}, nil
+			return &types.Builtin{TypeName: Type, Declared: t.Declared}, nil
 		}
 	}
 
@@ -108,11 +108,11 @@ func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.Str
 	)
 
 	res = &types.Struct{
-		Declared:   code.OfNode(spec),
 		Package:    ctx.Package(),
 		TypeName:   spec.Name.Name,
 		TypeParams: TypeParams(ctx, spec.TypeParams),
 		Position:   ctx.NodePosition(spec),
+		Declared:   code.OfNode(spec),
 	}
 
 	if res.Fields, err = c.Fields(ctx.WithDefined(res.TypeParams), typ.Fields); err != nil {
@@ -129,11 +129,11 @@ func (c *Converter) interfaceFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.
 	)
 
 	res = &types.Interface{
-		Declared:   code.OfNode(spec),
 		Package:    ctx.Package(),
 		TypeName:   spec.Name.Name,
 		TypeParams: TypeParams(ctx, spec.TypeParams),
 		Position:   ctx.NodePosition(spec),
+		Declared:   code.OfNode(spec),
 	}
 
 	if res.Methods, err = c.Fields(ctx.WithDefined(res.TypeParams), typ.Methods); err != nil {
@@ -150,11 +150,11 @@ func (c *Converter) typeDefFromSpec(ctx Context, t *ast.TypeSpec) (*types.TypeDe
 	)
 
 	typ = &types.TypeDef{
-		Declared:   code.OfNode(t),
 		Package:    ctx.Package(),
 		TypeName:   t.Name.Name,
 		TypeParams: TypeParams(ctx, t.TypeParams),
 		Position:   ctx.NodePosition(t),
+		Declared:   code.OfNode(t),
 	}
 
 	if typ.Type, err = c.TypeRef(ctx.WithDefined(typ.TypeParams), t.Type); err != nil {
@@ -171,10 +171,10 @@ func (c *Converter) typeAliasFromSpec(ctx Context, t *ast.TypeSpec) (*types.Type
 	)
 
 	typ = &types.TypeAlias{
-		Declared: code.OfNode(t),
 		Package:  ctx.Package(),
 		TypeName: t.Name.Name,
 		Position: ctx.NodePosition(t),
+		Declared: code.OfNode(t),
 	}
 
 	if typ.Type, err = c.TypeRef(ctx, t.Type); err != nil {

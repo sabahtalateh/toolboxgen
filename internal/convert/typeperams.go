@@ -22,11 +22,11 @@ func TypeParams(ctx Context, ff *ast.FieldList) types.TypeParams {
 		for _, name := range field.Names {
 			newName := fmt.Sprintf("T%d", i+1)
 			res = append(res, &types.TypeParam{
-				Declared: code.OfNode(name),
 				Original: name.Name,
 				Name:     newName,
 				Order:    i,
 				Position: ctx.NodePosition(name),
+				Declared: code.OfNode(name),
 			})
 			i += 1
 		}
