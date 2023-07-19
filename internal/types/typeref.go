@@ -97,10 +97,10 @@ type (
 	}
 
 	TypeParamRef struct {
-		Original  string
 		Name      string
 		Modifiers Modifiers
 		Position  token.Position
+		Original  string
 		Declared  string
 	}
 

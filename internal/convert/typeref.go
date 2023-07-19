@@ -41,10 +41,10 @@ func (c *Converter) midType(ctx Context, midType *mid.Type) (types.TypeRef, erro
 	if midType.Package == "" {
 		if def, ok := ctx.Defined(midType.TypeName); ok {
 			return &types.TypeParamRef{
-				Original:  midType.TypeName,
 				Name:      def.Name,
 				Modifiers: Modifiers(midType.Modifiers),
 				Position:  midType.Position,
+				Original:  midType.TypeName,
 				Declared:  midType.Declared,
 			}, nil
 		}

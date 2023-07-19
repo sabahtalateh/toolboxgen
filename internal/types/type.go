@@ -53,10 +53,10 @@ type (
 	}
 
 	TypeParam struct {
-		Original string
 		Name     string
 		Order    int
 		Position token.Position
+		Original string
 		Declared string
 	}
 
