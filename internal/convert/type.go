@@ -115,7 +115,7 @@ func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.Str
 		Position:   ctx.NodePosition(spec),
 	}
 
-	if res.Fields, err = c.Fields(ctx, typ.Fields); err != nil {
+	if res.Fields, err = c.Fields(ctx.WithDefined(res.TypeParams), typ.Fields); err != nil {
 		return nil, err
 	}
 
@@ -136,7 +136,7 @@ func (c *Converter) interfaceFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.
 		Position:   ctx.NodePosition(spec),
 	}
 
-	if res.Methods, err = c.Fields(ctx, typ.Methods); err != nil {
+	if res.Methods, err = c.Fields(ctx.WithDefined(res.TypeParams), typ.Methods); err != nil {
 		return nil, err
 	}
 
