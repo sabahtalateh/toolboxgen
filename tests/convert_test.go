@@ -332,6 +332,27 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
+			name: "interfacetype-1",
+			dir:  "testmod/convert/interfacetype_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/interfacetype_1.A": &types.TypeAlias{
+						Package:  "testmod/convert/interfacetype_1",
+						TypeName: "A",
+						Type: &types.InterfaceTypeRef{
+							Fields: []*types.Field{{
+								Name: "Method",
+								Type: &types.FuncTypeRef{
+									Params:  []*types.Field{{Name: "b", Type: &types.BuiltinRef{TypeName: "bool"}}},
+									Results: []*types.Field{{Type: &types.BuiltinRef{TypeName: "error"}}},
+								},
+							}},
+						},
+					},
+				},
+			},
+		},
+		{
 			name: "structref-1",
 			dir:  "testmod/convert/structref_1",
 			want: convertOut{

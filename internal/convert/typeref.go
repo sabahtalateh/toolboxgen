@@ -3,6 +3,7 @@ package convert
 import (
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/mid"
+	midPosition "github.com/sabahtalateh/toolboxgen/internal/mid/position"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 	"github.com/sabahtalateh/toolboxgen/internal/types/position"
 	"go/ast"
@@ -30,9 +31,10 @@ func (c *Converter) midTypeRef(ctx Context, ref mid.TypeRef) (types.TypeRef, err
 	case *mid.StructType:
 		return c.midStructType(ctx.WithPosition(r.Position), r)
 	case *mid.InterfaceType:
+		return c.midInterfaceType(ctx.WithPosition(r.Position), r)
+	default:
+		return nil, errors.Errorf(midPosition.OfTypeRef(ref), "unknown type %T", r)
 	}
-
-	return nil, nil
 }
 
 func (c *Converter) midType(ctx Context, midType *mid.Type) (types.TypeRef, error) {
@@ -141,6 +143,25 @@ func (c *Converter) midStructType(ctx Context, midType *mid.StructType) (*types.
 	)
 
 	res = &types.StructTypeRef{
+		Declared:  midType.Declared,
+		Modifiers: Modifiers(midType.Modifiers),
+		Position:  midType.Position,
+	}
+
+	if res.Fields, err = c.midFields(ctx, midType.Fields...); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (c *Converter) midInterfaceType(ctx Context, midType *mid.InterfaceType) (*types.InterfaceTypeRef, error) {
+	var (
+		res *types.InterfaceTypeRef
+		err error
+	)
+
+	res = &types.InterfaceTypeRef{
 		Declared:  midType.Declared,
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,

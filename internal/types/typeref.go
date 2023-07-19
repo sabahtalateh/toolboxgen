@@ -89,6 +89,13 @@ type (
 		Position  token.Position
 	}
 
+	InterfaceTypeRef struct {
+		Declared  string
+		Modifiers Modifiers
+		Fields    Fields
+		Position  token.Position
+	}
+
 	TypeParamRef struct {
 		Declared  string
 		Original  string
@@ -100,16 +107,17 @@ type (
 	TypeRefs []TypeRef
 )
 
-func (t *BuiltinRef) typRef()    {}
-func (t *StructRef) typRef()     {}
-func (t *InterfaceRef) typRef()  {}
-func (t *TypeDefRef) typRef()    {}
-func (t *TypeAliasRef) typRef()  {}
-func (t *MapRef) typRef()        {}
-func (t *ChanRef) typRef()       {}
-func (t *FuncTypeRef) typRef()   {}
-func (t *StructTypeRef) typRef() {}
-func (t *TypeParamRef) typRef()  {}
+func (t *BuiltinRef) typRef()       {}
+func (t *StructRef) typRef()        {}
+func (t *InterfaceRef) typRef()     {}
+func (t *TypeDefRef) typRef()       {}
+func (t *TypeAliasRef) typRef()     {}
+func (t *MapRef) typRef()           {}
+func (t *ChanRef) typRef()          {}
+func (t *FuncTypeRef) typRef()      {}
+func (t *StructTypeRef) typRef()    {}
+func (t *InterfaceTypeRef) typRef() {}
+func (t *TypeParamRef) typRef()     {}
 
 func (t *BuiltinRef) Equal(t2 TypeRef) bool {
 	switch tt2 := t2.(type) {
@@ -286,6 +294,23 @@ func (t *FuncTypeRef) Equal(t2 TypeRef) bool {
 func (t *StructTypeRef) Equal(t2 TypeRef) bool {
 	switch tt2 := t2.(type) {
 	case *StructTypeRef:
+		if !t.Modifiers.Equal(tt2.Modifiers) {
+			return false
+		}
+
+		if !t.Fields.Equal(tt2.Fields) {
+			return false
+		}
+
+		return true
+	default:
+		return false
+	}
+}
+
+func (t *InterfaceTypeRef) Equal(t2 TypeRef) bool {
+	switch tt2 := t2.(type) {
+	case *InterfaceTypeRef:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
