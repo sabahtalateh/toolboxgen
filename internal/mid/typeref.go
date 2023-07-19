@@ -24,7 +24,7 @@ type (
 		Modifiers  Modifiers
 		Package    string
 		TypeName   string
-		TypeParams []TypeRef
+		TypeParams TypeRefs
 		Position   token.Position
 		error      error
 	}
@@ -70,6 +70,8 @@ type (
 		Position  token.Position
 		error     error
 	}
+
+	TypeRefs []TypeRef
 )
 
 func (x *Type) typeRef()          {}
@@ -80,23 +82,9 @@ func (x *StructType) typeRef()    {}
 func (x *InterfaceType) typeRef() {}
 
 type (
-	Field struct {
-		Declared string
-		Name     string
-		Type     TypeRef
-		Position token.Position
-		error    error
-	}
-
-	Fields []*Field
-)
-
-type (
 	Modifier interface {
 		modifier()
 	}
-
-	Modifiers []Modifier
 
 	Pointer struct {
 		Position token.Position
@@ -110,11 +98,25 @@ type (
 	Ellipsis struct {
 		Position token.Position
 	}
+
+	Modifiers []Modifier
 )
 
 func (p *Pointer) modifier()  {}
 func (a *Array) modifier()    {}
 func (a *Ellipsis) modifier() {}
+
+type (
+	Field struct {
+		Declared string
+		Name     string
+		Type     TypeRef
+		Position token.Position
+		error    error
+	}
+
+	Fields []*Field
+)
 
 type kind int
 
@@ -194,15 +196,13 @@ func ParseTypeRef(files *token.FileSet, e ast.Expr) TypeRef {
 			error:     v.err,
 		}
 	case kInterfaceType:
-		println(123)
-		// return &StructType{
-		// 	Declared:  code.OfNode(e),
-		// 	Modifiers: v.modifiers,
-		// 	Fields:    v.fields,
-		// 	Position:  files.Position(e.Pos()),
-		// 	error:     v.err,
-		// }
-		panic("unsupported ref type")
+		return &InterfaceType{
+			Declared:  code.OfNode(e),
+			Modifiers: v.modifiers,
+			Fields:    v.fields,
+			Position:  files.Position(e.Pos()),
+			error:     v.err,
+		}
 	default:
 		panic("unsupported ref type")
 	}
@@ -403,10 +403,8 @@ func (v *refVisitor) errorf(pos token.Pos, format string, a ...any) {
 }
 
 func (x *Type) Error() error {
-	for _, param := range x.TypeParams {
-		if err := param.Error(); err != nil {
-			return err
-		}
+	if err := x.TypeParams.Error(); err != nil {
+		return err
 	}
 
 	return x.error
@@ -449,26 +447,18 @@ func (x *FuncType) Error() error {
 }
 
 func (x *StructType) Error() error {
-	for _, field := range x.Fields {
-		if err := field.Type.Error(); err != nil {
-			return err
-		}
-		if field.Error() != nil {
-			return field.error
-		}
+	if err := x.Fields.Error(); err != nil {
+		return err
 	}
+
 	return x.error
 }
 
 func (x *InterfaceType) Error() error {
-	for _, field := range x.Fields {
-		if err := field.Type.Error(); err != nil {
-			return err
-		}
-		if field.Error() != nil {
-			return field.error
-		}
+	if err := x.Fields.Error(); err != nil {
+		return err
 	}
+
 	return x.error
 }
 
@@ -480,8 +470,21 @@ func (x *Field) Error() error {
 	return x.error
 }
 
+func (x TypeRefs) Error() error {
+	for _, xx := range x {
+		if err := xx.Error(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (x Fields) Error() error {
 	for _, field := range x {
+		if err := field.Type.Error(); err != nil {
+			return err
+		}
 		if err := field.Error(); err != nil {
 			return err
 		}

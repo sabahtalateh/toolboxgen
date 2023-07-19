@@ -1,2 +1,0 @@
-- дописать `mid.InterfaceType`
-- дописать `mid - Error`
