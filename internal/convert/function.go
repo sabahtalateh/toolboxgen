@@ -91,10 +91,9 @@ func receiverTypeParams(recv mid.TypeRef) (types.TypeParams, error) {
 		switch p := param.(type) {
 		case *mid.Type:
 			res = append(res, &types.TypeParam{
-				Name:     fmt.Sprintf("T%d", i+1),
 				Order:    i,
+				Name:     fmt.Sprintf("T%d", i+1),
 				Position: p.Position,
-				Original: p.TypeName,
 				Declared: p.Declared,
 			})
 		default:

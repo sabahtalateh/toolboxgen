@@ -21,23 +21,14 @@ type Context struct {
 	imports  []*ast.ImportSpec
 	files    *token.FileSet
 	position token.Position
-	defined  map[string]*types.TypeParam
+	defined  struct {
+		byOrder map[int]*types.TypeParam
+		byName  map[string]*types.TypeParam
+	}
 }
 
-func NewContext(
-	Package string,
-	imports []*ast.ImportSpec,
-	files *token.FileSet,
-	position token.Position,
-	defined map[string]*types.TypeParam,
-) Context {
-	return Context{
-		pakage:   Package,
-		imports:  imports,
-		files:    files,
-		position: position,
-		defined:  defined,
-	}
+func NewContext() Context {
+	return Context{}
 }
 
 func (c Context) WithPackage(Package string) Context {
@@ -111,19 +102,28 @@ func (c Context) NodePosition(n ast.Node) token.Position {
 }
 
 func (c Context) WithDefined(defined types.TypeParams) Context {
-	definedMap := maps.FromSlice(defined, func(v *types.TypeParam) (string, *types.TypeParam) { return v.Original, v })
-
 	return Context{
 		pakage:   c.pakage,
 		imports:  c.imports,
 		files:    c.files,
 		position: c.position,
-		defined:  definedMap,
+		defined: struct {
+			byOrder map[int]*types.TypeParam
+			byName  map[string]*types.TypeParam
+		}{
+			byOrder: maps.FromSlice(defined, func(v *types.TypeParam) (int, *types.TypeParam) { return v.Order, v }),
+			byName:  maps.FromSlice(defined, func(v *types.TypeParam) (string, *types.TypeParam) { return v.Name, v }),
+		},
 	}
 }
 
-func (c Context) Defined(name string) (*types.TypeParam, bool) {
-	x, ok := c.defined[name]
+func (c Context) Defined(order int) (*types.TypeParam, bool) {
+	x, ok := c.defined.byOrder[order]
+	return x, ok
+}
+
+func (c Context) DefinedByName(name string) (*types.TypeParam, bool) {
+	x, ok := c.defined.byName[name]
 	return x, ok
 }
 

@@ -3,12 +3,15 @@ package types
 import (
 	"go/token"
 
+	"github.com/sabahtalateh/toolboxgen/internal/clone"
 	"github.com/sabahtalateh/toolboxgen/internal/maps"
 )
 
 type (
 	Type interface {
 		typ()
+
+		clone.Clone[Type]
 		Equal(Type) bool
 	}
 
@@ -18,45 +21,48 @@ type (
 	}
 
 	Struct struct {
-		Package    string
-		TypeName   string
-		TypeParams TypeParams
-		Fields     Fields
-		Position   token.Position
-		Declared   string
+		TypeParams   TypeParams
+		Package      string
+		TypeName     string
+		Fields       Fields
+		Position     token.Position
+		TypePosition token.Position
+		Declared     string
 	}
 
 	Interface struct {
-		Package    string
-		TypeName   string
-		TypeParams TypeParams
-		Methods    Fields
-		Position   token.Position
-		Declared   string
+		TypeParams   TypeParams
+		Package      string
+		TypeName     string
+		Methods      Fields
+		Position     token.Position
+		TypePosition token.Position
+		Declared     string
 	}
 
 	TypeDef struct {
-		Package    string
-		TypeName   string
-		TypeParams TypeParams
-		Type       TypeRef
-		Position   token.Position
-		Declared   string
+		TypeParams   TypeParams
+		Package      string
+		TypeName     string
+		Type         TypeRef
+		Position     token.Position
+		TypePosition token.Position
+		Declared     string
 	}
 
 	TypeAlias struct {
-		Package  string
-		TypeName string
-		Type     TypeRef
-		Position token.Position
-		Declared string
+		Package      string
+		TypeName     string
+		Type         TypeRef
+		Position     token.Position
+		TypePosition token.Position
+		Declared     string
 	}
 
 	TypeParam struct {
-		Name     string
 		Order    int
+		Name     string
 		Position token.Position
-		Original string
 		Declared string
 	}
 
@@ -90,6 +96,10 @@ func (t *Struct) Equal(t2 Type) bool {
 		}
 
 		if !t.TypeParams.Equal(tt2.TypeParams) {
+			return false
+		}
+
+		if !t.Fields.Equal(tt2.Fields) {
 			return false
 		}
 

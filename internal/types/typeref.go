@@ -1,62 +1,67 @@
 package types
 
 import (
+	"github.com/sabahtalateh/toolboxgen/internal/clone"
 	"go/token"
 )
 
 type (
 	TypeRef interface {
 		typRef()
+
+		clone.Clone[TypeRef]
 		Equal(TypeRef) bool
 	}
 
 	BuiltinRef struct {
 		Modifiers  Modifiers
 		TypeName   string
-		Definition *Builtin
 		Position   token.Position
+		Definition *Builtin
 		Declared   string
 	}
 
 	StructRef struct {
 		Modifiers  Modifiers
+		TypeParams TypeRefs
 		Package    string
 		TypeName   string
-		TypeParams TypeRefs
 		Fields     Fields
-		Definition *Struct
 		Position   token.Position
+		Definition *Struct
 		Declared   string
 	}
 
 	InterfaceRef struct {
-		Declared   string
 		Modifiers  Modifiers
+		TypeParams TypeRefs
 		Package    string
 		TypeName   string
-		TypeParams TypeRefs
-		Definition *Interface
+		Methods    Fields
 		Position   token.Position
+		Definition *Interface
+		Declared   string
 	}
 
 	TypeDefRef struct {
 		Modifiers  Modifiers
+		TypeParams TypeRefs
 		Package    string
 		TypeName   string
 		Type       TypeRef
-		TypeParams TypeRefs
-		Definition *TypeDef
 		Position   token.Position
+		Definition *TypeDef
 		Declared   string
 	}
 
 	TypeAliasRef struct {
-		Modifiers Modifiers
-		Package   string
-		TypeName  string
-		Type      TypeRef
-		Position  token.Position
-		Declared  string
+		Modifiers  Modifiers
+		Package    string
+		TypeName   string
+		Type       TypeRef
+		Position   token.Position
+		Definition *TypeAlias
+		Declared   string
 	}
 
 	MapRef struct {
@@ -97,10 +102,10 @@ type (
 	}
 
 	TypeParamRef struct {
-		Name      string
 		Modifiers Modifiers
+		Order     int
+		Name      string
 		Position  token.Position
-		Original  string
 		Declared  string
 	}
 

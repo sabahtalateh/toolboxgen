@@ -3,33 +3,34 @@ package errors
 import "go/token"
 
 const (
-	notSupported           = "not supported"
-	inconsistentTypeParams = "inconsistent type params"
-	stringLitExpected      = "string literal expected"
-	errorExpected          = "error expected"
-	functionRefExpected    = "function reference expected"
+	unexpectedType      = "unexpected type"
+	builtinTypeExpected = "builtin type expected"
+	structExpected      = "struct expected"
+	interfaceExpected   = "interface expected"
+	typeDefExpected     = "typedef expected"
+	typeAliasExpected   = "type alias expected"
 )
 
-func NotSupportedErr(pos token.Position) *PositionedErr {
-	return Errorf(pos, notSupported)
+func UnexpectedType(pos token.Position) *PositionedErr {
+	return Errorf(pos, unexpectedType)
 }
 
-func InconsistentTypeParamsErr(pos token.Position) *PositionedErr {
-	return Errorf(pos, inconsistentTypeParams)
+func BuiltinTypeExpectedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, builtinTypeExpected)
 }
 
-func StringLitExpectedErr(pos token.Position) *PositionedErr {
-	return Errorf(pos, stringLitExpected)
+func StructExpectedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, structExpected)
 }
 
-func ErrorExpectedErr(pos token.Position) *PositionedErr {
-	return Errorf(pos, errorExpected)
+func InterfaceExpectedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, interfaceExpected)
 }
 
-func FunctionRefExpectedErr(pos token.Position) *PositionedErr {
-	return Errorf(pos, functionRefExpected)
+func TypeDefExpectedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, typeDefExpected)
 }
 
-func BuiltinFunctionErr(pos token.Position, funcName string) *PositionedErr {
-	return Errorf(pos, "`%s` builtin function not allowed", funcName)
+func TypeAliasExpectedErr(pos token.Position) *PositionedErr {
+	return Errorf(pos, typeAliasExpected)
 }

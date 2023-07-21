@@ -39,7 +39,7 @@ func convertFile(file string) convertOut {
 			}
 
 			ast.Inspect(f, func(node ast.Node) bool {
-				ctx := convert.NewContext(Package, f.Imports, files, token.Position{}, nil)
+				ctx := convert.NewContext().WithPackage(Package).WithImports(f.Imports).WithFiles(files)
 				switch n := node.(type) {
 				case *ast.TypeSpec:
 					t, err := conv.Type(ctx.WithPos(n.Pos()), n)
@@ -428,12 +428,110 @@ func TestConvert(t *testing.T) {
 		{
 			name: "complex-1",
 			dir:  "testmod/convert/complex_1",
+			want: convertOut{
+				types: map[string]types.Type{
+					"testmod/convert/complex_1.A": &types.Struct{
+						Package:  "testmod/convert/complex_1",
+						TypeName: "A",
+						TypeParams: []*types.TypeParam{
+							{Name: "T1", Order: 0},
+							{Name: "T2", Order: 1},
+							{Name: "T3", Order: 2},
+							{Name: "T4", Order: 3},
+						},
+						Fields: []*types.Field{
+							{
+								Name: "d",
+								Type: &types.TypeParamRef{
+									Name:      "T4",
+									Modifiers: []types.Modifier{&types.Array{}},
+								},
+							},
+							{
+								Name: "s",
+								Type: &types.BuiltinRef{
+									Modifiers: []types.Modifier{&types.Pointer{}},
+									TypeName:  "string",
+								},
+							},
+						},
+					},
+					"testmod/convert/complex_1.B": &types.TypeDef{
+						Package:  "testmod/convert/complex_1",
+						TypeName: "B",
+						TypeParams: []*types.TypeParam{
+							{Name: "T1", Order: 0},
+							{Name: "T2", Order: 1},
+							{Name: "T3", Order: 2},
+						},
+						Type: &types.StructRef{
+							Modifiers: []types.Modifier{&types.Array{}},
+							Package:   "testmod/convert/complex_1",
+							TypeName:  "A",
+							TypeParams: []types.TypeRef{
+								&types.InterfaceTypeRef{
+									Modifiers: []types.Modifier{&types.Pointer{}},
+									Fields: []*types.Field{{
+										Name: "Func",
+										Type: &types.FuncTypeRef{
+											Params: []*types.Field{
+												{
+													Name: "b",
+													Type: &types.TypeParamRef{
+														Modifiers: []types.Modifier{&types.Pointer{}},
+														Name:      "T2",
+														Order:     1,
+													},
+												},
+											},
+											Results: []*types.Field{{Type: &types.BuiltinRef{TypeName: "string"}}},
+										},
+									}},
+								},
+								&types.TypeParamRef{Name: "T3"},
+								&types.BuiltinRef{
+									Modifiers: []types.Modifier{&types.Array{}},
+									TypeName:  "float32",
+								},
+								&types.TypeParamRef{
+									Modifiers: []types.Modifier{&types.Array{}, &types.Pointer{}, &types.Pointer{}},
+									Name:      "T2",
+								},
+							},
+							Fields: []*types.Field{
+								{
+									Name: "d",
+									Type: &types.TypeParamRef{
+										Modifiers: []types.Modifier{&types.Array{}, &types.Pointer{}, &types.Pointer{}},
+										Name:      "T2",
+										Order:     1,
+									},
+								},
+								{
+									Name: "s",
+									Type: &types.BuiltinRef{
+										Modifiers: []types.Modifier{&types.Pointer{}},
+										TypeName:  "string",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "forward-1",
+			dir:  "testmod/convert/forward_1",
 			want: convertOut{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := convertFile(tt.dir)
+			for i := 0; i < 1000; i++ {
+				println(i)
+			}
 			if !got.equal(tt.want) {
 				t.Errorf("convertFile() = %s\n\n\nwant = %s", pretty.Sprint(got), pretty.Sprint(tt.want))
 			}

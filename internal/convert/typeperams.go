@@ -20,16 +20,29 @@ func TypeParams(ctx Context, ff *ast.FieldList) types.TypeParams {
 
 	for _, field := range ff.List {
 		for _, name := range field.Names {
-			newName := fmt.Sprintf("T%d", i+1)
 			res = append(res, &types.TypeParam{
-				Name:     newName,
 				Order:    i,
+				Name:     name.Name,
 				Position: ctx.NodePosition(name),
-				Original: name.Name,
-				Declared: code.OfNode(name),
+				Declared: fmt.Sprintf("%s %s", code.OfNode(name), code.OfNode(field.Type)),
 			})
 			i += 1
 		}
+	}
+
+	return res
+}
+
+func InitTypeParams(params types.TypeParams) types.TypeRefs {
+	var res types.TypeRefs
+
+	for _, param := range params {
+		res = append(res, &types.TypeParamRef{
+			Order:    param.Order,
+			Name:     param.Name,
+			Position: param.Position,
+			Declared: param.Declared,
+		})
 	}
 
 	return res

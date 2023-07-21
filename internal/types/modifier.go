@@ -1,9 +1,13 @@
 package types
 
-import "go/token"
+import (
+	"github.com/sabahtalateh/toolboxgen/internal/clone"
+	"go/token"
+)
 
 type (
 	Modifier interface {
+		clone.Clone[Modifier]
 		modifier()
 		Equal(m Modifier) bool
 	}
