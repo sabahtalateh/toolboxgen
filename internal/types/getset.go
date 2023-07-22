@@ -190,6 +190,8 @@ func (s SetOnRef) Modifiers(m Modifiers) {
 		r.Modifiers = m
 	case *StructTypeRef:
 		r.Modifiers = m
+	case *InterfaceTypeRef:
+		r.Modifiers = m
 	case *TypeParamRef:
 		r.Modifiers = m
 	default:
