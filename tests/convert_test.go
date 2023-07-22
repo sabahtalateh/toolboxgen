@@ -410,16 +410,13 @@ func TestConvert(t *testing.T) {
 			want: convertOut{
 				types: map[string]types.Type{
 					"testmod/convert/typeparamref.B": &types.TypeDef{
-						Package:  "testmod/convert/typeparamref",
-						TypeName: "B",
-						TypeParams: []*types.TypeParam{
-							{Name: "T1", Order: 0},
-							{Name: "T2", Order: 1},
-						},
+						Package:    "testmod/convert/typeparamref",
+						TypeName:   "B",
+						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}},
 						Type: &types.StructRef{
 							Package:    "testmod/convert/typeparamref",
 							TypeName:   "A",
-							TypeParams: []types.TypeRef{&types.TypeParamRef{Name: "T2"}},
+							TypeParams: []types.TypeRef{&types.TypeParamRef{Order: 1}},
 						},
 					},
 				},
@@ -431,19 +428,14 @@ func TestConvert(t *testing.T) {
 			want: convertOut{
 				types: map[string]types.Type{
 					"testmod/convert/complex.A": &types.Struct{
-						Package:  "testmod/convert/complex",
-						TypeName: "A",
-						TypeParams: []*types.TypeParam{
-							{Name: "T1", Order: 0},
-							{Name: "T2", Order: 1},
-							{Name: "T3", Order: 2},
-							{Name: "T4", Order: 3},
-						},
+						Package:    "testmod/convert/complex",
+						TypeName:   "A",
+						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}, {Order: 2}, {Order: 3}},
 						Fields: []*types.Field{
 							{
 								Name: "d",
 								Type: &types.TypeParamRef{
-									Name:      "T4",
+									Order:     3,
 									Modifiers: []types.Modifier{&types.Array{}},
 								},
 							},
@@ -457,13 +449,9 @@ func TestConvert(t *testing.T) {
 						},
 					},
 					"testmod/convert/complex.B": &types.TypeDef{
-						Package:  "testmod/convert/complex",
-						TypeName: "B",
-						TypeParams: []*types.TypeParam{
-							{Name: "T1", Order: 0},
-							{Name: "T2", Order: 1},
-							{Name: "T3", Order: 2},
-						},
+						Package:    "testmod/convert/complex",
+						TypeName:   "B",
+						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}, {Order: 2}},
 						Type: &types.StructRef{
 							Modifiers: []types.Modifier{&types.Array{}},
 							Package:   "testmod/convert/complex",
@@ -479,7 +467,6 @@ func TestConvert(t *testing.T) {
 													Name: "b",
 													Type: &types.TypeParamRef{
 														Modifiers: []types.Modifier{&types.Pointer{}},
-														Name:      "T2",
 														Order:     1,
 													},
 												},
@@ -488,14 +475,14 @@ func TestConvert(t *testing.T) {
 										},
 									}},
 								},
-								&types.TypeParamRef{Name: "T3"},
+								&types.TypeParamRef{Order: 2},
 								&types.BuiltinRef{
 									Modifiers: []types.Modifier{&types.Array{}},
 									TypeName:  "float32",
 								},
 								&types.TypeParamRef{
 									Modifiers: []types.Modifier{&types.Array{}, &types.Pointer{}, &types.Pointer{}},
-									Name:      "T2",
+									Order:     1,
 								},
 							},
 							Fields: []*types.Field{
