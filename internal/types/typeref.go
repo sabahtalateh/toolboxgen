@@ -102,11 +102,12 @@ type (
 	}
 
 	TypeParamRef struct {
-		Modifiers Modifiers
-		Order     int
-		Name      string
-		Position  token.Position
-		Declared  string
+		Modifiers  Modifiers
+		Order      int
+		Name       string
+		Position   token.Position
+		Definition *TypeParam
+		Declared   string
 	}
 
 	TypeRefs []TypeRef

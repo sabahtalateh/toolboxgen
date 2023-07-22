@@ -206,11 +206,12 @@ func (t *InterfaceTypeRef) Clone() TypeRef {
 
 func (t *TypeParamRef) Clone() TypeRef {
 	return &TypeParamRef{
-		Modifiers: t.Modifiers.Clone(),
-		Order:     t.Order,
-		Name:      t.Name,
-		Position:  t.Position,
-		Declared:  t.Declared,
+		Modifiers:  t.Modifiers.Clone(),
+		Order:      t.Order,
+		Name:       t.Name,
+		Position:   t.Position,
+		Definition: t.Definition.Clone(),
+		Declared:   t.Declared,
 	}
 }
 

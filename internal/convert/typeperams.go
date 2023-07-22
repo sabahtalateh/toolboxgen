@@ -38,10 +38,11 @@ func InitTypeParams(params types.TypeParams) types.TypeRefs {
 
 	for _, param := range params {
 		res = append(res, &types.TypeParamRef{
-			Order:    param.Order,
-			Name:     param.Name,
-			Position: param.Position,
-			Declared: param.Declared,
+			Order:      param.Order,
+			Name:       param.Name,
+			Position:   param.Position,
+			Definition: param,
+			Declared:   param.Declared,
 		})
 	}
 

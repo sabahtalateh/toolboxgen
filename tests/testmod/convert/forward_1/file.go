@@ -1,6 +1,10 @@
 package forward_1
 
+type ABC[T any] struct {
+}
+
 type XYZ[YYY any] struct {
+	Y ABC[YYY]
 }
 
 type A[P1, P2 any] interface {
