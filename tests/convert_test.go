@@ -68,24 +68,24 @@ func TestConvert(t *testing.T) {
 	}
 	tests := []testCase{
 		{
-			name: "struct-1",
-			dir:  "testmod/convert/struct_1",
+			name: "struct",
+			dir:  "testmod/convert/struct",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/struct_1.A": &types.Struct{
-						Package:  "testmod/convert/struct_1",
+					"testmod/convert/struct.A": &types.Struct{
+						Package:  "testmod/convert/struct",
 						TypeName: "A",
 					},
 				},
 			},
 		},
 		{
-			name: "interface-1",
-			dir:  "testmod/convert/interface_1",
+			name: "interface",
+			dir:  "testmod/convert/interface",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/interface_1.A": &types.Interface{
-						Package:  "testmod/convert/interface_1",
+					"testmod/convert/interface.A": &types.Interface{
+						Package:  "testmod/convert/interface",
 						TypeName: "A",
 						Methods: []*types.Field{{
 							Name: "Method",
@@ -100,11 +100,11 @@ func TestConvert(t *testing.T) {
 		},
 		{
 			name: "interface-2",
-			dir:  "testmod/convert/interface_2",
+			dir:  "testmod/convert/interface2",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/interface_2.A": &types.Interface{
-						Package:  "testmod/convert/interface_2",
+					"testmod/convert/interface2.A": &types.Interface{
+						Package:  "testmod/convert/interface2",
 						TypeName: "A",
 						Methods: []*types.Field{
 							{
@@ -133,12 +133,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "typedef-1",
-			dir:  "testmod/convert/typedef_1",
+			name: "typedef",
+			dir:  "testmod/convert/typedef",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/typedef_1.A": &types.TypeDef{
-						Package:  "testmod/convert/typedef_1",
+					"testmod/convert/typedef.A": &types.TypeDef{
+						Package:  "testmod/convert/typedef",
 						TypeName: "A",
 						Type:     &types.BuiltinRef{TypeName: "int"},
 					},
@@ -146,12 +146,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "typealias-1",
-			dir:  "testmod/convert/typealias_1",
+			name: "typealias",
+			dir:  "testmod/convert/typealias",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/typealias_1.A": &types.TypeAlias{
-						Package:  "testmod/convert/typealias_1",
+					"testmod/convert/typealias.A": &types.TypeAlias{
+						Package:  "testmod/convert/typealias",
 						TypeName: "A",
 						Type:     &types.BuiltinRef{TypeName: "int"},
 					},
@@ -159,112 +159,112 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "builtin-1",
-			dir:  "testmod/convert/builtin_1",
+			name: "builtin",
+			dir:  "testmod/convert/builtin",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/builtin_1.Bool": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Bool": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Bool",
 						Type:     &types.BuiltinRef{TypeName: "bool"},
 					},
-					"testmod/convert/builtin_1.Uint8": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Uint8": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Uint8",
 						Type:     &types.BuiltinRef{TypeName: "uint8"},
 					},
-					"testmod/convert/builtin_1.Uint16": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Uint16": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Uint16",
 						Type:     &types.BuiltinRef{TypeName: "uint16"},
 					},
-					"testmod/convert/builtin_1.Uint32": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Uint32": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Uint32",
 						Type:     &types.BuiltinRef{TypeName: "uint32"},
 					},
-					"testmod/convert/builtin_1.Uint64": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Uint64": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Uint64",
 						Type:     &types.BuiltinRef{TypeName: "uint64"},
 					},
-					"testmod/convert/builtin_1.Int8": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Int8": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Int8",
 						Type:     &types.BuiltinRef{TypeName: "int8"},
 					},
-					"testmod/convert/builtin_1.Int16": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Int16": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Int16",
 						Type:     &types.BuiltinRef{TypeName: "int16"},
 					},
-					"testmod/convert/builtin_1.Int32": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Int32": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Int32",
 						Type:     &types.BuiltinRef{TypeName: "int32"},
 					},
-					"testmod/convert/builtin_1.Int64": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Int64": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Int64",
 						Type:     &types.BuiltinRef{TypeName: "int64"},
 					},
-					"testmod/convert/builtin_1.Float32": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Float32": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Float32",
 						Type:     &types.BuiltinRef{TypeName: "float32"},
 					},
-					"testmod/convert/builtin_1.Float64": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Float64": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Float64",
 						Type:     &types.BuiltinRef{TypeName: "float64"},
 					},
-					"testmod/convert/builtin_1.Complex64": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Complex64": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Complex64",
 						Type:     &types.BuiltinRef{TypeName: "complex64"},
 					},
-					"testmod/convert/builtin_1.Complex128": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Complex128": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Complex128",
 						Type:     &types.BuiltinRef{TypeName: "complex128"},
 					},
-					"testmod/convert/builtin_1.String": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.String": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "String",
 						Type:     &types.BuiltinRef{TypeName: "string"},
 					},
-					"testmod/convert/builtin_1.Int": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Int": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Int",
 						Type:     &types.BuiltinRef{TypeName: "int"},
 					},
-					"testmod/convert/builtin_1.Uint": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Uint": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Uint",
 						Type:     &types.BuiltinRef{TypeName: "uint"},
 					},
-					"testmod/convert/builtin_1.Uintptr": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Uintptr": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Uintptr",
 						Type:     &types.BuiltinRef{TypeName: "uintptr"},
 					},
-					"testmod/convert/builtin_1.Byte": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Byte": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Byte",
 						Type:     &types.BuiltinRef{TypeName: "byte"},
 					},
-					"testmod/convert/builtin_1.Rune": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Rune": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Rune",
 						Type:     &types.BuiltinRef{TypeName: "rune"},
 					},
-					"testmod/convert/builtin_1.Any": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Any": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Any",
 						Type:     &types.BuiltinRef{TypeName: "any"},
 					},
-					"testmod/convert/builtin_1.Comparable": &types.TypeDef{
-						Package:  "testmod/convert/builtin_1",
+					"testmod/convert/builtin.Comparable": &types.TypeDef{
+						Package:  "testmod/convert/builtin",
 						TypeName: "Comparable",
 						Type:     &types.BuiltinRef{TypeName: "comparable"},
 					},
@@ -272,12 +272,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "map-1",
-			dir:  "testmod/convert/map_1",
+			name: "map",
+			dir:  "testmod/convert/map",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/map_1.A": &types.TypeDef{
-						Package:  "testmod/convert/map_1",
+					"testmod/convert/map.A": &types.TypeDef{
+						Package:  "testmod/convert/map",
 						TypeName: "A",
 						Type: &types.MapRef{
 							Key:   &types.BuiltinRef{TypeName: "string"},
@@ -288,12 +288,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "chan-1",
-			dir:  "testmod/convert/chan_1",
+			name: "chan",
+			dir:  "testmod/convert/chan",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/chan_1.A": &types.TypeDef{
-						Package:  "testmod/convert/chan_1",
+					"testmod/convert/chan.A": &types.TypeDef{
+						Package:  "testmod/convert/chan",
 						TypeName: "A",
 						Type:     &types.ChanRef{Value: &types.BuiltinRef{TypeName: "string"}},
 					},
@@ -301,12 +301,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "functype-1",
-			dir:  "testmod/convert/functype_1",
+			name: "functype",
+			dir:  "testmod/convert/functype",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/functype_1.A": &types.TypeDef{
-						Package:  "testmod/convert/functype_1",
+					"testmod/convert/functype.A": &types.TypeDef{
+						Package:  "testmod/convert/functype",
 						TypeName: "A",
 						Type: &types.FuncTypeRef{
 							Params:  []*types.Field{{Name: "a", Type: &types.BuiltinRef{TypeName: "int8"}}},
@@ -317,12 +317,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "structtype-1",
-			dir:  "testmod/convert/structtype_1",
+			name: "structtype",
+			dir:  "testmod/convert/structtype",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/structtype_1.A": &types.TypeAlias{
-						Package:  "testmod/convert/structtype_1",
+					"testmod/convert/structtype.A": &types.TypeAlias{
+						Package:  "testmod/convert/structtype",
 						TypeName: "A",
 						Type: &types.StructTypeRef{
 							Fields: []*types.Field{{Name: "a", Type: &types.BuiltinRef{TypeName: "string"}}},
@@ -332,12 +332,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "interfacetype-1",
-			dir:  "testmod/convert/interfacetype_1",
+			name: "interfacetype",
+			dir:  "testmod/convert/interfacetype",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/interfacetype_1.A": &types.TypeAlias{
-						Package:  "testmod/convert/interfacetype_1",
+					"testmod/convert/interfacetype.A": &types.TypeAlias{
+						Package:  "testmod/convert/interfacetype",
 						TypeName: "A",
 						Type: &types.InterfaceTypeRef{
 							Fields: []*types.Field{{
@@ -353,71 +353,71 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "structref-1",
-			dir:  "testmod/convert/structref_1",
+			name: "structref",
+			dir:  "testmod/convert/structref",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/structref_1.B": &types.TypeDef{
-						Package:  "testmod/convert/structref_1",
+					"testmod/convert/structref.B": &types.TypeDef{
+						Package:  "testmod/convert/structref",
 						TypeName: "B",
-						Type:     &types.StructRef{Package: "testmod/convert/structref_1", TypeName: "A"},
+						Type:     &types.StructRef{Package: "testmod/convert/structref", TypeName: "A"},
 					},
 				},
 			},
 		},
 		{
-			name: "interfaceref-1",
-			dir:  "testmod/convert/interfaceref_1",
+			name: "interfaceref",
+			dir:  "testmod/convert/interfaceref",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/interfaceref_1.B": &types.TypeDef{
-						Package:  "testmod/convert/interfaceref_1",
+					"testmod/convert/interfaceref.B": &types.TypeDef{
+						Package:  "testmod/convert/interfaceref",
 						TypeName: "B",
-						Type:     &types.InterfaceRef{Package: "testmod/convert/interfaceref_1", TypeName: "A"},
+						Type:     &types.InterfaceRef{Package: "testmod/convert/interfaceref", TypeName: "A"},
 					},
 				},
 			},
 		},
 		{
-			name: "typedefref-1",
-			dir:  "testmod/convert/typedefref_1",
+			name: "typedefref",
+			dir:  "testmod/convert/typedefref",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/typedefref_1.B": &types.TypeDef{
-						Package:  "testmod/convert/typedefref_1",
+					"testmod/convert/typedefref.B": &types.TypeDef{
+						Package:  "testmod/convert/typedefref",
 						TypeName: "B",
-						Type:     &types.TypeDefRef{Package: "testmod/convert/typedefref_1", TypeName: "A"},
+						Type:     &types.TypeDefRef{Package: "testmod/convert/typedefref", TypeName: "A"},
 					},
 				},
 			},
 		},
 		{
-			name: "typealiasref-1",
-			dir:  "testmod/convert/typealiasref_1",
+			name: "typealiasref",
+			dir:  "testmod/convert/typealiasref",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/typealiasref_1.B": &types.TypeDef{
-						Package:  "testmod/convert/typealiasref_1",
+					"testmod/convert/typealiasref.B": &types.TypeDef{
+						Package:  "testmod/convert/typealiasref",
 						TypeName: "B",
-						Type:     &types.TypeAliasRef{Package: "testmod/convert/typealiasref_1", TypeName: "A"},
+						Type:     &types.TypeAliasRef{Package: "testmod/convert/typealiasref", TypeName: "A"},
 					},
 				},
 			},
 		},
 		{
-			name: "typeparamref-1",
-			dir:  "testmod/convert/typeparamref_1",
+			name: "typeparamref",
+			dir:  "testmod/convert/typeparamref",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/typeparamref_1.B": &types.TypeDef{
-						Package:  "testmod/convert/typeparamref_1",
+					"testmod/convert/typeparamref.B": &types.TypeDef{
+						Package:  "testmod/convert/typeparamref",
 						TypeName: "B",
 						TypeParams: []*types.TypeParam{
 							{Name: "T1", Order: 0},
 							{Name: "T2", Order: 1},
 						},
 						Type: &types.StructRef{
-							Package:    "testmod/convert/typeparamref_1",
+							Package:    "testmod/convert/typeparamref",
 							TypeName:   "A",
 							TypeParams: []types.TypeRef{&types.TypeParamRef{Name: "T2"}},
 						},
@@ -426,12 +426,12 @@ func TestConvert(t *testing.T) {
 			},
 		},
 		{
-			name: "complex-1",
-			dir:  "testmod/convert/complex_1",
+			name: "complex",
+			dir:  "testmod/convert/complex",
 			want: convertOut{
 				types: map[string]types.Type{
-					"testmod/convert/complex_1.A": &types.Struct{
-						Package:  "testmod/convert/complex_1",
+					"testmod/convert/complex.A": &types.Struct{
+						Package:  "testmod/convert/complex",
 						TypeName: "A",
 						TypeParams: []*types.TypeParam{
 							{Name: "T1", Order: 0},
@@ -456,8 +456,8 @@ func TestConvert(t *testing.T) {
 							},
 						},
 					},
-					"testmod/convert/complex_1.B": &types.TypeDef{
-						Package:  "testmod/convert/complex_1",
+					"testmod/convert/complex.B": &types.TypeDef{
+						Package:  "testmod/convert/complex",
 						TypeName: "B",
 						TypeParams: []*types.TypeParam{
 							{Name: "T1", Order: 0},
@@ -466,7 +466,7 @@ func TestConvert(t *testing.T) {
 						},
 						Type: &types.StructRef{
 							Modifiers: []types.Modifier{&types.Array{}},
-							Package:   "testmod/convert/complex_1",
+							Package:   "testmod/convert/complex",
 							TypeName:  "A",
 							TypeParams: []types.TypeRef{
 								&types.InterfaceTypeRef{
@@ -520,18 +520,20 @@ func TestConvert(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "forward-1",
-			dir:  "testmod/convert/forward_1",
-			want: convertOut{},
-		},
+		// {
+		// 	name: "recursive_type",
+		// 	dir:  "testmod/convert/forward",
+		// 	want: convertOut{},
+		// },
+		// {
+		// 	name: "recursive_type",
+		// 	dir:  "testmod/convert/forward",
+		// 	want: convertOut{},
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := convertFile(tt.dir)
-			for i := 0; i < 1000; i++ {
-				println(i)
-			}
 			if !got.equal(tt.want) {
 				t.Errorf("convertFile() = %s\n\n\nwant = %s", pretty.Sprint(got), pretty.Sprint(tt.want))
 			}

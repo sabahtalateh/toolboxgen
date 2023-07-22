@@ -1,10 +1,6 @@
 package types
 
 func (t *BuiltinRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
-
 	return &BuiltinRef{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeName:   t.TypeName,
@@ -15,10 +11,6 @@ func (t *BuiltinRef) Clone() TypeRef {
 }
 
 func (t *StructRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
-
 	return &StructRef{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeParams: t.TypeParams.Clone(),
@@ -32,10 +24,6 @@ func (t *StructRef) Clone() TypeRef {
 }
 
 func (t *InterfaceRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
-
 	return &InterfaceRef{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeParams: t.TypeParams.Clone(),
@@ -49,10 +37,6 @@ func (t *InterfaceRef) Clone() TypeRef {
 }
 
 func (t *TypeDefRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
-
 	return &TypeDefRef{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeParams: t.TypeParams.Clone(),
@@ -66,10 +50,6 @@ func (t *TypeDefRef) Clone() TypeRef {
 }
 
 func (t *TypeAliasRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
-
 	return &TypeAliasRef{
 		Modifiers:  t.Modifiers.Clone(),
 		Package:    t.Package,
@@ -82,9 +62,6 @@ func (t *TypeAliasRef) Clone() TypeRef {
 }
 
 func (t *MapRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
 	return &MapRef{
 		Modifiers: t.Modifiers.Clone(),
 		Key:       t.Key.Clone(),
@@ -95,9 +72,6 @@ func (t *MapRef) Clone() TypeRef {
 }
 
 func (t *ChanRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
 	return &ChanRef{
 		Modifiers: t.Modifiers.Clone(),
 		Value:     t.Value.Clone(),
@@ -107,9 +81,6 @@ func (t *ChanRef) Clone() TypeRef {
 }
 
 func (t *FuncTypeRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
 	return &FuncTypeRef{
 		Modifiers: t.Modifiers.Clone(),
 		Params:    t.Params.Clone(),
@@ -120,9 +91,6 @@ func (t *FuncTypeRef) Clone() TypeRef {
 }
 
 func (t *StructTypeRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
 	return &StructTypeRef{
 		Modifiers: t.Modifiers.Clone(),
 		Fields:    t.Fields.Clone(),
@@ -132,9 +100,6 @@ func (t *StructTypeRef) Clone() TypeRef {
 }
 
 func (t *InterfaceTypeRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
 	return &InterfaceTypeRef{
 		Modifiers: t.Modifiers.Clone(),
 		Fields:    t.Fields.Clone(),
@@ -144,9 +109,6 @@ func (t *InterfaceTypeRef) Clone() TypeRef {
 }
 
 func (t *TypeParamRef) Clone() TypeRef {
-	if t == nil {
-		return nil
-	}
 	return &TypeParamRef{
 		Modifiers:  t.Modifiers.Clone(),
 		Order:      t.Order,

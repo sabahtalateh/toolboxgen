@@ -113,6 +113,8 @@ func (g GetOnRef) Modifiers() Modifiers {
 		return r.Modifiers
 	case *StructTypeRef:
 		return r.Modifiers
+	case *InterfaceTypeRef:
+		return r.Modifiers
 	case *TypeParamRef:
 		return r.Modifiers
 	default:
