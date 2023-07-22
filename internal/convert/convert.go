@@ -2,6 +2,7 @@ package convert
 
 import (
 	"fmt"
+	"github.com/sabahtalateh/toolboxgen/internal/types"
 	"go/ast"
 	"path/filepath"
 	"strings"
@@ -17,11 +18,12 @@ import (
 type Converter struct {
 	pkgDir  *pkgdir.PkgDir
 	builtin *builtin.Builtin
+	types   map[string]types.Type
 }
 
 func New(mod *mod.Module) (*Converter, error) {
 	var (
-		c   = new(Converter)
+		c   = &Converter{types: map[string]types.Type{}}
 		err error
 	)
 
@@ -33,9 +35,42 @@ func New(mod *mod.Module) (*Converter, error) {
 	return c, nil
 }
 
-func packagePath(ctx Context, alias string) (pakage string, err error) {
+func (c *Converter) putType(typ types.Type) types.Type {
+	c.types[typeKeyFromType(typ)] = typ
+	return typ
+}
+
+func typeKeyFromType(typ types.Type) string {
+	var Package, typeName string
+	switch t := typ.(type) {
+	case *types.Builtin:
+		typeName = t.TypeName
+	case *types.Struct:
+		Package, typeName = t.Package, t.TypeName
+	case *types.Interface:
+		Package, typeName = t.Package, t.TypeName
+	case *types.TypeDef:
+		Package, typeName = t.Package, t.TypeName
+	case *types.TypeAlias:
+		Package, typeName = t.Package, t.TypeName
+	default:
+		panic("unknown type")
+	}
+
+	return fmt.Sprintf("%s.%s", Package, typeName)
+}
+
+func typeKey(Package string, typeName string) string {
+	key := typeName
+	if Package != "" {
+		key = fmt.Sprintf("%s.%s", Package, key)
+	}
+	return key
+}
+
+func packagePath(ctx Context, alias string) (Package string, err error) {
 	if alias == "" {
-		pakage = ctx.Package()
+		Package = ctx.Package()
 	} else {
 		var imp *ast.ImportSpec
 		for _, spec := range ctx.Imports() {
@@ -61,11 +96,11 @@ func packagePath(ctx Context, alias string) (pakage string, err error) {
 		if imp == nil {
 			err = fmt.Errorf("package `%s` not resolved", alias)
 		} else {
-			pakage = imp.Path.Value
+			Package = imp.Path.Value
 		}
 	}
 
-	return utils.Unquote(pakage), err
+	return utils.Unquote(Package), err
 }
 
 func (c *Converter) dir(mod *mod.Module, pakage string) (string, error) {

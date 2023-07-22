@@ -11,40 +11,44 @@ import (
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
-func (c *Converter) Type(ctx Context, t *ast.TypeSpec) (types.Type, error) {
-	if builtin, ok := c.builtin.Types[t.Name.Name]; ok {
+func (c *Converter) Type(ctx Context, typ *ast.TypeSpec) (types.Type, error) {
+	if b, ok := c.builtin.Types[typ.Name.Name]; ok {
 		return &types.Builtin{
-			TypeName: builtin.TypeName,
-			Declared: builtin.Declared,
+			TypeName: b.TypeName,
+			Declared: b.Declared,
 		}, nil
 	}
 
-	switch typ := t.Type.(type) {
+	switch t := typ.Type.(type) {
 	case *ast.StructType:
-		switch t.Assign {
+		switch typ.Assign {
 		case token.NoPos:
-			return c.structFromSpec(ctx, t, typ)
+			return c.structFromSpec(ctx, typ, t)
 		default:
-			return c.typeAliasFromSpec(ctx, t)
+			return c.typeAliasFromSpec(ctx, typ)
 		}
 	case *ast.InterfaceType:
-		switch t.Assign {
+		switch typ.Assign {
 		case token.NoPos:
-			return c.interfaceFromSpec(ctx, t, typ)
+			return c.interfaceFromSpec(ctx, typ, t)
 		default:
-			return c.typeAliasFromSpec(ctx, t)
+			return c.typeAliasFromSpec(ctx, typ)
 		}
 	default:
-		switch t.Assign {
+		switch typ.Assign {
 		case token.NoPos:
-			return c.typeDefFromSpec(ctx, t)
+			return c.typeDefFromSpec(ctx, typ)
 		default:
-			return c.typeAliasFromSpec(ctx, t)
+			return c.typeAliasFromSpec(ctx, typ)
 		}
 	}
 }
 
 func (c *Converter) findType(ctx Context, Package, Type string) (types.Type, error) {
+	if typ, ok := c.types[typeKey(Package, Type)]; ok {
+		return typ, nil
+	}
+
 	pkgDir, err := c.pkgDir.Dir(Package)
 	if err != nil {
 		return nil, errors.Error(ctx.Position(), err)
@@ -97,8 +101,7 @@ func (c *Converter) findType(ctx Context, Package, Type string) (types.Type, err
 		return nil, errors.Errorf(ctx.Position(), "type %s not found at %s", Type, Package)
 	}
 
-	ctx = ctx.WithPackage(Package).WithImports(imports).WithFiles(files).WithPos(spec.Pos())
-	return c.Type(ctx, spec)
+	return c.Type(ctx.WithPackage(Package).WithImports(imports).WithFiles(files).WithPos(spec.Pos()), spec)
 }
 
 func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.StructType) (*types.Struct, error) {
@@ -115,6 +118,8 @@ func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.Str
 		TypePosition: ctx.NodePosition(spec.Type),
 		Declared:     code.OfNode(spec),
 	}
+
+	c.putType(res)
 
 	if res.Fields, err = c.Fields(ctx.WithDefined(res.TypeParams), typ.Fields); err != nil {
 		return nil, err
@@ -138,6 +143,8 @@ func (c *Converter) interfaceFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.
 		Declared:     code.OfNode(spec),
 	}
 
+	c.putType(res)
+
 	if res.Methods, err = c.Fields(ctx.WithDefined(res.TypeParams), typ.Methods); err != nil {
 		return nil, err
 	}
@@ -147,11 +154,11 @@ func (c *Converter) interfaceFromSpec(ctx Context, spec *ast.TypeSpec, typ *ast.
 
 func (c *Converter) typeDefFromSpec(ctx Context, spec *ast.TypeSpec) (*types.TypeDef, error) {
 	var (
-		typ *types.TypeDef
+		res *types.TypeDef
 		err error
 	)
 
-	typ = &types.TypeDef{
+	res = &types.TypeDef{
 		Package:      ctx.Package(),
 		TypeName:     spec.Name.Name,
 		TypeParams:   TypeParams(ctx, spec.TypeParams),
@@ -160,20 +167,22 @@ func (c *Converter) typeDefFromSpec(ctx Context, spec *ast.TypeSpec) (*types.Typ
 		Declared:     code.OfNode(spec),
 	}
 
-	if typ.Type, err = c.TypeRef(ctx.WithDefined(typ.TypeParams), spec.Type); err != nil {
+	c.putType(res)
+
+	if res.Type, err = c.TypeRef(ctx.WithDefined(res.TypeParams), spec.Type); err != nil {
 		return nil, err
 	}
 
-	return typ, err
+	return res, nil
 }
 
 func (c *Converter) typeAliasFromSpec(ctx Context, spec *ast.TypeSpec) (*types.TypeAlias, error) {
 	var (
-		typ *types.TypeAlias
+		res *types.TypeAlias
 		err error
 	)
 
-	typ = &types.TypeAlias{
+	res = &types.TypeAlias{
 		Package:      ctx.Package(),
 		TypeName:     spec.Name.Name,
 		Position:     ctx.NodePosition(spec),
@@ -181,9 +190,11 @@ func (c *Converter) typeAliasFromSpec(ctx Context, spec *ast.TypeSpec) (*types.T
 		Declared:     code.OfNode(spec),
 	}
 
-	if typ.Type, err = c.TypeRef(ctx, spec.Type); err != nil {
+	c.putType(res)
+
+	if res.Type, err = c.TypeRef(ctx, spec.Type); err != nil {
 		return nil, err
 	}
 
-	return typ, nil
+	return res, nil
 }

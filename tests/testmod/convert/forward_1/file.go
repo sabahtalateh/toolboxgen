@@ -1,6 +1,10 @@
 package forward_1
 
-type A[T any] map[string]A[T]
+type X[T any] struct {
+	A *X[T]
+}
+
+// type A[T any] map[string]A[T]
 
 // type CDE[T any] *interface {
 // 	BB() [][]T

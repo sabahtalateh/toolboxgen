@@ -3,7 +3,6 @@ package types
 import (
 	"go/token"
 
-	"github.com/sabahtalateh/toolboxgen/internal/clone"
 	"github.com/sabahtalateh/toolboxgen/internal/maps"
 )
 
@@ -11,7 +10,6 @@ type (
 	Type interface {
 		typ()
 
-		clone.Clone[Type]
 		Equal(Type) bool
 		Get() GetOnType
 	}

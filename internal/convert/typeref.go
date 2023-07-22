@@ -176,8 +176,7 @@ func (c *Converter) midFields(ctx Context, fields ...*mid.Field) (types.Fields, 
 	)
 
 	for _, field := range fields {
-		typeRef, err = c.midTypeRef(ctx, field.Type)
-		if err != nil {
+		if typeRef, err = c.midTypeRef(ctx, field.Type); err != nil {
 			return nil, err
 		}
 		res = append(res, &types.Field{
@@ -207,21 +206,16 @@ func (c *Converter) structRef(ctx Context, mid *mid.Type, typ *types.Struct) (*t
 		return nil, err
 	}
 
-	def, ok := typ.Clone().(*types.Struct)
-	if !ok {
-		return nil, errors.InterfaceExpectedErr(typ.TypePosition)
-	}
-
 	return resolveStruct(
-		ctx.WithDefined(def.TypeParams),
+		ctx.WithDefined(typ.TypeParams),
 		&types.StructRef{
 			Modifiers:  Modifiers(mid.Modifiers),
-			TypeParams: InitTypeParams(def.TypeParams),
-			Package:    def.Package,
-			TypeName:   def.TypeName,
-			Fields:     def.Fields.Clone(),
+			TypeParams: InitTypeParams(typ.TypeParams),
+			Package:    typ.Package,
+			TypeName:   typ.TypeName,
+			Fields:     typ.Fields.Clone(),
 			Position:   mid.Position,
-			Definition: def,
+			Definition: typ,
 			Declared:   mid.Declared,
 		},
 		actual,
@@ -234,21 +228,16 @@ func (c *Converter) interfaceRef(ctx Context, mid *mid.Type, typ *types.Interfac
 		return nil, err
 	}
 
-	def, ok := typ.Clone().(*types.Interface)
-	if !ok {
-		return nil, errors.InterfaceExpectedErr(typ.TypePosition)
-	}
-
 	return resolveInterface(
-		ctx.WithDefined(def.TypeParams),
+		ctx.WithDefined(typ.TypeParams),
 		&types.InterfaceRef{
 			Modifiers:  Modifiers(mid.Modifiers),
-			TypeParams: InitTypeParams(def.TypeParams),
-			Package:    def.Package,
-			TypeName:   def.TypeName,
-			Methods:    def.Methods.Clone(),
+			TypeParams: InitTypeParams(typ.TypeParams),
+			Package:    typ.Package,
+			TypeName:   typ.TypeName,
+			Methods:    typ.Methods.Clone(),
 			Position:   mid.Position,
-			Definition: def,
+			Definition: typ,
 			Declared:   mid.Declared,
 		},
 		actual,
@@ -261,21 +250,16 @@ func (c *Converter) typeDefRef(ctx Context, mid *mid.Type, typ *types.TypeDef) (
 		return nil, err
 	}
 
-	def, ok := typ.Clone().(*types.TypeDef)
-	if !ok {
-		return nil, errors.InterfaceExpectedErr(typ.TypePosition)
-	}
-
 	return resolveTypeDef(
-		ctx.WithDefined(def.TypeParams),
+		ctx.WithDefined(typ.TypeParams),
 		&types.TypeDefRef{
 			Modifiers:  Modifiers(mid.Modifiers),
-			TypeParams: InitTypeParams(def.TypeParams),
-			Package:    def.Package,
-			TypeName:   def.TypeName,
-			Type:       def.Type.Clone(),
+			TypeParams: InitTypeParams(typ.TypeParams),
+			Package:    typ.Package,
+			TypeName:   typ.TypeName,
+			Type:       typ.Type.Clone(),
 			Position:   mid.Position,
-			Definition: def,
+			Definition: typ,
 			Declared:   mid.Declared,
 		},
 		actual,

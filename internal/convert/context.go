@@ -18,6 +18,7 @@ import (
 // defined is defined type params
 type Context struct {
 	pakage   string
+	typeName string
 	imports  []*ast.ImportSpec
 	files    *token.FileSet
 	position token.Position
@@ -34,6 +35,18 @@ func NewContext() Context {
 func (c Context) WithPackage(Package string) Context {
 	return Context{
 		pakage:   Package,
+		typeName: c.typeName,
+		imports:  c.imports,
+		files:    c.files,
+		position: c.position,
+		defined:  c.defined,
+	}
+}
+
+func (c Context) WithTypeName(typeName string) Context {
+	return Context{
+		pakage:   c.pakage,
+		typeName: typeName,
 		imports:  c.imports,
 		files:    c.files,
 		position: c.position,
@@ -48,6 +61,7 @@ func (c Context) Package() string {
 func (c Context) WithImports(imports []*ast.ImportSpec) Context {
 	return Context{
 		pakage:   c.pakage,
+		typeName: c.typeName,
 		imports:  imports,
 		files:    c.files,
 		position: c.position,
@@ -62,6 +76,7 @@ func (c Context) Imports() []*ast.ImportSpec {
 func (c Context) WithFiles(files *token.FileSet) Context {
 	return Context{
 		pakage:   c.pakage,
+		typeName: c.typeName,
 		imports:  c.imports,
 		files:    files,
 		position: c.position,
@@ -76,6 +91,7 @@ func (c Context) Files() *token.FileSet {
 func (c Context) WithPos(pos token.Pos) Context {
 	return Context{
 		pakage:   c.pakage,
+		typeName: c.typeName,
 		imports:  c.imports,
 		files:    c.files,
 		position: c.files.Position(pos),
@@ -86,6 +102,7 @@ func (c Context) WithPos(pos token.Pos) Context {
 func (c Context) WithPosition(position token.Position) Context {
 	return Context{
 		pakage:   c.pakage,
+		typeName: c.typeName,
 		imports:  c.imports,
 		files:    c.files,
 		position: position,
@@ -93,17 +110,10 @@ func (c Context) WithPosition(position token.Position) Context {
 	}
 }
 
-func (c Context) Position() token.Position {
-	return c.position
-}
-
-func (c Context) NodePosition(n ast.Node) token.Position {
-	return c.files.Position(n.Pos())
-}
-
 func (c Context) WithDefined(defined types.TypeParams) Context {
 	return Context{
 		pakage:   c.pakage,
+		typeName: c.typeName,
 		imports:  c.imports,
 		files:    c.files,
 		position: c.position,
@@ -115,6 +125,14 @@ func (c Context) WithDefined(defined types.TypeParams) Context {
 			byName:  maps.FromSlice(defined, func(v *types.TypeParam) (string, *types.TypeParam) { return v.Name, v }),
 		},
 	}
+}
+
+func (c Context) Position() token.Position {
+	return c.position
+}
+
+func (c Context) NodePosition(n ast.Node) token.Position {
+	return c.files.Position(n.Pos())
 }
 
 func (c Context) Defined(order int) (*types.TypeParam, bool) {
