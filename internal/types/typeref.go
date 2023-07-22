@@ -1,8 +1,9 @@
 package types
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/clone"
 	"go/token"
+
+	"github.com/sabahtalateh/toolboxgen/internal/clone"
 )
 
 type (
@@ -10,6 +11,8 @@ type (
 		typRef()
 
 		clone.Clone[TypeRef]
+		Get() GetOnRef
+		Set() SetOnRef
 		Equal(TypeRef) bool
 	}
 

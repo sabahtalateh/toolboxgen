@@ -13,6 +13,7 @@ type (
 
 		clone.Clone[Type]
 		Equal(Type) bool
+		Get() GetOnType
 	}
 
 	Builtin struct {

@@ -10,6 +10,7 @@ func (t *Builtin) Clone() Type {
 		Declared: t.Declared,
 	}
 }
+
 func (t *Struct) Clone() Type {
 	return &Struct{
 		TypeParams:   t.TypeParams.Clone(),
@@ -21,6 +22,7 @@ func (t *Struct) Clone() Type {
 		Declared:     t.Declared,
 	}
 }
+
 func (t *Interface) Clone() Type {
 	return &Interface{
 		TypeParams:   t.TypeParams.Clone(),
@@ -32,6 +34,7 @@ func (t *Interface) Clone() Type {
 		Declared:     t.Declared,
 	}
 }
+
 func (t *TypeDef) Clone() Type {
 	return &TypeDef{
 		TypeParams:   t.TypeParams.Clone(),
@@ -43,6 +46,7 @@ func (t *TypeDef) Clone() Type {
 		Declared:     t.Declared,
 	}
 }
+
 func (t *TypeAlias) Clone() Type {
 	return &TypeAlias{
 		Package:      t.Package,

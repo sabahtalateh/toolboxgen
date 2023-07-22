@@ -2,22 +2,11 @@ package convert
 
 import (
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
-	"github.com/sabahtalateh/toolboxgen/internal/position"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
+// resolveRef resolves type parameters into actual types
 func resolveRef(ctx Context, ref types.TypeRef, actual []types.TypeRef) (types.TypeRef, error) {
-	for i := 0; i < 1000; i++ {
-		i += 1
-		i -= 1
-	}
-
-	var (
-		res types.TypeRef
-		err error
-	)
-	println(res)
-
 	switch r := ref.(type) {
 	case *types.BuiltinRef:
 		return r, nil
@@ -28,28 +17,22 @@ func resolveRef(ctx Context, ref types.TypeRef, actual []types.TypeRef) (types.T
 	case *types.TypeDefRef:
 		return resolveTypeDef(ctx, r, actual)
 	case *types.TypeAliasRef:
-		println(123)
+		return r, nil
 	case *types.MapRef:
-		println(123)
+		return resolveMap(ctx, r, actual)
 	case *types.ChanRef:
-		println(123)
+		return resolveChan(ctx, r, actual)
 	case *types.FuncTypeRef:
 		return resolveFuncType(ctx, r, actual)
 	case *types.StructTypeRef:
-		println(123)
+		return resolveStructType(ctx, r, actual)
 	case *types.InterfaceTypeRef:
-		println(123)
+		return resolveInterfaceType(ctx, r, actual)
 	case *types.TypeParamRef:
-		ref, err = resolveTypeParam(ctx, r, actual)
-		if err != nil {
-			return nil, err
-		}
-		return ref, nil
+		return resolveTypeParam(ctx, r, actual)
 	default:
-		return nil, errors.Errorf(position.OfTypeRef(r), "unknown type %T", r)
+		return nil, errors.Errorf(r.Get().Position(), "unknown type %T", r)
 	}
-
-	panic(123)
 }
 
 func resolveStruct(ctx Context, ref *types.StructRef, actual types.TypeRefs) (*types.StructRef, error) {
@@ -100,6 +83,33 @@ func resolveTypeDef(ctx Context, ref *types.TypeDefRef, actual types.TypeRefs) (
 	return ref, nil
 }
 
+func resolveMap(ctx Context, ref *types.MapRef, actual types.TypeRefs) (*types.MapRef, error) {
+	var err error
+
+	ref.Key, err = resolveRef(ctx, ref.Key, actual)
+	if err != nil {
+		return nil, err
+	}
+
+	ref.Value, err = resolveRef(ctx, ref.Value, actual)
+	if err != nil {
+		return nil, err
+	}
+
+	return ref, nil
+}
+
+func resolveChan(ctx Context, ref *types.ChanRef, actual types.TypeRefs) (*types.ChanRef, error) {
+	var err error
+
+	ref.Value, err = resolveRef(ctx, ref.Value, actual)
+	if err != nil {
+		return nil, err
+	}
+
+	return ref, nil
+}
+
 func resolveFuncType(ctx Context, ref *types.FuncTypeRef, actual types.TypeRefs) (*types.FuncTypeRef, error) {
 	var err error
 
@@ -108,6 +118,26 @@ func resolveFuncType(ctx Context, ref *types.FuncTypeRef, actual types.TypeRefs)
 	}
 
 	if ref.Results, err = resolveFields(ctx, ref.Results, actual); err != nil {
+		return nil, err
+	}
+
+	return ref, nil
+}
+
+func resolveStructType(ctx Context, ref *types.StructTypeRef, actual types.TypeRefs) (*types.StructTypeRef, error) {
+	var err error
+
+	if ref.Fields, err = resolveFields(ctx, ref.Fields, actual); err != nil {
+		return nil, err
+	}
+
+	return ref, nil
+}
+
+func resolveInterfaceType(ctx Context, ref *types.InterfaceTypeRef, actual types.TypeRefs) (*types.InterfaceTypeRef, error) {
+	var err error
+
+	if ref.Fields, err = resolveFields(ctx, ref.Fields, actual); err != nil {
 		return nil, err
 	}
 
@@ -124,7 +154,10 @@ func resolveTypeParam(ctx Context, ref *types.TypeParamRef, actual types.TypeRef
 		return nil, errors.Errorf(ref.Position, "type parameter not found")
 	}
 
-	return actual[defined.Order], nil
+	act := actual[defined.Order]
+	act.Set().Modifiers(append(ref.Modifiers, act.Get().Modifiers()...))
+
+	return act, nil
 }
 
 func resolveTypeParams(ctx Context, params types.TypeRefs, actual types.TypeRefs) (types.TypeRefs, error) {

@@ -1,12 +1,12 @@
 package convert
 
 import (
+	"go/ast"
+
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/mid"
 	midPosition "github.com/sabahtalateh/toolboxgen/internal/mid/position"
-	"github.com/sabahtalateh/toolboxgen/internal/position"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
-	"go/ast"
 )
 
 func (c *Converter) TypeRef(ctx Context, expr ast.Expr) (types.TypeRef, error) {
@@ -61,7 +61,7 @@ func (c *Converter) midType(ctx Context, mid *mid.Type) (types.TypeRef, error) {
 	case *types.TypeAlias:
 		return typeAliasRef(mid, t), nil
 	default:
-		return nil, errors.Errorf(position.OfType(t), "unknown type %T", t)
+		return nil, errors.Errorf(t.Get().Position(), "unknown type %T", t)
 	}
 }
 
@@ -319,33 +319,4 @@ func (c *Converter) actual(ctx Context, defined types.TypeParams, mids mid.TypeR
 		res = append(res, act)
 	}
 	return res, nil
-}
-
-func prependModifiers(t types.TypeRef, mods types.Modifiers) {
-	switch tt := t.(type) {
-	case *types.BuiltinRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.StructRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.InterfaceRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.TypeDefRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.TypeAliasRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.MapRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.ChanRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.FuncTypeRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.StructTypeRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.InterfaceTypeRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	case *types.TypeParamRef:
-		tt.Modifiers = append(mods, tt.Modifiers...)
-	default:
-		panic("unknown type")
-	}
 }
