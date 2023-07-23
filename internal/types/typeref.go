@@ -39,7 +39,7 @@ type (
 	InterfaceRef struct {
 		Package    string
 		TypeName   string
-		Methods    Fields
+		Fields     Fields
 		Modifiers  Modifiers
 		TypeParams TypeRefs
 		Position   token.Position

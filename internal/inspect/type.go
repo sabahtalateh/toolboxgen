@@ -56,7 +56,7 @@ func Interface(ctx Context, t *types.Interface) string {
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
 	out += " interface {"
-	methods := Fields(ctx, t.Methods)
+	methods := Fields(ctx, t.Fields)
 
 	if len(methods) > 0 {
 		for _, method := range methods {

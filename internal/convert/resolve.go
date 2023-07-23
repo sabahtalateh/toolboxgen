@@ -59,7 +59,7 @@ func resolveInterface(ctx Context, ref *types.InterfaceRef, actual types.TypeRef
 		return nil, err
 	}
 
-	ref.Methods, err = resolveFields(ctx, ref.Methods, actual)
+	ref.Fields, err = resolveFields(ctx, ref.Fields, actual)
 	if err != nil {
 		return nil, err
 	}

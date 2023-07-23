@@ -51,8 +51,8 @@ func (t *Interface) Equal(t2 Type) bool {
 			return false
 		}
 
-		methods1 := maps.FromSlice(t.Methods, func(s *Field) (string, *Field) { return s.Name, s })
-		methods2 := maps.FromSlice(tt2.Methods, func(s *Field) (string, *Field) { return s.Name, s })
+		methods1 := maps.FromSlice(t.Fields, func(s *Field) (string, *Field) { return s.Name, s })
+		methods2 := maps.FromSlice(tt2.Fields, func(s *Field) (string, *Field) { return s.Name, s })
 
 		if len(methods1) != len(methods2) {
 			return false

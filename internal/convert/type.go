@@ -145,7 +145,7 @@ func (c *Converter) interfaceFromSpec(ctx Context, spec *ast.TypeSpec, ast *ast.
 
 	c.putType(typ)
 
-	if typ.Methods, err = c.Fields(ctx.WithDefined(typ.TypeParams), ast.Methods); err != nil {
+	if typ.Fields, err = c.Fields(ctx.WithDefined(typ.TypeParams), ast.Methods); err != nil {
 		return nil, err
 	}
 

@@ -93,7 +93,7 @@ func TestConvert(t *testing.T) {
 					"testmod/convert/interface.A": &types.Interface{
 						Package:  "testmod/convert/interface",
 						TypeName: "A",
-						Methods: []*types.Field{{
+						Fields: []*types.Field{{
 							Name: "Method",
 							Type: &types.FuncTypeRef{
 								Params:  []*types.Field{{Type: &types.BuiltinRef{TypeName: "string"}}},
@@ -112,7 +112,7 @@ func TestConvert(t *testing.T) {
 					"testmod/convert/interface2.A": &types.Interface{
 						Package:  "testmod/convert/interface2",
 						TypeName: "A",
-						Methods: []*types.Field{
+						Fields: []*types.Field{
 							{
 								Name: "Method1",
 								Type: &types.FuncTypeRef{
@@ -557,7 +557,7 @@ func TestConvert(t *testing.T) {
 						Package:    "testmod/convert/typeparams",
 						TypeName:   "A2",
 						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}},
-						Methods: []*types.Field{
+						Fields: []*types.Field{
 							// M1(*A1[*A]) A1[A1[[]B]]
 							{
 								Name: "M1",
@@ -631,7 +631,7 @@ func TestConvert(t *testing.T) {
 								&types.StructTypeRef{Modifiers: []types.Modifier{&types.Array{}}},
 							},
 							// M1(*A1[**X]) A1[A1[[][]struct{}]]
-							Methods: []*types.Field{{
+							Fields: []*types.Field{{
 								Name: "M1",
 								Type: &types.FuncTypeRef{
 									Params: []*types.Field{{
@@ -736,7 +736,7 @@ func TestConvert(t *testing.T) {
 							Type: &types.InterfaceRef{
 								Package:  "testmod/convert/typeparams",
 								TypeName: "A2",
-								Methods: []*types.Field{
+								Fields: []*types.Field{
 									// M1(*A1[**[]A2[A1[*U]]) A1[A1[[][]struct{}]]
 									{
 										Name: "M1",
@@ -757,7 +757,7 @@ func TestConvert(t *testing.T) {
 																Type: &types.InterfaceRef{
 																	Package:  "testmod/convert/typeparams",
 																	TypeName: "A2",
-																	Methods:  nil, // <--
+																	Fields:   nil, // <--
 																	Modifiers: []types.Modifier{
 																		&types.Array{},
 																		&types.Pointer{},
@@ -821,7 +821,7 @@ func TestConvert(t *testing.T) {
 										TypeName:   "A2",
 										Modifiers:  []types.Modifier{&types.Pointer{}, &types.Array{}},
 										TypeParams: []types.TypeRef{}, // <--
-										Methods:    []*types.Field{},  // <--
+										Fields:     []*types.Field{},  // <--
 									},
 									// []struct{}
 									&types.StructTypeRef{Modifiers: []types.Modifier{&types.Array{}}},
@@ -835,7 +835,7 @@ func TestConvert(t *testing.T) {
 									Modifiers: []types.Modifier{&types.Array{}},
 									// [A1[*U], V]
 									TypeParams: []types.TypeRef{}, // <--
-									Methods:    []*types.Field{},  // <--
+									Fields:     []*types.Field{},  // <--
 								},
 							},
 						},

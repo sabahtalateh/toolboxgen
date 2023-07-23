@@ -29,7 +29,7 @@ func (t *InterfaceRef) Clone() TypeRef {
 		TypeParams: t.TypeParams.Clone(),
 		Package:    t.Package,
 		TypeName:   t.TypeName,
-		Methods:    t.Methods.Clone(),
+		Fields:     t.Fields.Clone(),
 		Position:   t.Position,
 		Interface:  t.Interface,
 		Declared:   t.Declared,

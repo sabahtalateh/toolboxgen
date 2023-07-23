@@ -31,7 +31,7 @@ type (
 		Package      string
 		TypeName     string
 		TypeParams   TypeParams
-		Methods      Fields
+		Fields       Fields
 		Position     token.Position
 		TypePosition token.Position
 		Declared     string
