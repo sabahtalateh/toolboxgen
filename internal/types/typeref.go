@@ -10,103 +10,104 @@ type (
 	TypeRef interface {
 		typRef()
 
-		clone.Clone[TypeRef]
 		Get() GetOnRef
 		Set() SetOnRef
 		Equal(TypeRef) bool
+
+		clone.Clone[TypeRef]
 	}
 
 	BuiltinRef struct {
-		Modifiers  Modifiers
 		TypeName   string
+		Modifiers  Modifiers
 		Position   token.Position
 		Definition *Builtin
 		Declared   string
 	}
 
 	StructRef struct {
-		Modifiers  Modifiers
-		TypeParams TypeRefs
 		Package    string
 		TypeName   string
 		Fields     Fields
+		Modifiers  Modifiers
+		TypeParams TypeRefs
 		Position   token.Position
 		Definition *Struct
 		Declared   string
 	}
 
 	InterfaceRef struct {
-		Modifiers  Modifiers
-		TypeParams TypeRefs
 		Package    string
 		TypeName   string
 		Methods    Fields
+		Modifiers  Modifiers
+		TypeParams TypeRefs
 		Position   token.Position
-		Definition *Interface
+		Interface  *Interface
 		Declared   string
 	}
 
 	TypeDefRef struct {
-		Modifiers  Modifiers
-		TypeParams TypeRefs
 		Package    string
 		TypeName   string
 		Type       TypeRef
+		Modifiers  Modifiers
+		TypeParams TypeRefs
 		Position   token.Position
 		Definition *TypeDef
 		Declared   string
 	}
 
 	TypeAliasRef struct {
-		Modifiers  Modifiers
 		Package    string
 		TypeName   string
 		Type       TypeRef
+		Modifiers  Modifiers
 		Position   token.Position
 		Definition *TypeAlias
 		Declared   string
 	}
 
 	MapRef struct {
-		Modifiers Modifiers
 		Key       TypeRef
 		Value     TypeRef
+		Modifiers Modifiers
 		Position  token.Position
 		Declared  string
 	}
 
 	ChanRef struct {
-		Modifiers Modifiers
 		Value     TypeRef
+		Modifiers Modifiers
 		Position  token.Position
 		Declared  string
 	}
 
 	FuncTypeRef struct {
-		Modifiers Modifiers
 		Params    Fields
 		Results   Fields
+		Modifiers Modifiers
 		Position  token.Position
 		Declared  string
 	}
 
 	StructTypeRef struct {
-		Modifiers Modifiers
 		Fields    Fields
+		Modifiers Modifiers
 		Position  token.Position
 		Declared  string
 	}
 
 	InterfaceTypeRef struct {
-		Modifiers Modifiers
 		Fields    Fields
+		Modifiers Modifiers
 		Position  token.Position
 		Declared  string
 	}
 
 	TypeParamRef struct {
-		Modifiers  Modifiers
 		Order      int
+		Modifiers  Modifiers
 		Name       string
 		Position   token.Position
 		Definition *TypeParam

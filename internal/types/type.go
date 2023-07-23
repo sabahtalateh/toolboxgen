@@ -18,9 +18,9 @@ type (
 	}
 
 	Struct struct {
-		TypeParams   TypeParams
 		Package      string
 		TypeName     string
+		TypeParams   TypeParams
 		Fields       Fields
 		Position     token.Position
 		TypePosition token.Position
@@ -28,9 +28,9 @@ type (
 	}
 
 	Interface struct {
-		TypeParams   TypeParams
 		Package      string
 		TypeName     string
+		TypeParams   TypeParams
 		Methods      Fields
 		Position     token.Position
 		TypePosition token.Position
@@ -38,9 +38,9 @@ type (
 	}
 
 	TypeDef struct {
-		TypeParams   TypeParams
 		Package      string
 		TypeName     string
+		TypeParams   TypeParams
 		Type         TypeRef
 		Position     token.Position
 		TypePosition token.Position

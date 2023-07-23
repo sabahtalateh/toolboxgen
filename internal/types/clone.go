@@ -31,18 +31,23 @@ func (t *InterfaceRef) Clone() TypeRef {
 		TypeName:   t.TypeName,
 		Methods:    t.Methods.Clone(),
 		Position:   t.Position,
-		Definition: t.Definition,
+		Interface:  t.Interface,
 		Declared:   t.Declared,
 	}
 }
 
 func (t *TypeDefRef) Clone() TypeRef {
+	var typ TypeRef
+	if t.Type != nil {
+		typ = t.Type.Clone()
+	}
+
 	return &TypeDefRef{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeParams: t.TypeParams.Clone(),
 		Package:    t.Package,
 		TypeName:   t.TypeName,
-		Type:       t.Type.Clone(),
+		Type:       typ,
 		Position:   t.Position,
 		Definition: t.Definition,
 		Declared:   t.Declared,
@@ -50,11 +55,16 @@ func (t *TypeDefRef) Clone() TypeRef {
 }
 
 func (t *TypeAliasRef) Clone() TypeRef {
+	var typ TypeRef
+	if t.Type != nil {
+		typ = t.Type.Clone()
+	}
+
 	return &TypeAliasRef{
 		Modifiers:  t.Modifiers.Clone(),
 		Package:    t.Package,
 		TypeName:   t.TypeName,
-		Type:       t.Type.Clone(),
+		Type:       typ,
 		Position:   t.Position,
 		Definition: t.Definition,
 		Declared:   t.Declared,
@@ -128,23 +138,14 @@ func (t TypeRefs) Clone() TypeRefs {
 }
 
 func (m *Pointer) Clone() Modifier {
-	if m == nil {
-		return nil
-	}
 	return &Pointer{Position: m.Position}
 }
 
 func (m *Array) Clone() Modifier {
-	if m == nil {
-		return nil
-	}
 	return &Array{Sized: m.Sized, Position: m.Position}
 }
 
 func (m *Ellipsis) Clone() Modifier {
-	if m == nil {
-		return nil
-	}
 	return &Ellipsis{Position: m.Position}
 }
 
@@ -157,9 +158,6 @@ func (m Modifiers) Clone() Modifiers {
 }
 
 func (f *Field) Clone() *Field {
-	if f == nil {
-		return nil
-	}
 	return &Field{
 		Name:     f.Name,
 		Type:     f.Type.Clone(),

@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"github.com/sabahtalateh/toolboxgen/internal/inspect"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -45,6 +46,11 @@ func convertFile(file string) convertOut {
 					t, err := conv.Type(ctx.WithPos(n.Pos()), n)
 					check(err)
 					res.types[typeID(t)] = t
+					ins := inspect.Type(
+						inspect.EmptyContext().WithTrimPackage("testmod/convert/typeparams"),
+						t,
+					)
+					println(ins)
 					return false
 					// case *ast.FuncDecl:
 					// 	f, err := conv.Function(ctx.WithPos(n.Pos()), n)
@@ -427,11 +433,19 @@ func TestConvert(t *testing.T) {
 			dir:  "testmod/convert/complex",
 			want: convertOut{
 				types: map[string]types.Type{
+					// type A[A, B, C, D any] struct {
+					//	d []D
+					//	s *string
+					// }
+					// type A[A, B, C, D any]
 					"testmod/convert/complex.A": &types.Struct{
 						Package:    "testmod/convert/complex",
 						TypeName:   "A",
 						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}, {Order: 2}, {Order: 3}},
+						// d []D
+						// s *string
 						Fields: []*types.Field{
+							// d []D
 							{
 								Name: "d",
 								Type: &types.TypeParamRef{
@@ -439,6 +453,7 @@ func TestConvert(t *testing.T) {
 									Modifiers: []types.Modifier{&types.Array{}},
 								},
 							},
+							// s *string
 							{
 								Name: "s",
 								Type: &types.BuiltinRef{
@@ -448,15 +463,21 @@ func TestConvert(t *testing.T) {
 							},
 						},
 					},
+					// type B[AA, BB, CC comparable] []A[*interface{ Func(b *BB) string }, CC, []float32, **BB]
 					"testmod/convert/complex.B": &types.TypeDef{
 						Package:    "testmod/convert/complex",
 						TypeName:   "B",
 						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}, {Order: 2}},
+						// []A[*interface{ Func(b *BB) string }, CC, []float32, **BB] = []struct {
+						//	d []**BB
+						//	s *string
+						// }
 						Type: &types.StructRef{
 							Modifiers: []types.Modifier{&types.Array{}},
 							Package:   "testmod/convert/complex",
 							TypeName:  "A",
 							TypeParams: []types.TypeRef{
+								// *interface{ Func(b *BB) string }
 								&types.InterfaceTypeRef{
 									Modifiers: []types.Modifier{&types.Pointer{}},
 									Fields: []*types.Field{{
@@ -475,22 +496,26 @@ func TestConvert(t *testing.T) {
 										},
 									}},
 								},
+								// CC
 								&types.TypeParamRef{Order: 2},
+								// []float32
 								&types.BuiltinRef{
 									Modifiers: []types.Modifier{&types.Array{}},
 									TypeName:  "float32",
 								},
+								// **BB
 								&types.TypeParamRef{
-									Modifiers: []types.Modifier{&types.Array{}, &types.Pointer{}, &types.Pointer{}},
+									Modifiers: []types.Modifier{&types.Pointer{}, &types.Pointer{}},
 									Order:     1,
 								},
 							},
+							// d []**BB
+							// s *string
 							Fields: []*types.Field{
 								{
 									Name: "d",
 									Type: &types.TypeParamRef{
 										Modifiers: []types.Modifier{&types.Array{}, &types.Pointer{}, &types.Pointer{}},
-										Name:      "T2",
 										Order:     1,
 									},
 								},
@@ -507,16 +532,317 @@ func TestConvert(t *testing.T) {
 				},
 			},
 		},
-		// {
-		// 	name: "recursive_type",
-		// 	dir:  "testmod/convert/forward",
-		// 	want: convertOut{},
-		// },
-		// {
-		// 	name: "recursive_type",
-		// 	dir:  "testmod/convert/forward",
-		// 	want: convertOut{},
-		// },
+		{
+			name: "typeparams",
+			dir:  "testmod/convert/typeparams",
+			want: convertOut{
+				types: map[string]types.Type{
+					// type A1[T any] struct {
+					//	t []T
+					// }
+					"testmod/convert/typeparams.A1": &types.Struct{
+						TypeParams: []*types.TypeParam{{Order: 0}},
+						Package:    "testmod/convert/typeparams",
+						TypeName:   "A1",
+						// t []T
+						Fields: []*types.Field{{
+							Name: "t",
+							Type: &types.TypeParamRef{Order: 0, Modifiers: []types.Modifier{&types.Array{}}},
+						}},
+					},
+					// type A2[A, B any] interface {
+					// 	M1(*A1[*A]) A1[A1[[]B]]
+					// }
+					"testmod/convert/typeparams.A2": &types.Interface{
+						Package:    "testmod/convert/typeparams",
+						TypeName:   "A2",
+						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}},
+						Methods: []*types.Field{
+							// M1(*A1[*A]) A1[A1[[]B]]
+							{
+								Name: "M1",
+								Type: &types.FuncTypeRef{
+									Params: []*types.Field{
+										// *A1[*A]
+										{
+											Type: &types.StructRef{
+												Package:   "testmod/convert/typeparams",
+												TypeName:  "A1",
+												Modifiers: []types.Modifier{&types.Pointer{}},
+												TypeParams: []types.TypeRef{
+													// *A
+													&types.TypeParamRef{
+														Modifiers: []types.Modifier{&types.Pointer{}},
+														Order:     0,
+													},
+												},
+											},
+										},
+									},
+									Results: []*types.Field{
+										// A1[A1[[]B]]
+										{
+											Type: &types.StructRef{
+												Package:  "testmod/convert/typeparams",
+												TypeName: "A1",
+												TypeParams: []types.TypeRef{
+													// A1[[]B]
+													&types.StructRef{
+														Package:  "testmod/convert/typeparams",
+														TypeName: "A1",
+														TypeParams: []types.TypeRef{
+															// []B
+															&types.TypeParamRef{
+																Order:     1,
+																Modifiers: []types.Modifier{&types.Array{}},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					// type A3[X any] -> A2[*X, []struct{}]
+					// ->
+					// A2[*X, []struct{}] interface {
+					//	M1(*A1[**X]) A1[A1[[][]struct{}]]
+					// }
+					"testmod/convert/typeparams.A3":
+					// type A3[X any]
+					&types.TypeDef{
+						Package:    "testmod/convert/typeparams",
+						TypeName:   "A3",
+						TypeParams: []*types.TypeParam{{Order: 0}},
+						// A2[*X, []struct{}] interface {
+						//	M1(*A1[**X]) A1[A1[[][]struct{}]]
+						// }
+						Type: &types.InterfaceRef{
+							Package:  "testmod/convert/typeparams",
+							TypeName: "A2",
+							// [*X, []struct{}]
+							TypeParams: []types.TypeRef{
+								// *X
+								&types.TypeParamRef{Modifiers: []types.Modifier{&types.Pointer{}}, Order: 0},
+								// []struct{}
+								&types.StructTypeRef{Modifiers: []types.Modifier{&types.Array{}}},
+							},
+							// M1(*A1[**X]) A1[A1[[][]struct{}]]
+							Methods: []*types.Field{{
+								Name: "M1",
+								Type: &types.FuncTypeRef{
+									Params: []*types.Field{{
+										// *A1[**X]
+										// ->
+										// A1[**X] struct {
+										// 	t []**X
+										// }
+										Type: &types.StructRef{
+											Package:   "testmod/convert/typeparams",
+											TypeName:  "A1",
+											Modifiers: []types.Modifier{&types.Pointer{}},
+											// [**X]
+											TypeParams: []types.TypeRef{
+												// **X
+												&types.TypeParamRef{
+													Modifiers: []types.Modifier{&types.Pointer{}, &types.Pointer{}},
+													Order:     0,
+												},
+											},
+											Fields: []*types.Field{
+												// t []**X
+												{
+													Name: "t",
+													Type: &types.TypeParamRef{
+														Order: 0,
+														Modifiers: []types.Modifier{
+															&types.Array{}, &types.Pointer{}, &types.Pointer{},
+														},
+													},
+												},
+											},
+										},
+									}},
+									Results: []*types.Field{{
+										// A1[A1[[][]struct{}]] -> type A1[A1[[][]struct{}]] struct {
+										//	t []A1[[][]struct{}]
+										// }
+										Type: &types.StructRef{
+											Package:  "testmod/convert/typeparams",
+											TypeName: "A1",
+											TypeParams: []types.TypeRef{
+												// A1[[][]struct{}] -> type A1[[][]struct{}] struct {
+												// 	t [][][]struct{}
+												// }
+												&types.StructRef{
+													Package:  "testmod/convert/typeparams",
+													TypeName: "A1",
+													TypeParams: []types.TypeRef{
+														// [][]struct{}
+														&types.StructTypeRef{
+															Modifiers: []types.Modifier{&types.Array{}, &types.Array{}},
+														},
+													},
+													// t [][][]struct{}
+													Fields: []*types.Field{{
+														Name: "t",
+														Type: &types.StructTypeRef{
+															Modifiers: []types.Modifier{&types.Array{}, &types.Array{}},
+														},
+													}},
+												},
+											},
+											// t []A1[[][]struct{}]
+											Fields: []*types.Field{
+												// t []A1[[][]struct{}]
+												{
+													Name: "t",
+													Type: &types.StructRef{
+														Package:   "testmod/convert/typeparams",
+														TypeName:  "A1",
+														Modifiers: []types.Modifier{&types.Array{}},
+														TypeParams: []types.TypeRef{
+															&types.StructTypeRef{
+																Modifiers: []types.Modifier{
+																	&types.Array{}, &types.Array{},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									}},
+								},
+							}},
+						},
+					},
+					"testmod/convert/typeparams.A4":
+					// type A4[U, V any] A3[[]A2[A1[*U], V]]
+					&types.TypeDef{
+						Package:    "testmod/convert/typeparams",
+						TypeName:   "A4",
+						TypeParams: []*types.TypeParam{{Order: 0}, {Order: 1}},
+						// A3[[]A2[A1[*U], V]] -> A2[*[]A2[A1[*U], V], []struct{}]
+						Type: &types.TypeDefRef{
+							Package:  "testmod/convert/typeparams",
+							TypeName: "A3",
+							// A2[*[]A2[A1[*U], V], []struct{}] -> type A2[*[]A2[A1[*U], []struct{}] interface {
+							//	M1(*A1[**[]A2[A1[*U]]) A1[A1[[][]struct{}]]
+							// }
+							Type: &types.InterfaceRef{
+								Package:  "testmod/convert/typeparams",
+								TypeName: "A2",
+								Methods: []*types.Field{
+									// M1(*A1[**[]A2[A1[*U]]) A1[A1[[][]struct{}]]
+									{
+										Name: "M1",
+										Type: &types.FuncTypeRef{
+											// *A1[**[]A2[A1[*U]]
+											Params: []*types.Field{
+												{
+													// *A1[**[]A2[A1[*U]] -> type A1[**[]A2[A1[*U]] struct {
+													//	t []**[]A2[A1[*U]
+													// }
+													Type: &types.StructRef{
+														Package:  "testmod/convert/typeparams",
+														TypeName: "A1",
+														Fields: []*types.Field{
+															// t []**[]A2[A1[*U]]
+															{
+																Name: "t",
+																Type: &types.InterfaceRef{
+																	Package:  "testmod/convert/typeparams",
+																	TypeName: "A2",
+																	Methods:  nil, // <--
+																	Modifiers: []types.Modifier{
+																		&types.Array{},
+																		&types.Pointer{},
+																		&types.Pointer{},
+																		&types.Array{},
+																	},
+																	// [A1[*U]]
+																	TypeParams: []types.TypeRef{
+																		// A1[*U] -> type A1[*U] struct {
+																		//	t []*U
+																		// }
+																		&types.StructRef{
+																			Package:  "testmod/convert/typeparams",
+																			TypeName: "A1",
+																			// t []*U
+																			Fields: []*types.Field{
+																				// t []*U
+																				{
+																					Name: "t",
+																					Type: &types.TypeParamRef{
+																						Order: 0,
+																						Modifiers: []types.Modifier{
+																							&types.Array{},
+																							&types.Pointer{},
+																						},
+																					},
+																				},
+																			},
+																			TypeParams: []types.TypeRef{
+																				&types.TypeParamRef{
+																					Order: 0,
+																					Modifiers: []types.Modifier{
+																						&types.Pointer{},
+																					},
+																				},
+																			},
+																		},
+																		&types.TypeParamRef{Order: 1},
+																	},
+																},
+															},
+														},
+														Modifiers: []types.Modifier{&types.Pointer{}},
+														// **[]A2[A1[*U]
+														TypeParams: nil, // <--
+													},
+													Position: token.Position{},
+													Declared: "",
+												},
+											}, // <--
+											// A1[A1[[][]struct{}]]
+											Results: nil, // <--
+										},
+									},
+								},
+								// *[]A2[A1[*U], V], []struct{}
+								TypeParams: []types.TypeRef{
+									// *[]A2[A1[*U], V]
+									&types.InterfaceRef{
+										Package:    "testmod/convert/typeparams",
+										TypeName:   "A2",
+										Modifiers:  []types.Modifier{&types.Pointer{}, &types.Array{}},
+										TypeParams: []types.TypeRef{}, // <--
+										Methods:    []*types.Field{},  // <--
+									},
+									// []struct{}
+									&types.StructTypeRef{Modifiers: []types.Modifier{&types.Array{}}},
+								},
+							},
+							TypeParams: []types.TypeRef{
+								// []A2[A1[*U], V]
+								&types.InterfaceRef{
+									Package:   "testmod/convert/typeparams",
+									TypeName:  "A2",
+									Modifiers: []types.Modifier{&types.Array{}},
+									// [A1[*U], V]
+									TypeParams: []types.TypeRef{}, // <--
+									Methods:    []*types.Field{},  // <--
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

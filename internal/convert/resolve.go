@@ -6,7 +6,7 @@ import (
 )
 
 // resolveRef resolves type parameters into actual types
-func resolveRef(ctx Context, ref types.TypeRef, actual []types.TypeRef) (types.TypeRef, error) {
+func resolveRef(ctx Context, ref types.TypeRef, actual types.TypeRefs) (types.TypeRef, error) {
 	switch r := ref.(type) {
 	case *types.BuiltinRef:
 		return r, nil
@@ -145,6 +145,8 @@ func resolveInterfaceType(ctx Context, ref *types.InterfaceTypeRef, actual types
 }
 
 func resolveTypeParam(ctx Context, ref *types.TypeParamRef, actual types.TypeRefs) (types.TypeRef, error) {
+	actual = actual.Clone()
+
 	defined, ok := ctx.DefinedByName(ref.Name)
 	if !ok {
 		return nil, errors.Errorf(ref.Position, "type parameter not found")
@@ -154,10 +156,10 @@ func resolveTypeParam(ctx Context, ref *types.TypeParamRef, actual types.TypeRef
 		return nil, errors.Errorf(ref.Position, "type parameter not found")
 	}
 
-	act := actual[defined.Order]
-	act.Set().Modifiers(append(ref.Modifiers, act.Get().Modifiers()...))
+	a := actual[defined.Order]
+	a.Set().Modifiers(append(ref.Modifiers, a.Get().Modifiers()...))
 
-	return act, nil
+	return a, nil
 }
 
 func resolveTypeParams(ctx Context, params types.TypeRefs, actual types.TypeRefs) (types.TypeRefs, error) {

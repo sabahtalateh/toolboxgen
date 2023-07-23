@@ -1,15 +1,17 @@
 package types
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/clone"
 	"go/token"
+
+	"github.com/sabahtalateh/toolboxgen/internal/clone"
 )
 
 type (
 	Modifier interface {
-		clone.Clone[Modifier]
 		modifier()
 		Equal(m Modifier) bool
+
+		clone.Clone[Modifier]
 	}
 
 	Pointer struct {
