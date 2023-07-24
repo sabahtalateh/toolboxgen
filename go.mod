@@ -5,9 +5,9 @@ go 1.20
 require (
 	github.com/kr/pretty v0.3.1
 	github.com/life4/genesis v1.2.0
-	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1
 	golang.org/x/mod v0.11.0
 	golang.org/x/tools v0.8.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

@@ -5,30 +5,28 @@ import (
 	"strings"
 )
 
-type Inspect interface {
-	Inspect(Context) string
+type Config struct {
+	TrimPackage   string
+	Introspective bool
 }
 
-type Context struct {
-	TrimPackage string
+type Inspect struct {
+	trimPackage string
+	intro       bool
 }
 
-func EmptyContext() Context {
-	return Context{}
+func New(c Config) *Inspect {
+	return &Inspect{trimPackage: c.TrimPackage, intro: c.Introspective}
 }
 
-func (c Context) WithTrimPackage(p string) Context {
-	return Context{TrimPackage: p}
-}
-
-func typeID(ctx Context, Package, TypeName string) string {
-	if Package == ctx.TrimPackage {
+func (i *Inspect) typeID(Package, TypeName string) string {
+	if Package == i.trimPackage {
 		return TypeName
 	}
 	out := fmt.Sprintf("%s.%s", Package, TypeName)
-	return strings.TrimPrefix(out, ctx.TrimPackage)
+	return strings.TrimPrefix(out, i.trimPackage)
 }
 
-func typeBlock(ctx Context, Package, TypeName string) string {
-	return fmt.Sprintf("type %s", typeID(ctx, Package, TypeName))
+func (i *Inspect) typeBlock(Package, TypeName string) string {
+	return fmt.Sprintf("type %s", i.typeID(Package, TypeName))
 }

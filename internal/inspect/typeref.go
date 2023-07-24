@@ -8,91 +8,91 @@ import (
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
-func TypeRef(ctx Context, t types.TypeRef) string {
+func (i *Inspect) TypeRef(t types.TypeRef) string {
 	switch tt := t.(type) {
 	case *types.BuiltinRef:
-		return BuiltinRef(tt)
+		return i.BuiltinRef(tt)
 	case *types.StructRef:
-		return StructRef(ctx, tt)
+		return i.StructRef(tt)
 	case *types.InterfaceRef:
-		return InterfaceRef(ctx, tt)
+		return i.InterfaceRef(tt)
 	case *types.TypeDefRef:
-		return TypeDefRef(ctx, tt)
+		return i.TypeDefRef(tt)
 	case *types.TypeAliasRef:
-		return TypeAliasRef(ctx, tt)
+		return i.TypeAliasRef(tt)
 	case *types.MapRef:
-		return MapRef(ctx, tt)
+		return i.MapRef(tt)
 	case *types.ChanRef:
-		return ChanRef(ctx, tt)
+		return i.ChanRef(tt)
 	case *types.FuncTypeRef:
-		return FuncTypeRef(ctx, tt)
+		return i.FuncTypeRef(tt)
 	case *types.StructTypeRef:
-		return StructTypeRef(ctx, tt)
+		return i.StructTypeRef(tt)
 	case *types.InterfaceTypeRef:
-		return InterfaceTypeRef(ctx, tt)
+		return i.InterfaceTypeRef(tt)
 	case *types.TypeParamRef:
-		return TypeParamRef(tt)
+		return i.TypeParamRef(tt)
 	default:
 		panic("unknown type reference")
 	}
 }
 
-func BuiltinRef(t *types.BuiltinRef) string {
+func (i *Inspect) BuiltinRef(t *types.BuiltinRef) string {
 	return Modifiers(t.Modifiers) + t.TypeName
 }
 
-func StructRef(ctx Context, t *types.StructRef) string {
-	out := Modifiers(t.Modifiers) + typeID(ctx, t.Package, t.TypeName)
+func (i *Inspect) StructRef(t *types.StructRef) string {
+	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) > 0 {
-		typeParamsOut := TypeRefs(ctx, t.TypeParams)
+		typeParamsOut := i.TypeRefs(t.TypeParams)
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
 	return out
 }
 
-func InterfaceRef(ctx Context, t *types.InterfaceRef) string {
-	out := Modifiers(t.Modifiers) + typeID(ctx, t.Package, t.TypeName)
+func (i *Inspect) InterfaceRef(t *types.InterfaceRef) string {
+	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) > 0 {
-		typeParamsOut := TypeRefs(ctx, t.TypeParams)
+		typeParamsOut := i.TypeRefs(t.TypeParams)
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
 	return out
 }
 
-func TypeDefRef(ctx Context, t *types.TypeDefRef) string {
-	out := Modifiers(t.Modifiers) + typeID(ctx, t.Package, t.TypeName)
+func (i *Inspect) TypeDefRef(t *types.TypeDefRef) string {
+	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) > 0 {
-		typeParamsOut := TypeRefs(ctx, t.TypeParams)
+		typeParamsOut := i.TypeRefs(t.TypeParams)
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
 	return out
 }
 
-func TypeAliasRef(ctx Context, t *types.TypeAliasRef) string {
-	return Modifiers(t.Modifiers) + typeID(ctx, t.Package, t.TypeName)
+func (i *Inspect) TypeAliasRef(t *types.TypeAliasRef) string {
+	return Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
 }
 
-func MapRef(ctx Context, t *types.MapRef) string {
+func (i *Inspect) MapRef(t *types.MapRef) string {
 	out := Modifiers(t.Modifiers)
-	out += fmt.Sprintf("map[%s]", TypeRef(ctx, t.Key))
-	out += fmt.Sprintf("%s", TypeRef(ctx, t.Value))
+	out += fmt.Sprintf("map[%s]", i.TypeRef(t.Key))
+	out += fmt.Sprintf("%s", i.TypeRef(t.Value))
 
 	return out
 }
 
-func ChanRef(ctx Context, t *types.ChanRef) string {
+func (i *Inspect) ChanRef(t *types.ChanRef) string {
 	out := Modifiers(t.Modifiers)
-	out += fmt.Sprintf("chan %s", TypeRef(ctx, t.Value))
+	out += fmt.Sprintf("chan %s", i.TypeRef(t.Value))
 
 	return out
 }
 
-func FuncTypeRef(ctx Context, t *types.FuncTypeRef) string {
+func (i *Inspect) FuncTypeRef(t *types.FuncTypeRef) string {
 	out := Modifiers(t.Modifiers) + "func ("
-	out += strings.Join(Fields(ctx, t.Params), ", ") + ")"
+	out += strings.Join(i.Fields2(t.Params), ", ") + ")"
 
 	if len(t.Results) > 0 {
-		results := Fields(ctx, t.Results)
+		results := i.Fields2(t.Results)
 		out += " "
 		if len(results) > 1 {
 			out += "("
@@ -106,11 +106,11 @@ func FuncTypeRef(ctx Context, t *types.FuncTypeRef) string {
 	return out
 }
 
-func StructTypeRef(ctx Context, t *types.StructTypeRef) string {
+func (i *Inspect) StructTypeRef(t *types.StructTypeRef) string {
 	out := Modifiers(t.Modifiers) + "struct{"
 
 	if len(t.Fields) > 0 {
-		fields := Fields(ctx, t.Fields)
+		fields := i.Fields2(t.Fields)
 		for _, field := range fields {
 			out += " " + field + ";"
 		}
@@ -123,11 +123,11 @@ func StructTypeRef(ctx Context, t *types.StructTypeRef) string {
 	return out
 }
 
-func InterfaceTypeRef(ctx Context, t *types.InterfaceTypeRef) string {
+func (i *Inspect) InterfaceTypeRef(t *types.InterfaceTypeRef) string {
 	out := Modifiers(t.Modifiers) + "interface{"
 
 	if len(t.Fields) > 0 {
-		fields := Fields(ctx, t.Fields)
+		fields := i.Fields2(t.Fields)
 		for _, field := range fields {
 			out += " " + field + ";"
 		}
@@ -140,23 +140,14 @@ func InterfaceTypeRef(ctx Context, t *types.InterfaceTypeRef) string {
 	return out
 }
 
-func TypeParamRef(t *types.TypeParamRef) string {
+func (i *Inspect) TypeParamRef(t *types.TypeParamRef) string {
 	return fmt.Sprintf("%s%s", Modifiers(t.Modifiers), t.Name)
 }
 
-func Field(ctx Context, f *types.Field) string {
-	name := ""
-	if f.Name != "" {
-		name = f.Name + " "
-	}
-	typeOut := TypeRef(ctx, f.Type)
-	return name + typeOut
+func (i *Inspect) Fields2(f types.Fields) []string {
+	return slices.Map(f, func(el *types.Field) string { return i.Field2(el) })
 }
 
-func Fields(ctx Context, f types.Fields) []string {
-	return slices.Map(f, func(el *types.Field) string { return Field(ctx, el) })
-}
-
-func TypeRefs(ctx Context, t types.TypeRefs) []string {
-	return slices.Map(t, func(el types.TypeRef) string { return TypeRef(ctx, el) })
+func (i *Inspect) TypeRefs(t types.TypeRefs) []string {
+	return slices.Map(t, func(el types.TypeRef) string { return i.TypeRef(el) })
 }

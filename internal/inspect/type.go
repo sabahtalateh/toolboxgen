@@ -1,62 +1,95 @@
 package inspect
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
 	"github.com/life4/genesis/slices"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
+	"gopkg.in/yaml.v3"
 )
 
-func Type(ctx Context, t types.Type) string {
+func (i *Inspect) Type(t types.Type) string {
 	switch tt := t.(type) {
 	case *types.Builtin:
-		return Builtin(tt)
+		return i.Builtin(tt)
 	case *types.Struct:
-		return Struct(ctx, tt)
+		return i.Struct(tt)
 	case *types.Interface:
-		return Interface(ctx, tt)
+		return i.Interface(tt)
 	case *types.TypeDef:
-		return TypeDef(ctx, tt)
+		return i.TypeDef(tt)
 	case *types.TypeAlias:
-		return TypeAlias(ctx, tt)
+		return i.TypeAlias(tt)
 	default:
 		panic("unknown type")
 	}
 }
 
-func Builtin(t *types.Builtin) string {
+func (i *Inspect) Builtin(t *types.Builtin) string {
 	return t.TypeName
 }
 
-func Struct(ctx Context, t *types.Struct) string {
-	out := typeBlock(ctx, t.Package, t.TypeName)
+const y = `
+A:
+  type: t
+  type2: t2
+  fields:
+    - f1
+    - f2
+`
+
+func (i *Inspect) Struct(t *types.Struct) string {
+	x := &yaml.Node{}
+	yaml.Unmarshal([]byte(y), x)
+	println(x)
+
+	Type := i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) != 0 {
-		typeParamsOut := TypeParams(t.TypeParams)
-		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
-	}
-	out += " struct {"
-	fields := Fields(ctx, t.Fields)
-	if len(fields) != 0 {
-		for _, field := range fields {
-			out += "\n\t" + field
-		}
-		out += "\n"
+		Type += fmt.Sprintf("[%s]", strings.Join(i.TypeParams(t.TypeParams), ", "))
 	}
 
-	out += "}"
+	kk := kv(t.TypeName,
+		kv("type", v(Type)),
+		kv("type2", v(Type)),
+		kv("fields", vv(i.Fields(t.Fields)...)),
+	)
+	println(kk)
 
-	return out
+	out := &yaml.Node{
+		// Kind: yaml.MappingNode,
+		// Content: kv(
+		// 	t.TypeName,
+		// 	kv("type", nn(Type)),
+		// kv("type2", nn(Type)),
+		// kv("fields", i.Fields(t.Fields)...),
+		// ),
+	}
+	// Map := m(out, t.TypeName)
+	// kv(Map, "type", Type)
+	// kv(Map, "fields", i.Fields(t.Fields)...)
+
+	var b bytes.Buffer
+	enc := yaml.NewEncoder(&b)
+	enc.SetIndent(2)
+	if err := enc.Encode(out); err != nil {
+		panic(err)
+	}
+
+	println(b.String())
+
+	return ""
 }
 
-func Interface(ctx Context, t *types.Interface) string {
-	out := typeBlock(ctx, t.Package, t.TypeName)
+func (i *Inspect) Interface(t *types.Interface) string {
+	out := i.typeBlock(t.Package, t.TypeName)
 	if len(t.TypeParams) != 0 {
-		typeParamsOut := TypeParams(t.TypeParams)
+		typeParamsOut := i.TypeParams(t.TypeParams)
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
 	out += " interface {"
-	methods := Fields(ctx, t.Fields)
+	methods := i.Fields2(t.Fields)
 
 	if len(methods) > 0 {
 		for _, method := range methods {
@@ -70,29 +103,29 @@ func Interface(ctx Context, t *types.Interface) string {
 	return out
 }
 
-func TypeDef(ctx Context, t *types.TypeDef) string {
-	out := typeBlock(ctx, t.Package, t.TypeName)
+func (i *Inspect) TypeDef(t *types.TypeDef) string {
+	out := i.typeBlock(t.Package, t.TypeName)
 	if len(t.TypeParams) != 0 {
-		typeParamsOut := TypeParams(t.TypeParams)
+		typeParamsOut := i.TypeParams(t.TypeParams)
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
-	out += " " + TypeRef(ctx, t.Type)
+	out += " " + i.TypeRef(t.Type)
 
 	return out
 }
 
-func TypeAlias(ctx Context, t *types.TypeAlias) string {
-	out := typeBlock(ctx, t.Package, t.TypeName)
+func (i *Inspect) TypeAlias(t *types.TypeAlias) string {
+	out := i.typeBlock(t.Package, t.TypeName)
 	out += " = "
-	out += TypeRef(ctx, t.Type)
+	out += i.TypeRef(t.Type)
 
 	return out
 }
 
-func TypeParam(t *types.TypeParam) string {
+func (i *Inspect) TypeParam(t *types.TypeParam) string {
 	return fmt.Sprintf("%s", t.Name)
 }
 
-func TypeParams(t types.TypeParams) []string {
-	return slices.Map(t, func(el *types.TypeParam) string { return TypeParam(el) })
+func (i *Inspect) TypeParams(t types.TypeParams) []string {
+	return slices.Map(t, func(el *types.TypeParam) string { return i.TypeParam(el) })
 }

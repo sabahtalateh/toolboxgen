@@ -1,5 +1,17 @@
 package typeparams
 
+// type A4[U, V any] A3[[]A2[A1[*U], V]]
+//
+
+type A1[T any] struct {
+	t []T
+	w *string
+}
+
+type A4[U, V any] A3[[]A2[A1[*U], V]]
+
+type A3[X any] A1[*X]
+
 type A2[A, B any] interface {
 	Int2
 	M1(a *A1[*A], b int) (A1[A1[[]B]], error)
@@ -10,25 +22,6 @@ type Int2 interface {
 }
 
 type Alias = A3[string]
-
-type A1[T any] struct {
-	d interface {
-		F(string2 string)
-		F2()
-	}
-	m  map[string][]T
-	c  chan []string
-	Al *Alias
-	t  []T
-	w  *string
-}
-
-type A4[U, V any] A3[[]A2[A1[*U], V]]
-
-type A3[X any] A2[*X, []struct {
-	a string
-	b string
-}]
 
 // Actual A3
 //

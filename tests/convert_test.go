@@ -46,11 +46,17 @@ func convertFile(file string) convertOut {
 					t, err := conv.Type(ctx.WithPos(n.Pos()), n)
 					check(err)
 					res.types[typeID(t)] = t
-					ins := inspect.Type(
-						inspect.EmptyContext().WithTrimPackage("testmod/convert/typeparams"),
-						t,
-					)
-					println(ins)
+					inspector := inspect.New(inspect.Config{
+						TrimPackage:   "testmod/convert/typeparams",
+						Introspective: false,
+					})
+					println(inspector.Type(t))
+
+					switch tt := t.(type) {
+					case *types.TypeDef:
+						jj := inspector.TypeRef(tt.Type)
+						println(jj)
+					}
 					return false
 					// case *ast.FuncDecl:
 					// 	f, err := conv.Function(ctx.WithPos(n.Pos()), n)
