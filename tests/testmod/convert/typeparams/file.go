@@ -8,20 +8,20 @@ type A1[T any] struct {
 	w *string
 }
 
-type A4[U, V any] A3[[]A2[A1[*U], V]]
-
-type A3[X any] A1[*X]
+type Alias = A3[string]
 
 type A2[A, B any] interface {
 	Int2
 	M1(a *A1[*A], b int) (A1[A1[[]B]], error)
 }
 
+type A4[U, V any] A3[[]A2[A1[*U], V]]
+
+type A3[X any] A1[*X]
+
 type Int2 interface {
 	F2()
 }
-
-type Alias = A3[string]
 
 // Actual A3
 //

@@ -1,16 +1,14 @@
 package inspect
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
 	"github.com/life4/genesis/slices"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
-	"gopkg.in/yaml.v3"
 )
 
-func (i *Inspect) Type(t types.Type) string {
+func (i *Inspect) Type(t types.Type) Out {
 	switch tt := t.(type) {
 	case *types.Builtin:
 		return i.Builtin(tt)
@@ -27,99 +25,62 @@ func (i *Inspect) Type(t types.Type) string {
 	}
 }
 
-func (i *Inspect) Builtin(t *types.Builtin) string {
-	return t.TypeName
+func (i *Inspect) Builtin(t *types.Builtin) Out {
+	return Out{Yaml: kv(t.TypeName, kv("builtin", v(t.TypeName))).yaml()}
 }
 
-const y = `
-A:
-  type: t
-  type2: t2
-  fields:
-    - f1
-    - f2
-`
-
-func (i *Inspect) Struct(t *types.Struct) string {
-	x := &yaml.Node{}
-	yaml.Unmarshal([]byte(y), x)
-	println(x)
-
+func (i *Inspect) Struct(t *types.Struct) Out {
 	Type := i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) != 0 {
 		Type += fmt.Sprintf("[%s]", strings.Join(i.TypeParams(t.TypeParams), ", "))
 	}
 
-	kk := kv(t.TypeName,
+	out := kv(t.TypeName,
 		kv("type", v(Type)),
-		kv("type2", v(Type)),
+		// kv("fields", vv(i.Fields(t.Fields)...)),
+		kv("fields", vv(
+			kv("method", kv("actual", vv("A", "B"))),
+		)),
+	)
+
+	return Out{Yaml: out.yaml()}
+}
+
+func (i *Inspect) Interface(t *types.Interface) Out {
+	Type := i.typeID(t.Package, t.TypeName)
+	if len(t.TypeParams) != 0 {
+		Type += fmt.Sprintf("[%s]", strings.Join(i.TypeParams(t.TypeParams), ", "))
+	}
+
+	out := kv(t.TypeName,
+		kv("interface", v(Type)),
 		kv("fields", vv(i.Fields(t.Fields)...)),
 	)
-	println(kk)
 
-	out := &yaml.Node{
-		// Kind: yaml.MappingNode,
-		// Content: kv(
-		// 	t.TypeName,
-		// 	kv("type", nn(Type)),
-		// kv("type2", nn(Type)),
-		// kv("fields", i.Fields(t.Fields)...),
-		// ),
-	}
-	// Map := m(out, t.TypeName)
-	// kv(Map, "type", Type)
-	// kv(Map, "fields", i.Fields(t.Fields)...)
-
-	var b bytes.Buffer
-	enc := yaml.NewEncoder(&b)
-	enc.SetIndent(2)
-	if err := enc.Encode(out); err != nil {
-		panic(err)
-	}
-
-	println(b.String())
-
-	return ""
+	return Out{Yaml: out.yaml()}
 }
 
-func (i *Inspect) Interface(t *types.Interface) string {
-	out := i.typeBlock(t.Package, t.TypeName)
+func (i *Inspect) TypeDef(t *types.TypeDef) Out {
+	Type := i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) != 0 {
-		typeParamsOut := i.TypeParams(t.TypeParams)
-		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
-	}
-	out += " interface {"
-	methods := i.Fields2(t.Fields)
-
-	if len(methods) > 0 {
-		for _, method := range methods {
-			out += "\n\t" + method
-		}
-		out += "\n"
+		Type += fmt.Sprintf("[%s]", strings.Join(i.TypeParams(t.TypeParams), ", "))
 	}
 
-	out += "}"
+	out := kv(t.TypeName,
+		kv("typedef", v(Type)),
+		kv("type", v(i.TypeRef(t.Type))),
+	)
 
-	return out
+	return Out{Yaml: out.yaml()}
 }
 
-func (i *Inspect) TypeDef(t *types.TypeDef) string {
-	out := i.typeBlock(t.Package, t.TypeName)
-	if len(t.TypeParams) != 0 {
-		typeParamsOut := i.TypeParams(t.TypeParams)
-		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
-	}
-	out += " " + i.TypeRef(t.Type)
+func (i *Inspect) TypeAlias(t *types.TypeAlias) Out {
+	out := kv(t.TypeName,
+		kv("typealias", v(i.typeID(t.Package, t.TypeName))),
+		kv("type", v(i.TypeRef(t.Type))),
+	)
 
-	return out
-}
-
-func (i *Inspect) TypeAlias(t *types.TypeAlias) string {
-	out := i.typeBlock(t.Package, t.TypeName)
-	out += " = "
-	out += i.TypeRef(t.Type)
-
-	return out
+	return Out{Yaml: out.yaml()}
 }
 
 func (i *Inspect) TypeParam(t *types.TypeParam) string {

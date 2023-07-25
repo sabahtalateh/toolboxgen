@@ -46,15 +46,15 @@ func convertFile(file string) convertOut {
 					t, err := conv.Type(ctx.WithPos(n.Pos()), n)
 					check(err)
 					res.types[typeID(t)] = t
-					inspector := inspect.New(inspect.Config{
+					i := inspect.New(inspect.Config{
 						TrimPackage:   "testmod/convert/typeparams",
 						Introspective: false,
 					})
-					println(inspector.Type(t))
+					println(i.Type(t).String())
 
 					switch tt := t.(type) {
 					case *types.TypeDef:
-						jj := inspector.TypeRef(tt.Type)
+						jj := i.TypeRef(tt.Type)
 						println(jj)
 					}
 					return false

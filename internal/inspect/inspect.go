@@ -26,7 +26,3 @@ func (i *Inspect) typeID(Package, TypeName string) string {
 	out := fmt.Sprintf("%s.%s", Package, TypeName)
 	return strings.TrimPrefix(out, i.trimPackage)
 }
-
-func (i *Inspect) typeBlock(Package, TypeName string) string {
-	return fmt.Sprintf("type %s", i.typeID(Package, TypeName))
-}
