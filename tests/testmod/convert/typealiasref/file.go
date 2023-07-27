@@ -1,5 +1,9 @@
 package typealiasref
 
-type A = string
+type C struct {
+	a string
+}
 
-type B A
+type B C
+
+type A = B

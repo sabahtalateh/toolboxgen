@@ -31,7 +31,7 @@ func (t *InterfaceRef) Clone() TypeRef {
 		TypeName:   t.TypeName,
 		Fields:     t.Fields.Clone(),
 		Position:   t.Position,
-		Interface:  t.Interface,
+		Definition: t.Definition,
 		Declared:   t.Declared,
 	}
 }

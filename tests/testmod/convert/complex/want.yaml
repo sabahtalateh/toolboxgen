@@ -1,0 +1,30 @@
+# type A[A, B, C, D any] struct {
+#	d []D
+#	s *string
+#}
+A:
+  struct: A[A, B, C, D]
+  fields: [ 'd []D', s *string ]
+
+# type B[AA, BB, CC comparable] []A[*interface{ Func(b *BB) string }, CC, []float32, **BB]
+# A[*interface{ Func(b *BB) string }, CC, []float32, **BB] struct {
+#   d []**BB
+#   s *string
+# }
+B:
+  typedef: B[AA, BB, CC] []A[*interface{ Func func (b *BB) string }, CC, []float32, **BB]
+  intro:
+    struct: A[A, B, C, D]
+    modifiers: '[]'
+    actual:
+      - modifiers: '*'
+        interface.fields:
+          - name: Func
+            func.params: [ b *BB ]
+            func.results: [ string ]
+      - CC
+      - '[]float32'
+      - '**BB'
+    fields:
+      - d []**BB
+      - s *string

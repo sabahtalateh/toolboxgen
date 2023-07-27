@@ -16,7 +16,11 @@ func (c *Converter) Field(ctx Context, field *ast.Field) (types.Fields, error) {
 	}
 
 	if len(field.Names) == 0 {
-		return []*types.Field{{Type: tr, Position: ctx.NodePosition(field), Declared: code.OfNode(field.Type)}}, nil
+		return []*types.Field{{
+			Type:     tr,
+			Position: ctx.NodePosition(field),
+			Declared: code.OfNode(field.Type)},
+		}, nil
 	}
 
 	var res types.Fields

@@ -2,16 +2,16 @@ package inspect
 
 import (
 	"fmt"
+	"github.com/life4/genesis/slices"
 	"strings"
 
-	"github.com/life4/genesis/slices"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
-func (i *Inspect) TypeRef(t types.TypeRef) string {
+func (i *Inspect) TypeRef(t types.TypeRef) any {
 	switch tt := t.(type) {
 	case *types.BuiltinRef:
-		return i.BuiltinRef(tt)
+		return Modifiers(tt.Modifiers) + tt.TypeName
 	case *types.StructRef:
 		return i.StructRef(tt)
 	case *types.InterfaceRef:
@@ -31,68 +31,219 @@ func (i *Inspect) TypeRef(t types.TypeRef) string {
 	case *types.InterfaceTypeRef:
 		return i.InterfaceTypeRef(tt)
 	case *types.TypeParamRef:
-		return i.TypeParamRef(tt)
+		return Modifiers(tt.Modifiers) + tt.Name
+	default:
+		panic("unknown type")
+	}
+}
+
+func (i *Inspect) typeRef(t types.TypeRef) string {
+	switch tt := t.(type) {
+	case *types.BuiltinRef:
+		return i.builtinRef(tt)
+	case *types.StructRef:
+		return i.structRef(tt)
+	case *types.InterfaceRef:
+		return i.interfaceRef(tt)
+	case *types.TypeDefRef:
+		return i.typeDefRef(tt)
+	case *types.TypeAliasRef:
+		return i.typeAliasRef(tt)
+	case *types.MapRef:
+		return i.mapRef(tt)
+	case *types.ChanRef:
+		return i.chanRef(tt)
+	case *types.FuncTypeRef:
+		return i.funcTypeRef(tt)
+	case *types.StructTypeRef:
+		return i.structTypeRef(tt)
+	case *types.InterfaceTypeRef:
+		return i.interfaceTypeRef(tt)
+	case *types.TypeParamRef:
+		return i.typeParamRef(tt)
 	default:
 		panic("unknown type reference")
 	}
 }
 
-func (i *Inspect) BuiltinRef(t *types.BuiltinRef) string {
+func (i *Inspect) builtinRef(t *types.BuiltinRef) string {
 	return Modifiers(t.Modifiers) + t.TypeName
 }
 
-func (i *Inspect) StructRef(t *types.StructRef) string {
+func (i *Inspect) StructRef(t *types.StructRef) map[string]any {
+	d := t.Definition
+
+	res := map[string]any{"struct": i.composeType(d.Package, d.TypeName, d.TypeParams)}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	if len(t.TypeParams) != 0 {
+		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeRef) any { return i.TypeRef(el) })
+	}
+
+	if i.intro && len(t.Fields) != 0 {
+		res["fields"] = i.Fields(t.Fields)
+	}
+
+	return res
+}
+
+func (i *Inspect) structRef(t *types.StructRef) string {
 	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) > 0 {
-		typeParamsOut := i.TypeRefs(t.TypeParams)
+		typeParamsOut := i.typeRefs(t.TypeParams)
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
 	return out
 }
 
-func (i *Inspect) InterfaceRef(t *types.InterfaceRef) string {
+func (i *Inspect) InterfaceRef(t *types.InterfaceRef) map[string]any {
+	d := t.Definition
+
+	res := map[string]any{"interface": i.composeType(d.Package, d.TypeName, d.TypeParams)}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	if len(t.TypeParams) != 0 {
+		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeRef) any { return i.TypeRef(el) })
+	}
+
+	if i.intro && len(t.Fields) != 0 {
+		res["fields"] = i.Fields(t.Fields)
+	}
+
+	return res
+}
+
+func (i *Inspect) interfaceRef(t *types.InterfaceRef) string {
 	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
 	if len(t.TypeParams) > 0 {
-		typeParamsOut := i.TypeRefs(t.TypeParams)
+		typeParamsOut := i.typeRefs(t.TypeParams)
+		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
+	}
+
+	return out
+}
+
+func (i *Inspect) TypeDefRef(t *types.TypeDefRef) map[string]any {
+	d := t.Definition
+
+	res := map[string]any{
+		"typedef": i.composeType(d.Package, d.TypeName, d.TypeParams) + " " + i.typeRef(d.Type),
+	}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	if len(t.TypeParams) != 0 {
+		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeRef) any { return i.TypeRef(el) })
+	}
+
+	if i.intro {
+		res["intro"] = i.TypeRef(t.Type)
+	}
+
+	return res
+}
+
+func (i *Inspect) typeDefRef(t *types.TypeDefRef) string {
+	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
+	if len(t.TypeParams) > 0 {
+		typeParamsOut := i.typeRefs(t.TypeParams)
 		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
 	}
 	return out
 }
 
-func (i *Inspect) TypeDefRef(t *types.TypeDefRef) string {
-	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
-	if len(t.TypeParams) > 0 {
-		typeParamsOut := i.TypeRefs(t.TypeParams)
-		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
+func (i *Inspect) TypeAliasRef(t *types.TypeAliasRef) map[string]any {
+	d := t.Definition
+
+	res := map[string]any{
+		"typealias": i.composeType(d.Package, d.TypeName, nil) + " = " + i.typeRef(d.Type),
 	}
-	return out
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	if i.intro {
+		res["intro"] = i.TypeRef(t.Type)
+	}
+
+	return res
 }
 
-func (i *Inspect) TypeAliasRef(t *types.TypeAliasRef) string {
+func (i *Inspect) typeAliasRef(t *types.TypeAliasRef) string {
 	return Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
 }
 
-func (i *Inspect) MapRef(t *types.MapRef) string {
+func (i *Inspect) MapRef(t *types.MapRef) map[string]any {
+	res := map[string]any{
+		"map.key":   i.TypeRef(t.Key),
+		"map.value": i.TypeRef(t.Value),
+	}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	return res
+}
+
+func (i *Inspect) mapRef(t *types.MapRef) string {
 	out := Modifiers(t.Modifiers)
-	out += fmt.Sprintf("map[%s]", i.TypeRef(t.Key))
-	out += fmt.Sprintf("%s", i.TypeRef(t.Value))
+	out += fmt.Sprintf("map[%s]", i.typeRef(t.Key))
+	out += fmt.Sprintf("%s", i.typeRef(t.Value))
 
 	return out
 }
 
-func (i *Inspect) ChanRef(t *types.ChanRef) string {
+func (i *Inspect) ChanRef(t *types.ChanRef) map[string]any {
+	res := map[string]any{"chan": i.TypeRef(t.Value)}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	return res
+}
+
+func (i *Inspect) chanRef(t *types.ChanRef) string {
 	out := Modifiers(t.Modifiers)
-	out += fmt.Sprintf("chan %s", i.TypeRef(t.Value))
+	out += fmt.Sprintf("chan %s", i.typeRef(t.Value))
 
 	return out
 }
 
-func (i *Inspect) FuncTypeRef(t *types.FuncTypeRef) string {
+func (i *Inspect) FuncTypeRef(t *types.FuncTypeRef) map[string]any {
+	res := map[string]any{}
+
+	if len(t.Params) != 0 {
+		res["func.params"] = i.Fields(t.Params)
+	}
+
+	if len(t.Results) != 0 {
+		res["func.results"] = i.Fields(t.Results)
+	}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	return res
+}
+
+func (i *Inspect) funcTypeRef(t *types.FuncTypeRef) string {
 	out := Modifiers(t.Modifiers) + "func ("
-	out += strings.Join(i.Fields2(t.Params), ", ") + ")"
+	out += strings.Join(i.fields(t.Params), ", ") + ")"
 
 	if len(t.Results) > 0 {
-		results := i.Fields2(t.Results)
+		results := i.fields(t.Results)
 		out += " "
 		if len(results) > 1 {
 			out += "("
@@ -106,11 +257,29 @@ func (i *Inspect) FuncTypeRef(t *types.FuncTypeRef) string {
 	return out
 }
 
-func (i *Inspect) StructTypeRef(t *types.StructTypeRef) string {
+func (i *Inspect) StructTypeRef(t *types.StructTypeRef) any {
+	if !i.intro {
+		return Modifiers(t.Modifiers) + "struct {...}"
+	}
+
+	res := map[string]any{}
+
+	if len(t.Fields) != 0 {
+		res["struct.fields"] = i.Fields(t.Fields)
+	}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	return res
+}
+
+func (i *Inspect) structTypeRef(t *types.StructTypeRef) string {
 	out := Modifiers(t.Modifiers) + "struct{"
 
 	if len(t.Fields) > 0 {
-		fields := i.Fields2(t.Fields)
+		fields := i.fields(t.Fields)
 		for _, field := range fields {
 			out += " " + field + ";"
 		}
@@ -123,11 +292,29 @@ func (i *Inspect) StructTypeRef(t *types.StructTypeRef) string {
 	return out
 }
 
-func (i *Inspect) InterfaceTypeRef(t *types.InterfaceTypeRef) string {
+func (i *Inspect) InterfaceTypeRef(t *types.InterfaceTypeRef) any {
+	if !i.intro {
+		return Modifiers(t.Modifiers) + "interface {...}"
+	}
+
+	res := map[string]any{}
+
+	if len(t.Fields) != 0 {
+		res["interface.fields"] = i.Fields(t.Fields)
+	}
+
+	if len(t.Modifiers) != 0 {
+		res["modifiers"] = Modifiers(t.Modifiers)
+	}
+
+	return res
+}
+
+func (i *Inspect) interfaceTypeRef(t *types.InterfaceTypeRef) string {
 	out := Modifiers(t.Modifiers) + "interface{"
 
 	if len(t.Fields) > 0 {
-		fields := i.Fields2(t.Fields)
+		fields := i.fields(t.Fields)
 		for _, field := range fields {
 			out += " " + field + ";"
 		}
@@ -140,14 +327,10 @@ func (i *Inspect) InterfaceTypeRef(t *types.InterfaceTypeRef) string {
 	return out
 }
 
-func (i *Inspect) TypeParamRef(t *types.TypeParamRef) string {
+func (i *Inspect) typeParamRef(t *types.TypeParamRef) string {
 	return fmt.Sprintf("%s%s", Modifiers(t.Modifiers), t.Name)
 }
 
-func (i *Inspect) Fields2(f types.Fields) []string {
-	return slices.Map(f, func(el *types.Field) string { return i.Field2(el) })
-}
-
-func (i *Inspect) TypeRefs(t types.TypeRefs) []string {
-	return slices.Map(t, func(el types.TypeRef) string { return i.TypeRef(el) })
+func (i *Inspect) typeRefs(t types.TypeRefs) []string {
+	return slices.Map(t, func(el types.TypeRef) string { return i.typeRef(el) })
 }

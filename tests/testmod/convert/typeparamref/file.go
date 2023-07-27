@@ -1,5 +1,7 @@
 package typeparamref
 
-type A[X any] struct{}
+type A[X any] struct {
+	x *X
+}
 
-type B[Y, Z any] A[Z]
+type B[Y, Z any] A[[]Z]

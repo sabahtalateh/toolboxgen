@@ -1,0 +1,6 @@
+A:
+  interface: A
+  fields:
+    - name: Method
+      func.params: [ string ]
+      func.results: [ string ]

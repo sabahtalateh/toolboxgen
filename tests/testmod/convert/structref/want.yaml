@@ -1,0 +1,9 @@
+A:
+  struct: A
+  fields: [ a uintptr ]
+B:
+  typedef: B A
+  # contents of A
+  intro:
+    struct: A
+    fields: [ a uintptr ]

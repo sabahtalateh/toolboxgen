@@ -1,19 +1,35 @@
 package inspect
 
 import (
+	"fmt"
 	"github.com/life4/genesis/slices"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
-	"gopkg.in/yaml.v3"
 )
 
-func (i *Inspect) introField(f *types.Field) *yaml.Node {
-	out := &yaml.Node{Kind: yaml.MappingNode, Tag: "!!map"}
+func (i *Inspect) Fields(ff types.Fields) []any {
+	return slices.Map(ff, func(f *types.Field) any {
+		intro := i.TypeRef(f.Type)
+		switch in := intro.(type) {
+		case map[string]any:
+			res := map[string]any{}
+			if f.Name != "" {
+				res["name"] = f.Name
+			}
+			for k, v := range in {
+				res[k] = v
+			}
 
-	if f.Name != "" {
-		// out =
-	}
+			return res
+		default:
+			res := ""
+			if f.Name != "" {
+				res += f.Name + " "
+			}
+			res += fmt.Sprintf("%s", in)
 
-	return out
+			return res
+		}
+	})
 }
 
 func (i *Inspect) field(f *types.Field) string {
@@ -21,26 +37,9 @@ func (i *Inspect) field(f *types.Field) string {
 	if f.Name != "" {
 		name = f.Name + " "
 	}
-	typeOut := i.TypeRef(f.Type)
-	return name + typeOut
+	return name + i.typeRef(f.Type)
 }
 
-func (i *Inspect) Field(f *types.Field) any {
-	if i.intro {
-		return i.introField(f)
-	}
-	return i.field(f)
-}
-
-func (i *Inspect) Field2(f *types.Field) string {
-	name := ""
-	if f.Name != "" {
-		name = f.Name + " "
-	}
-	typeOut := i.TypeRef(f.Type)
-	return name + typeOut
-}
-
-func (i *Inspect) Fields(f types.Fields) []any {
-	return slices.Map(f, func(el *types.Field) any { return i.Field(el) })
+func (i *Inspect) fields(f types.Fields) []string {
+	return slices.Map(f, func(el *types.Field) string { return i.field(el) })
 }

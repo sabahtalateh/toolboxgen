@@ -43,7 +43,7 @@ type (
 		Modifiers  Modifiers
 		TypeParams TypeRefs
 		Position   token.Position
-		Interface  *Interface
+		Definition *Interface
 		Declared   string
 	}
 

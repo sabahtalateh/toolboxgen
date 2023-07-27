@@ -237,7 +237,7 @@ func (c *Converter) interfaceRef(ctx Context, mid *mid.Type, typ *types.Interfac
 			TypeName:   typ.TypeName,
 			Fields:     typ.Fields.Clone(),
 			Position:   mid.Position,
-			Interface:  typ,
+			Definition: typ,
 			Declared:   mid.Declared,
 		},
 		actual,

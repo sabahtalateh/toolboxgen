@@ -1,0 +1,15 @@
+A:
+  interface: A
+  fields:
+    - name: Method
+      func.params: [ b bool ]
+      func.results: [ error ]
+B:
+  typedef: B A
+  # contents of A
+  intro:
+    interface: A
+    fields:
+      - name: Method
+        func.params: [ b bool ]
+        func.results: [ error ]
