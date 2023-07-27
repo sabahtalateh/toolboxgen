@@ -10,6 +10,6 @@ type A[X, Y, Z any] struct {
 	f3 *Z
 }
 
-// type B[T any] A[[]string, []T, []struct{ a A[**T, struct{}, **T] }]
+type B[T any] A[[]string, []T, []struct{ a A[**T, struct{}, **T] }]
 
 // type D C[string, struct{}]
