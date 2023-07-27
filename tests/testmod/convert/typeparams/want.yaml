@@ -25,9 +25,7 @@ A:
     - f *X
     - name: f2
       typedef: '[]C[A, B] *interface{ F func (a A) (B, error) }'
-      actual:
-        - Y
-        - uint
+      actual: [ Y, uint ]
       intro:
         interface: '*{..}'
         fields:
