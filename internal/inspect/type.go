@@ -32,7 +32,7 @@ func (i *Inspect) Builtin(t *types.Builtin) map[string]any {
 func (i *Inspect) Struct(t *types.Struct) map[string]any {
 	res := map[string]any{"struct": i.composeType(t.Package, t.TypeName, t.TypeParams)}
 
-	if i.intro && len(t.Fields) != 0 {
+	if len(t.Fields) != 0 {
 		res["fields"] = i.Fields(t.Fields)
 	}
 
@@ -42,7 +42,7 @@ func (i *Inspect) Struct(t *types.Struct) map[string]any {
 func (i *Inspect) Interface(t *types.Interface) map[string]any {
 	res := map[string]any{"interface": i.composeType(t.Package, t.TypeName, t.TypeParams)}
 
-	if i.intro && len(t.Fields) != 0 {
+	if len(t.Fields) != 0 {
 		res["fields"] = i.Fields(t.Fields)
 	}
 
@@ -54,9 +54,7 @@ func (i *Inspect) TypeDef(t *types.TypeDef) map[string]any {
 		"typedef": i.composeType(t.Package, t.TypeName, t.TypeParams) + " " + i.typeRef(t.Type),
 	}
 
-	if i.intro {
-		res["intro"] = i.TypeRef(t.Type)
-	}
+	res["intro"] = i.TypeRef(t.Type)
 
 	return map[string]any{t.TypeName: res}
 }
@@ -64,9 +62,7 @@ func (i *Inspect) TypeDef(t *types.TypeDef) map[string]any {
 func (i *Inspect) TypeAlias(t *types.TypeAlias) map[string]any {
 	res := map[string]any{"typealias": i.composeType(t.Package, t.TypeName, nil) + " = " + i.typeRef(t.Type)}
 
-	if i.intro {
-		res["intro"] = i.TypeRef(t.Type)
-	}
+	res["intro"] = i.TypeRef(t.Type)
 
 	return map[string]any{t.TypeName: res}
 }

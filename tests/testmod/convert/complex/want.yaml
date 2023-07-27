@@ -14,14 +14,14 @@ A:
 B:
   typedef: B[AA, BB, CC] []A[*interface{ Func func (b *BB) string }, CC, []float32, **BB]
   intro:
-    struct: A[A, B, C, D]
-    modifiers: '[]'
+    struct: '[]A[A, B, C, D]'
     actual:
-      - modifiers: '*'
-        interface.fields:
+      - interface: '*{..}'
+        fields:
           - name: Func
-            func.params: [ b *BB ]
-            func.results: [ string ]
+            func: '{..}'
+            params: [ b *BB ]
+            results: [ string ]
       - CC
       - '[]float32'
       - '**BB'

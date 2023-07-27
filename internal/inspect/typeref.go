@@ -73,17 +73,13 @@ func (i *Inspect) builtinRef(t *types.BuiltinRef) string {
 func (i *Inspect) StructRef(t *types.StructRef) map[string]any {
 	d := t.Definition
 
-	res := map[string]any{"struct": i.composeType(d.Package, d.TypeName, d.TypeParams)}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
-	}
+	res := map[string]any{"struct": Modifiers(t.Modifiers) + i.composeType(d.Package, d.TypeName, d.TypeParams)}
 
 	if len(t.TypeParams) != 0 {
 		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeRef) any { return i.TypeRef(el) })
 	}
 
-	if i.intro && len(t.Fields) != 0 {
+	if len(t.Fields) != 0 {
 		res["fields"] = i.Fields(t.Fields)
 	}
 
@@ -102,17 +98,13 @@ func (i *Inspect) structRef(t *types.StructRef) string {
 func (i *Inspect) InterfaceRef(t *types.InterfaceRef) map[string]any {
 	d := t.Definition
 
-	res := map[string]any{"interface": i.composeType(d.Package, d.TypeName, d.TypeParams)}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
-	}
+	res := map[string]any{"interface": Modifiers(t.Modifiers) + i.composeType(d.Package, d.TypeName, d.TypeParams)}
 
 	if len(t.TypeParams) != 0 {
 		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeRef) any { return i.TypeRef(el) })
 	}
 
-	if i.intro && len(t.Fields) != 0 {
+	if len(t.Fields) != 0 {
 		res["fields"] = i.Fields(t.Fields)
 	}
 
@@ -133,20 +125,14 @@ func (i *Inspect) TypeDefRef(t *types.TypeDefRef) map[string]any {
 	d := t.Definition
 
 	res := map[string]any{
-		"typedef": i.composeType(d.Package, d.TypeName, d.TypeParams) + " " + i.typeRef(d.Type),
-	}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
+		"typedef": Modifiers(t.Modifiers) + i.composeType(d.Package, d.TypeName, d.TypeParams) + " " + i.typeRef(d.Type),
 	}
 
 	if len(t.TypeParams) != 0 {
 		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeRef) any { return i.TypeRef(el) })
 	}
 
-	if i.intro {
-		res["intro"] = i.TypeRef(t.Type)
-	}
+	res["intro"] = i.TypeRef(t.Type)
 
 	return res
 }
@@ -163,17 +149,9 @@ func (i *Inspect) typeDefRef(t *types.TypeDefRef) string {
 func (i *Inspect) TypeAliasRef(t *types.TypeAliasRef) map[string]any {
 	d := t.Definition
 
-	res := map[string]any{
-		"typealias": i.composeType(d.Package, d.TypeName, nil) + " = " + i.typeRef(d.Type),
-	}
+	res := map[string]any{"typealias": Modifiers(t.Modifiers) + i.composeType(d.Package, d.TypeName, nil) + " = " + i.typeRef(d.Type)}
 
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
-	}
-
-	if i.intro {
-		res["intro"] = i.TypeRef(t.Type)
-	}
+	res["intro"] = i.TypeRef(t.Type)
 
 	return res
 }
@@ -184,12 +162,9 @@ func (i *Inspect) typeAliasRef(t *types.TypeAliasRef) string {
 
 func (i *Inspect) MapRef(t *types.MapRef) map[string]any {
 	res := map[string]any{
-		"map.key":   i.TypeRef(t.Key),
-		"map.value": i.TypeRef(t.Value),
-	}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
+		"map":   Modifiers(t.Modifiers) + "map[..]..",
+		"key":   i.TypeRef(t.Key),
+		"value": i.TypeRef(t.Value),
 	}
 
 	return res
@@ -204,10 +179,9 @@ func (i *Inspect) mapRef(t *types.MapRef) string {
 }
 
 func (i *Inspect) ChanRef(t *types.ChanRef) map[string]any {
-	res := map[string]any{"chan": i.TypeRef(t.Value)}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
+	res := map[string]any{
+		"chan": Modifiers(t.Modifiers) + "chan ..",
+		"type": i.TypeRef(t.Value),
 	}
 
 	return res
@@ -220,19 +194,15 @@ func (i *Inspect) chanRef(t *types.ChanRef) string {
 	return out
 }
 
-func (i *Inspect) FuncTypeRef(t *types.FuncTypeRef) map[string]any {
-	res := map[string]any{}
+func (i *Inspect) FuncTypeRef(t *types.FuncTypeRef) any {
+	res := map[string]any{"func": Modifiers(t.Modifiers) + "{..}"}
 
 	if len(t.Params) != 0 {
-		res["func.params"] = i.Fields(t.Params)
+		res["params"] = i.Fields(t.Params)
 	}
 
 	if len(t.Results) != 0 {
-		res["func.results"] = i.Fields(t.Results)
-	}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
+		res["results"] = i.Fields(t.Results)
 	}
 
 	return res
@@ -258,18 +228,10 @@ func (i *Inspect) funcTypeRef(t *types.FuncTypeRef) string {
 }
 
 func (i *Inspect) StructTypeRef(t *types.StructTypeRef) any {
-	if !i.intro {
-		return Modifiers(t.Modifiers) + "struct {...}"
-	}
-
-	res := map[string]any{}
+	res := map[string]any{"struct": Modifiers(t.Modifiers) + "{..}"}
 
 	if len(t.Fields) != 0 {
-		res["struct.fields"] = i.Fields(t.Fields)
-	}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
+		res["fields"] = i.Fields(t.Fields)
 	}
 
 	return res
@@ -293,18 +255,10 @@ func (i *Inspect) structTypeRef(t *types.StructTypeRef) string {
 }
 
 func (i *Inspect) InterfaceTypeRef(t *types.InterfaceTypeRef) any {
-	if !i.intro {
-		return Modifiers(t.Modifiers) + "interface {...}"
-	}
-
-	res := map[string]any{}
+	res := map[string]any{"interface": Modifiers(t.Modifiers) + "{..}"}
 
 	if len(t.Fields) != 0 {
-		res["interface.fields"] = i.Fields(t.Fields)
-	}
-
-	if len(t.Modifiers) != 0 {
-		res["modifiers"] = Modifiers(t.Modifiers)
+		res["fields"] = i.Fields(t.Fields)
 	}
 
 	return res

@@ -1,4 +1,5 @@
 A:
   typealias: A = struct{ a string }
   intro:
-    struct.fields: [ a string ]
+    struct: '{..}'
+    fields: [ a string ]

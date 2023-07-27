@@ -6,17 +6,15 @@ import (
 )
 
 type Config struct {
-	TrimPackage   string
-	Introspective bool
+	TrimPackage string
 }
 
 type Inspect struct {
 	trimPackage string
-	intro       bool
 }
 
 func New(c Config) *Inspect {
-	return &Inspect{trimPackage: c.TrimPackage, intro: c.Introspective}
+	return &Inspect{trimPackage: c.TrimPackage}
 }
 
 func (i *Inspect) typeID(Package, TypeName string) string {

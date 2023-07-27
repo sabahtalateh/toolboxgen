@@ -1,5 +1,6 @@
 A:
   typedef: A func (a int8) int16
   intro:
-    func.params: [ a int8 ]
-    func.results: [ int16 ]
+    func: '{..}'
+    params: [ a int8 ]
+    results: [ int16 ]

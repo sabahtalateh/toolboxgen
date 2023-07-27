@@ -2,8 +2,10 @@ A:
   interface: A
   fields:
     - name: Method1
-      func.params: [ a string ]
-      func.results: [ b string, c error ]
+      func: '{..}'
+      params: [ a string ]
+      results: [ b string, c error ]
     - name: Method2
-      func.params: [ d string ]
-      func.results: [ e string, f error ]
+      func: '{..}'
+      params: [ d string ]
+      results: [ e string, f error ]

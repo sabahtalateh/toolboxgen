@@ -1,20 +1,22 @@
 package tests
 
 import (
-	"github.com/kr/pretty"
-	"github.com/sabahtalateh/toolboxgen/internal/inspect"
 	"go/ast"
 	"go/parser"
 	"go/token"
-	"gopkg.in/yaml.v3"
+	yaml2 "gopkg.in/yaml.v2"
+	yaml3 "gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/sabahtalateh/toolboxgen/internal/convert"
+	"github.com/sabahtalateh/toolboxgen/internal/inspect"
 	"github.com/sabahtalateh/toolboxgen/internal/mod"
+	"golang.org/x/exp/maps"
 )
 
 func convertFile(file, trim string) map[string]any {
@@ -46,7 +48,7 @@ func convertFile(file, trim string) map[string]any {
 					t, err := conv.Type(ctx.WithPos(n.Pos()), n)
 					check(err)
 
-					i := inspect.New(inspect.Config{TrimPackage: trim, Introspective: true}).Type(t)
+					i := inspect.New(inspect.Config{TrimPackage: trim}).Type(t)
 					for k, v := range i {
 						res[k] = v
 					}
@@ -63,7 +65,6 @@ func TestConvert(t *testing.T) {
 	type testCase struct {
 		name string
 		dir  string
-		want convertOut
 	}
 	tests := []testCase{
 		{name: "struct", dir: "testmod/convert/struct"},
@@ -87,21 +88,81 @@ func TestConvert(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir, err := os.Getwd()
-			check(err)
-
-			bb, err := os.ReadFile(filepath.Join(dir, tt.dir, "want.yaml"))
-			check(err)
+			dir := check2(os.Getwd())
+			bb := check2(os.ReadFile(filepath.Join(dir, tt.dir, "want.yaml")))
 
 			var want map[string]any
-			err = yaml.Unmarshal(bb, &want)
-			check(err)
+			check(yaml3.Unmarshal(bb, &want))
 
 			got := convertFile(tt.dir, tt.dir)
 
-			if !reflect.DeepEqual(want, got) {
-				t.Errorf("convertFile() = %s\n\n\nwant = %s", pretty.Sprint(got), pretty.Sprint(want))
+			if !reflect.DeepEqual(got, want) {
+				g := check2(yaml2.Marshal(ordered(got)))
+				w := check2(yaml2.Marshal(ordered(want)))
+
+				t.Errorf("\ngot:\n\n%s\nwant\n\n%s", g, w)
 			}
 		})
+	}
+}
+
+func ordered(m map[string]any) yaml2.MapSlice {
+	keys := maps.Keys(m)
+	sort.SliceStable(keys, func(i, j int) bool {
+		o1 := ord(keys[i])
+		o2 := ord(keys[j])
+		if o1 == o2 {
+			return keys[i] < keys[j]
+		}
+
+		return o1 < o2
+	})
+
+	y := yaml2.MapSlice{}
+	for _, k := range keys {
+		v := m[k]
+		switch vv := v.(type) {
+		case map[string]any:
+			y = append(y, yaml2.MapItem{Key: k, Value: ordered(vv)})
+		case []any:
+			var res []any
+			for _, v := range vv {
+				switch vv := v.(type) {
+				case map[string]any:
+					uu := ordered(vv)
+					res = append(res, uu)
+				default:
+					res = append(res, vv)
+				}
+			}
+			y = append(y, yaml2.MapItem{Key: k, Value: res})
+		default:
+			y = append(y, yaml2.MapItem{Key: k, Value: vv})
+		}
+	}
+
+	return y
+}
+
+func ord(x string) int {
+	switch x {
+	case "struct", "interface", "typedef", "typealias":
+		return 3
+	case "name":
+		return 0
+	case "modifiers":
+		return 1
+	case "actual":
+		return 4
+	case "intro":
+		return 99
+	case "map":
+		return 100
+	case "key":
+		return 101
+	case "value":
+		return 102
+	default:
+		return 999
 	}
 }

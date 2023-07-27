@@ -2,8 +2,9 @@ A:
   interface: A
   fields:
     - name: Method
-      func.params: [ b bool ]
-      func.results: [ error ]
+      func: '{..}'
+      params: [ b bool ]
+      results: [ error ]
 B:
   typedef: B A
   # contents of A
@@ -11,5 +12,6 @@ B:
     interface: A
     fields:
       - name: Method
-        func.params: [ b bool ]
-        func.results: [ error ]
+        func: '{..}'
+        params: [ b bool ]
+        results: [ error ]

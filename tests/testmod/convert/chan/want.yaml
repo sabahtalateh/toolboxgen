@@ -1,4 +1,5 @@
 A:
   typedef: A chan string
   intro:
-    chan: string
+    chan: chan ..
+    type: string
