@@ -6,7 +6,7 @@ func check(err error) {
 	}
 }
 
-func check2[T any](t T, err error) T {
+func unwrap[T any](t T, err error) T {
 	if err != nil {
 		panic(err)
 	}

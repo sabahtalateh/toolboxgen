@@ -4,8 +4,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
-	yaml2 "gopkg.in/yaml.v2"
-	yaml3 "gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -13,25 +11,22 @@ import (
 	"strings"
 	"testing"
 
+	"golang.org/x/exp/maps"
+	yaml2 "gopkg.in/yaml.v2"
+	yaml3 "gopkg.in/yaml.v3"
+
 	"github.com/sabahtalateh/toolboxgen/internal/convert"
 	"github.com/sabahtalateh/toolboxgen/internal/inspect"
 	"github.com/sabahtalateh/toolboxgen/internal/mod"
-	"golang.org/x/exp/maps"
 )
 
 func convertFile(file, trim string) map[string]any {
-	dir, err := os.Getwd()
-	check(err)
-
-	m, err := mod.LookupDir(filepath.Dir(filepath.Join(dir, file)), true)
-	check(err)
-
-	conv, err := convert.New(m)
-	check(err)
+	dir := unwrap(os.Getwd())
+	m := unwrap(mod.LookupDir(filepath.Dir(filepath.Join(dir, file)), true))
+	conv := unwrap(convert.New(m))
 
 	files := token.NewFileSet()
-	pkgs, err := parser.ParseDir(files, filepath.Join(dir, file), nil, parser.ParseComments)
-	check(err)
+	pkgs := unwrap(parser.ParseDir(files, filepath.Join(dir, file), nil, parser.ParseComments))
 
 	res := map[string]any{}
 	for _, pkg := range pkgs {
@@ -45,8 +40,7 @@ func convertFile(file, trim string) map[string]any {
 				ctx := convert.NewContext().WithPackage(Package).WithImports(f.Imports).WithFiles(files)
 				switch n := node.(type) {
 				case *ast.TypeSpec:
-					t, err := conv.Type(ctx.WithPos(n.Pos()), n)
-					check(err)
+					t := unwrap(conv.Type(ctx.WithPos(n.Pos()), n))
 
 					i := inspect.New(inspect.Config{TrimPackage: trim}).Type(t)
 					for k, v := range i {
@@ -88,8 +82,8 @@ func TestConvert(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := check2(os.Getwd())
-			bb := check2(os.ReadFile(filepath.Join(dir, tt.dir, "want.yaml")))
+			dir := unwrap(os.Getwd())
+			bb := unwrap(os.ReadFile(filepath.Join(dir, tt.dir, "want.yaml")))
 
 			var want map[string]any
 			check(yaml3.Unmarshal(bb, &want))
@@ -97,8 +91,8 @@ func TestConvert(t *testing.T) {
 			got := convertFile(tt.dir, tt.dir)
 
 			if !reflect.DeepEqual(got, want) {
-				g := check2(yaml2.Marshal(ordered(got)))
-				w := check2(yaml2.Marshal(ordered(want)))
+				g := unwrap(yaml2.Marshal(ordered(got)))
+				w := unwrap(yaml2.Marshal(ordered(want)))
 
 				t.Errorf("\ngot:\n\n%s\nwant\n\n%s", g, w)
 			}
