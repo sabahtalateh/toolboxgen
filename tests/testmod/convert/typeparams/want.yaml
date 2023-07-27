@@ -19,21 +19,23 @@ C:
 # type C[A, B any] *interface {
 #	F(a A) (B, error)
 # }
-#A:
-#  struct: A[X, Y, Z]
-#  fields:
-#    - f *X
-#    - name: f2
-#      modifiers: '[]'
-#      typedef: C[A, B] *interface{ F func (a A) (B, error) }
-#      actual: [ Y, uint ]
-#      intro:
-#        modifiers: '*'
-#        interface.fields:
-#          - name: F
-#            func.params: [ a Y ]
-#            func.results: [ uint, error ]
-#    - f3 *Z
+A:
+  struct: A[X, Y, Z]
+  fields:
+    - f *X
+    - name: f2
+      typedef: '[]C[A, B] *interface{ F func (a A) (B, error) }'
+      actual:
+        - Y
+        - uint
+      intro:
+        interface: '*{..}'
+        fields:
+          - name: F
+            func: '{..}'
+            params: [ a Y ]
+            results: [ uint, error ]
+    - f3 *Z
 
 # type B[T any] A[string, []T]
 # A[string, []T] struct {
