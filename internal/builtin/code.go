@@ -1,10 +1,7 @@
 package builtin
 
-const latest = "1.21"
-
-var builtin = map[string]string{
-	// https://raw.githubusercontent.com/golang/go/release-branch.go1.21/src/builtin/builtin.go
-	"1.21": `// Copyright 2011 The Go Authors. All rights reserved.
+// https://raw.githubusercontent.com/golang/go/release-branch.go1.21/src/builtin/builtin.go
+var builtingo = `// Copyright 2011 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -313,5 +310,4 @@ func println(args ...Type)
 type error interface {
 	error() string
 }
-`,
-}
+`

@@ -34,7 +34,7 @@ func Init() *Builtin {
 
 func (b *Builtin) init() {
 	files := token.NewFileSet()
-	f, err := parser.ParseFile(files, "", builtin[latest], 0)
+	f, err := parser.ParseFile(files, "", builtingo, 0)
 	if err != nil {
 		panic(err)
 	}

@@ -18,7 +18,8 @@ func TestConvert(t *testing.T) {
 		wantErr error
 	}
 	ttt := []testCase{
-		{name: "nested", dir: "mod/nested", wantErr: mod.ErrNotModRoot},
+		{name: "not-mod-root", dir: "mod/nested", wantErr: mod.ErrNotModRoot},
+		{name: "test", dir: "mod"},
 	}
 	for _, tt := range ttt {
 		t.Run(tt.name, func(t *testing.T) {
