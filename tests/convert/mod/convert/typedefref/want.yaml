@@ -1,0 +1,8 @@
+type A:
+  typedef: A string
+  intro: string
+type B:
+  typedef: B A
+  intro:
+    typedef: A string
+    intro: string

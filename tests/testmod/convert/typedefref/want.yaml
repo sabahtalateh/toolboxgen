@@ -1,8 +1,0 @@
-A:
-  typedef: A string
-  intro: string
-B:
-  typedef: B A
-  intro:
-    typedef: A string
-    intro: string

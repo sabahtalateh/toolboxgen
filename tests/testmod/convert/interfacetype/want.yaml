@@ -1,9 +1,0 @@
-A:
-  typealias: A = interface{ Method func (b bool) error }
-  intro:
-    interface: '{..}'
-    fields:
-      - name: Method
-        func: '{..}'
-        params: [ b bool ]
-        results: [ error ]

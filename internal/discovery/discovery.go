@@ -14,10 +14,10 @@ import (
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
-func Discover(rootDir string) (tt *Tools, err error) {
+func Discover(modRoot string) (tt *Tools, err error) {
 	d := new(discovery)
 
-	if d.mod, err = mod.LookupDir(rootDir, true); err != nil {
+	if d.mod, err = mod.LookupDir(modRoot, true); err != nil {
 		return nil, err
 	}
 
@@ -25,7 +25,7 @@ func Discover(rootDir string) (tt *Tools, err error) {
 		return nil, err
 	}
 
-	if err = d.discoverDir(rootDir); err != nil {
+	if err = d.discoverDir(modRoot); err != nil {
 		return nil, err
 	}
 
@@ -80,8 +80,6 @@ func (d *discovery) discoverDir(dir string) error {
 	return err
 }
 
-// TODO в функциях, которые принимают syntax.TypeRef и др проверять ошибки в этих типах - `.ParseError()`
-
 func (d *discovery) discoverFile(file *ast.File, Package string, files *token.FileSet) error {
 	var (
 		insideFunction *ast.FuncDecl // current top level function
@@ -98,6 +96,7 @@ func (d *discovery) discoverFile(file *ast.File, Package string, files *token.Fi
 			insideFunction = nil
 		}
 
+		ctx := convert.NewContext().WithPackage(Package).WithImports(file.Imports).WithFiles(files)
 		switch n := node.(type) {
 		case *ast.FuncDecl:
 			if insideFunction == nil {
@@ -105,17 +104,23 @@ func (d *discovery) discoverFile(file *ast.File, Package string, files *token.Fi
 			}
 
 			var fd *types.Function
-			ctx := convert.NewContext(Package, file.Imports, files, files.Position(n.Pos()), nil)
-			fd, err = d.converter.Function(ctx, n)
+			fd, err = d.converter.Function(ctx.WithPos(n.Pos()), n)
 			if err != nil {
 				return false
 			}
-
-			if fd.Receiver != nil {
-				println(fd)
+			println(fd)
+		case *ast.TypeSpec:
+			var t types.Type
+			t, err = d.converter.Type(ctx.WithPos(n.Pos()), n)
+			if err != nil {
+				return false
 			}
+			println(t)
 		case *ast.CallExpr:
+			d.converter.Call(ctx.WithPos(n.Pos()), n)
+
 			if insideFunction == nil || isInit(insideFunction) {
+
 				// calls := parse.ParseFuncCalls(n, ctx.files)
 				// for _, call := range calls {
 				// 	if err = call.error(); err != nil {

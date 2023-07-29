@@ -1,6 +1,0 @@
-A:
-  typedef: A map[string]string
-  intro:
-    map: map[..]..
-    key: string
-    value: string

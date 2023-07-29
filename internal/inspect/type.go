@@ -26,7 +26,7 @@ func (i *Inspect) Type(t types.Type) map[string]any {
 }
 
 func (i *Inspect) Builtin(t *types.Builtin) map[string]any {
-	return map[string]any{t.TypeName: map[string]any{"builtin": t.TypeName}}
+	return map[string]any{"type " + t.TypeName: map[string]any{"builtin": t.TypeName}}
 }
 
 func (i *Inspect) Struct(t *types.Struct) map[string]any {
@@ -36,7 +36,7 @@ func (i *Inspect) Struct(t *types.Struct) map[string]any {
 		res["fields"] = i.Fields(t.Fields)
 	}
 
-	return map[string]any{t.TypeName: res}
+	return map[string]any{"type " + t.TypeName: res}
 }
 
 func (i *Inspect) Interface(t *types.Interface) map[string]any {
@@ -46,7 +46,7 @@ func (i *Inspect) Interface(t *types.Interface) map[string]any {
 		res["fields"] = i.Fields(t.Fields)
 	}
 
-	return map[string]any{t.TypeName: res}
+	return map[string]any{"type " + t.TypeName: res}
 }
 
 func (i *Inspect) TypeDef(t *types.TypeDef) map[string]any {
@@ -56,7 +56,7 @@ func (i *Inspect) TypeDef(t *types.TypeDef) map[string]any {
 
 	res["intro"] = i.TypeRef(t.Type)
 
-	return map[string]any{t.TypeName: res}
+	return map[string]any{"type " + t.TypeName: res}
 }
 
 func (i *Inspect) TypeAlias(t *types.TypeAlias) map[string]any {
@@ -64,7 +64,7 @@ func (i *Inspect) TypeAlias(t *types.TypeAlias) map[string]any {
 
 	res["intro"] = i.TypeRef(t.Type)
 
-	return map[string]any{t.TypeName: res}
+	return map[string]any{"type " + t.TypeName: res}
 }
 
 func (i *Inspect) TypeParam(t *types.TypeParam) string {

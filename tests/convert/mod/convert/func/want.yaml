@@ -1,0 +1,9 @@
+type A:
+  struct: A
+
+func (*A) Func:
+  receiver:
+    name: a
+    struct: '*A'
+  params: [ x string ]
+  results: [ string, error ]

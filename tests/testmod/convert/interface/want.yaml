@@ -1,7 +1,0 @@
-A:
-  interface: A
-  fields:
-    - name: Method
-      func: '{..}'
-      params: [ string ]
-      results: [ string ]

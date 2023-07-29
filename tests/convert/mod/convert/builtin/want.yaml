@@ -1,0 +1,83 @@
+type Bool:
+  typedef: Bool bool
+  intro: bool
+
+type Uint8:
+  typedef: Uint8 uint8
+  intro: uint8
+
+type Uint16:
+  typedef: Uint16 uint16
+  intro: uint16
+
+type Uint32:
+  typedef: Uint32 uint32
+  intro: uint32
+
+type Uint64:
+  typedef: Uint64 uint64
+  intro: uint64
+
+type Int8:
+  typedef: Int8 int8
+  intro: int8
+
+type Int16:
+  typedef: Int16 int16
+  intro: int16
+
+type Int32:
+  typedef: Int32 int32
+  intro: int32
+
+type Int64:
+  typedef: Int64 int64
+  intro: int64
+
+type Float32:
+  typedef: Float32 float32
+  intro: float32
+
+type Float64:
+  typedef: Float64 float64
+  intro: float64
+
+type Complex64:
+  typedef: Complex64 complex64
+  intro: complex64
+
+type Complex128:
+  typedef: Complex128 complex128
+  intro: complex128
+
+type String:
+  typedef: String string
+  intro: string
+
+type Int:
+  typedef: Int int
+  intro: int
+
+type Uint:
+  typedef: Uint uint
+  intro: uint
+
+type Uintptr:
+  typedef: Uintptr uintptr
+  intro: uintptr
+
+type Byte:
+  typedef: Byte byte
+  intro: byte
+
+type Rune:
+  typedef: Rune rune
+  intro: rune
+
+type Any:
+  typedef: Any any
+  intro: any
+
+type Comparable:
+  typedef: Comparable comparable
+  intro: comparable

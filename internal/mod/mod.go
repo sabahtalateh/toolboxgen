@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	ErrNotModRoot  = errors.New("directory is not a go module root")
 	ErrPkgNotFound = errors.New("package not found")
 )
 
@@ -187,36 +188,7 @@ func LookupDir(dir string, withVendored bool) (*Module, error) {
 		return nil, fmt.Errorf("dir `%s` not exists", dir)
 	}
 
-	pathParts := strings.Split(dir, string(os.PathSeparator))
-
-	if pathParts[0] == "" {
-		// for Unix like systems, where "/some/pkgPath" splits into ["", "some", "pkgPath"]
-		pathParts[0] = string(os.PathSeparator)
-	}
-
-	goModPath := ""
-	goModFound := false
-	for i := 0; i < len(pathParts); i++ {
-		slice := pathParts[:len(pathParts)-i]
-		possibleGoModPath := filepath.Join(append(slice, "go.mod")...)
-		_, err := os.Stat(possibleGoModPath)
-		if err == nil {
-			goModPath = possibleGoModPath
-			goModFound = true
-			break
-		} else {
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			}
-			return nil, err
-		}
-	}
-
-	if !goModFound {
-		return nil, fmt.Errorf("go.mod not found at `%s` and parent dirs", dir)
-	}
-
-	mod, err := FromGoMod(goModPath, withVendored)
+	mod, err := FromGoMod(filepath.Join(dir, "go.mod"), withVendored)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +198,9 @@ func LookupDir(dir string, withVendored bool) (*Module, error) {
 
 func FromGoMod(goModPath string, withVendored bool) (*Module, error) {
 	goModBytes, err := os.ReadFile(goModPath)
+	if os.IsNotExist(err) {
+		return nil, ErrNotModRoot
+	}
 	if err != nil {
 		return nil, err
 	}

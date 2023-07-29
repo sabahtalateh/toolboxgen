@@ -1,0 +1,9 @@
+type A:
+  struct: A[X]
+  fields: [ x *X ]
+type B:
+  typedef: B[Y, Z] A[[]Z]
+  intro:
+    struct: A[X]
+    actual: [ '[]Z' ]
+    fields: [ 'x *[]Z' ]
