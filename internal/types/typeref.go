@@ -8,7 +8,7 @@ import (
 
 type (
 	TypeRef interface {
-		typRef()
+		typeRef()
 
 		Get() GetFromRef
 		Set() SetOnRef
@@ -117,14 +117,14 @@ type (
 	TypeRefs []TypeRef
 )
 
-func (t *BuiltinRef) typRef()       {}
-func (t *StructRef) typRef()        {}
-func (t *InterfaceRef) typRef()     {}
-func (t *TypeDefRef) typRef()       {}
-func (t *TypeAliasRef) typRef()     {}
-func (t *MapRef) typRef()           {}
-func (t *ChanRef) typRef()          {}
-func (t *FuncTypeRef) typRef()      {}
-func (t *StructTypeRef) typRef()    {}
-func (t *InterfaceTypeRef) typRef() {}
-func (t *TypeParamRef) typRef()     {}
+func (t *BuiltinRef) typeRef()       {}
+func (t *StructRef) typeRef()        {}
+func (t *InterfaceRef) typeRef()     {}
+func (t *TypeDefRef) typeRef()       {}
+func (t *TypeAliasRef) typeRef()     {}
+func (t *MapRef) typeRef()           {}
+func (t *ChanRef) typeRef()          {}
+func (t *FuncTypeRef) typeRef()      {}
+func (t *StructTypeRef) typeRef()    {}
+func (t *InterfaceTypeRef) typeRef() {}
+func (t *TypeParamRef) typeRef()     {}
