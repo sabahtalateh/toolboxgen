@@ -95,7 +95,7 @@ type (
 		typeRef()
 		Error() error
 
-		Get() GetOnTypeRef
+		Get() GetFromTypeRef
 	}
 
 	Type struct {

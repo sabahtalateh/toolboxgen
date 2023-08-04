@@ -5,10 +5,10 @@ import (
 )
 
 type (
-	GetOnType struct{ typ Type }
+	GetFromType struct{ typ Type }
 )
 
-func (g GetOnType) Position() token.Position {
+func (g GetFromType) Position() token.Position {
 	switch tt := g.typ.(type) {
 	case *Builtin:
 		return token.Position{}
@@ -25,7 +25,7 @@ func (g GetOnType) Position() token.Position {
 	}
 }
 
-func (g GetOnType) TypePosition() token.Position {
+func (g GetFromType) TypePosition() token.Position {
 	switch tt := g.typ.(type) {
 	case *Builtin:
 		return token.Position{}
@@ -42,31 +42,31 @@ func (g GetOnType) TypePosition() token.Position {
 	}
 }
 
-func (t *Builtin) Get() GetOnType {
-	return GetOnType{typ: t}
+func (t *Builtin) Get() GetFromType {
+	return GetFromType{typ: t}
 }
 
-func (t *Struct) Get() GetOnType {
-	return GetOnType{typ: t}
+func (t *Struct) Get() GetFromType {
+	return GetFromType{typ: t}
 }
 
-func (t *Interface) Get() GetOnType {
-	return GetOnType{typ: t}
+func (t *Interface) Get() GetFromType {
+	return GetFromType{typ: t}
 }
 
-func (t *TypeDef) Get() GetOnType {
-	return GetOnType{typ: t}
+func (t *TypeDef) Get() GetFromType {
+	return GetFromType{typ: t}
 }
 
-func (t *TypeAlias) Get() GetOnType {
-	return GetOnType{typ: t}
+func (t *TypeAlias) Get() GetFromType {
+	return GetFromType{typ: t}
 }
 
 type (
-	GetOnRef struct{ ref TypeRef }
+	GetFromRef struct{ ref TypeRef }
 )
 
-func (g GetOnRef) Position() token.Position {
+func (g GetFromRef) Position() token.Position {
 	switch r := g.ref.(type) {
 	case *BuiltinRef:
 		return r.Position
@@ -93,7 +93,7 @@ func (g GetOnRef) Position() token.Position {
 	}
 }
 
-func (g GetOnRef) Modifiers() Modifiers {
+func (g GetFromRef) Modifiers() Modifiers {
 	switch r := g.ref.(type) {
 	case *BuiltinRef:
 		return r.Modifiers
@@ -122,48 +122,48 @@ func (g GetOnRef) Modifiers() Modifiers {
 	}
 }
 
-func (t *BuiltinRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *BuiltinRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *StructRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *StructRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *InterfaceRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *InterfaceRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *TypeDefRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *TypeDefRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *TypeAliasRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *TypeAliasRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *MapRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *MapRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *ChanRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *ChanRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *FuncTypeRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *FuncTypeRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *StructTypeRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *StructTypeRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *InterfaceTypeRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *InterfaceTypeRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
-func (t *TypeParamRef) Get() GetOnRef {
-	return GetOnRef{ref: t}
+func (t *TypeParamRef) Get() GetFromRef {
+	return GetFromRef{ref: t}
 }
 
 type (

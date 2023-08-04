@@ -9,7 +9,7 @@ type (
 		typ()
 
 		Equal(Type) bool
-		Get() GetOnType
+		Get() GetFromType
 	}
 
 	Builtin struct {

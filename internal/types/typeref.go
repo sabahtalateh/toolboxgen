@@ -10,7 +10,7 @@ type (
 	TypeRef interface {
 		typRef()
 
-		Get() GetOnRef
+		Get() GetFromRef
 		Set() SetOnRef
 		Equal(TypeRef) bool
 
