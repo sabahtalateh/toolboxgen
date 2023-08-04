@@ -5,7 +5,6 @@ import (
 
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/mid"
-	midPosition "github.com/sabahtalateh/toolboxgen/internal/mid/position"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
@@ -33,7 +32,7 @@ func (c *Converter) midTypeRef(ctx Context, ref mid.TypeRef) (types.TypeRef, err
 	case *mid.InterfaceType:
 		return c.midInterfaceType(ctx.WithPosition(r.Position), r)
 	default:
-		return nil, errors.Errorf(midPosition.OfTypeRef(ref), "unknown type %T", r)
+		return nil, errors.Errorf(ref.Get().Position(), "unknown type %T", r)
 	}
 }
 
@@ -74,7 +73,7 @@ func (c *Converter) midMap(ctx Context, midType *mid.Map) (*types.MapRef, error)
 	res = &types.MapRef{
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
-		Declared:  midType.Declared,
+		Code:      midType.Code,
 	}
 
 	if res.Key, err = c.midTypeRef(ctx, midType.Key); err != nil {
@@ -97,7 +96,7 @@ func (c *Converter) midChan(ctx Context, midType *mid.Chan) (*types.ChanRef, err
 	res = &types.ChanRef{
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
-		Declared:  midType.Declared,
+		Code:      midType.Code,
 	}
 
 	if res.Value, err = c.midTypeRef(ctx, midType.Value); err != nil {
@@ -116,7 +115,7 @@ func (c *Converter) midFuncType(ctx Context, midType *mid.FuncType) (*types.Func
 	res = &types.FuncTypeRef{
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
-		Declared:  midType.Declared,
+		Code:      midType.Code,
 	}
 
 	if res.Params, err = c.midFields(ctx, midType.Params...); err != nil {
@@ -139,7 +138,7 @@ func (c *Converter) midStructType(ctx Context, midType *mid.StructType) (*types.
 	res = &types.StructTypeRef{
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
-		Declared:  midType.Declared,
+		Code:      midType.Code,
 	}
 
 	if res.Fields, err = c.midFields(ctx, midType.Fields...); err != nil {
@@ -158,7 +157,7 @@ func (c *Converter) midInterfaceType(ctx Context, midType *mid.InterfaceType) (*
 	res = &types.InterfaceTypeRef{
 		Modifiers: Modifiers(midType.Modifiers),
 		Position:  midType.Position,
-		Declared:  midType.Declared,
+		Code:      midType.Code,
 	}
 
 	if res.Fields, err = c.midFields(ctx, midType.Fields...); err != nil {
@@ -183,7 +182,7 @@ func (c *Converter) midFields(ctx Context, fields ...*mid.Field) (types.Fields, 
 			Name:     field.Name,
 			Type:     typeRef,
 			Position: field.Position,
-			Declared: field.Declared,
+			Code:     field.Code,
 		})
 	}
 
@@ -196,7 +195,7 @@ func builtinRef(midType *mid.Type, typ *types.Builtin) *types.BuiltinRef {
 		TypeName:   typ.TypeName,
 		Position:   midType.Position,
 		Definition: typ,
-		Declared:   midType.Declared,
+		Code:       midType.Code,
 	}
 }
 
@@ -216,7 +215,7 @@ func (c *Converter) structRef(ctx Context, mid *mid.Type, typ *types.Struct) (*t
 			Fields:     typ.Fields.Clone(),
 			Position:   mid.Position,
 			Definition: typ,
-			Declared:   mid.Declared,
+			Code:       mid.Code,
 		},
 		actual,
 	)
@@ -238,7 +237,7 @@ func (c *Converter) interfaceRef(ctx Context, mid *mid.Type, typ *types.Interfac
 			Fields:     typ.Fields.Clone(),
 			Position:   mid.Position,
 			Definition: typ,
-			Declared:   mid.Declared,
+			Code:       mid.Code,
 		},
 		actual,
 	)
@@ -260,7 +259,7 @@ func (c *Converter) typeDefRef(ctx Context, mid *mid.Type, typ *types.TypeDef) (
 			Type:       typ.Type.Clone(),
 			Position:   mid.Position,
 			Definition: typ,
-			Declared:   mid.Declared,
+			Code:       mid.Code,
 		},
 		actual,
 	)
@@ -274,7 +273,7 @@ func typeAliasRef(mid *mid.Type, typ *types.TypeAlias) *types.TypeAliasRef {
 		Type:       typ.Type,
 		Position:   mid.Position,
 		Definition: typ,
-		Declared:   mid.Declared,
+		Code:       mid.Code,
 	}
 }
 
@@ -285,7 +284,7 @@ func typeParamRef(mid *mid.Type, typ *types.TypeParam) *types.TypeParamRef {
 		Order:      typ.Order,
 		Position:   mid.Position,
 		Definition: typ,
-		Declared:   mid.Declared,
+		Code:       mid.Code,
 	}
 }
 

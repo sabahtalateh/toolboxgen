@@ -15,11 +15,11 @@ type Builtin struct {
 }
 
 type Type struct {
-	Declared string
+	Code string
 }
 
 type Function struct {
-	Declared string
+	Code string
 }
 
 func Init() *Builtin {
@@ -42,10 +42,10 @@ func (b *Builtin) init() {
 	ast.Inspect(f, func(node ast.Node) bool {
 		switch n := node.(type) {
 		case *ast.TypeSpec:
-			b.Types[n.Name.Name] = &types.Builtin{TypeName: n.Name.Name, Declared: code.OfNode(n)}
+			b.Types[n.Name.Name] = &types.Builtin{TypeName: n.Name.Name, Code: code.OfNode(n)}
 			return false
 		case *ast.FuncDecl:
-			b.Functions[n.Name.Name] = Function{Declared: code.OfNode(n)}
+			b.Functions[n.Name.Name] = Function{Code: code.OfNode(n)}
 			return false
 		}
 		return true

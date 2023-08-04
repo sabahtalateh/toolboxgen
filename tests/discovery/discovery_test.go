@@ -4,11 +4,10 @@ import (
 	"errors"
 	"github.com/sabahtalateh/toolboxgen/internal/discovery"
 	"github.com/sabahtalateh/toolboxgen/internal/mod"
+	tutils "github.com/sabahtalateh/toolboxgen/tests"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/sabahtalateh/toolboxgen/tests"
 )
 
 func TestConvert(t *testing.T) {
@@ -23,12 +22,15 @@ func TestConvert(t *testing.T) {
 	}
 	for _, tt := range ttt {
 		t.Run(tt.name, func(t *testing.T) {
-			dir := tests.Unwrap(os.Getwd())
+			dir := tutils.Unwrap(os.Getwd())
 
 			r, err := discovery.Discover(filepath.Join(dir, tt.dir))
 			if tt.wantErr != nil && !errors.Is(err, tt.wantErr) {
 				t.Errorf("\ngot error:\n%s\nwant error:\n%s", err, tt.wantErr)
 				return
+			}
+			if err != nil {
+				panic(err)
 			}
 
 			println(r)

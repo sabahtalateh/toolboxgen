@@ -7,7 +7,6 @@ import (
 	"github.com/sabahtalateh/toolboxgen/internal/code"
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
 	"github.com/sabahtalateh/toolboxgen/internal/mid"
-	"github.com/sabahtalateh/toolboxgen/internal/mid/position"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
@@ -22,7 +21,7 @@ func (c *Converter) Function(ctx Context, f *ast.FuncDecl) (*types.Function, err
 		Package:  ctx.Package(),
 		FuncName: f.Name.Name,
 		Position: ctx.NodePosition(f),
-		Declared: code.OfNode(f),
+		Code:     code.OfNode(f),
 	}
 
 	if function.Receiver, defined, err = c.receiver(ctx, f.Recv); err != nil {
@@ -84,7 +83,7 @@ func receiverTypeParams(recv mid.TypeRef) (types.TypeParams, error) {
 	case *mid.Type:
 		params = r.TypeParams
 	default:
-		return nil, errors.Errorf(position.OfTypeRef(recv), "unsupported receiver type")
+		return nil, errors.Errorf(recv.Get().Position(), "unsupported receiver type")
 	}
 
 	for i, param := range params {
@@ -94,10 +93,10 @@ func receiverTypeParams(recv mid.TypeRef) (types.TypeParams, error) {
 				Order:    i,
 				Name:     fmt.Sprintf("T%d", i+1),
 				Position: p.Position,
-				Declared: p.Declared,
+				Code:     p.Code,
 			})
 		default:
-			return nil, errors.Errorf(position.OfTypeRef(p), "unsupported receiver type param type")
+			return nil, errors.Errorf(p.Get().Position(), "unsupported receiver type param type")
 		}
 	}
 

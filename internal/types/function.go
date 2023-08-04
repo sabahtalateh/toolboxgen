@@ -13,6 +13,6 @@ type (
 		Parameters Fields
 		Results    Fields
 		Position   token.Position
-		Declared   string
+		Code       string
 	}
 )

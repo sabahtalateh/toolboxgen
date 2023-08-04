@@ -14,7 +14,7 @@ type (
 
 	Builtin struct {
 		TypeName string
-		Declared string
+		Code     string
 	}
 
 	Struct struct {
@@ -24,7 +24,7 @@ type (
 		Fields       Fields
 		Position     token.Position
 		TypePosition token.Position
-		Declared     string
+		Code         string
 	}
 
 	Interface struct {
@@ -34,7 +34,7 @@ type (
 		Fields       Fields
 		Position     token.Position
 		TypePosition token.Position
-		Declared     string
+		Code         string
 	}
 
 	TypeDef struct {
@@ -44,7 +44,7 @@ type (
 		Type         TypeRef
 		Position     token.Position
 		TypePosition token.Position
-		Declared     string
+		Code         string
 	}
 
 	TypeAlias struct {
@@ -53,14 +53,14 @@ type (
 		Type         TypeRef
 		Position     token.Position
 		TypePosition token.Position
-		Declared     string
+		Code         string
 	}
 
 	TypeParam struct {
 		Order    int
 		Name     string
 		Position token.Position
-		Declared string
+		Code     string
 	}
 
 	TypeParams []*TypeParam

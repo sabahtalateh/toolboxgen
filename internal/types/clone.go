@@ -6,7 +6,7 @@ func (t *BuiltinRef) Clone() TypeRef {
 		TypeName:   t.TypeName,
 		Position:   t.Position,
 		Definition: t.Definition,
-		Declared:   t.Declared,
+		Code:       t.Code,
 	}
 }
 
@@ -19,7 +19,7 @@ func (t *StructRef) Clone() TypeRef {
 		Fields:     t.Fields.Clone(),
 		Position:   t.Position,
 		Definition: t.Definition,
-		Declared:   t.Declared,
+		Code:       t.Code,
 	}
 }
 
@@ -32,7 +32,7 @@ func (t *InterfaceRef) Clone() TypeRef {
 		Fields:     t.Fields.Clone(),
 		Position:   t.Position,
 		Definition: t.Definition,
-		Declared:   t.Declared,
+		Code:       t.Code,
 	}
 }
 
@@ -50,7 +50,7 @@ func (t *TypeDefRef) Clone() TypeRef {
 		Type:       typ,
 		Position:   t.Position,
 		Definition: t.Definition,
-		Declared:   t.Declared,
+		Code:       t.Code,
 	}
 }
 
@@ -67,7 +67,7 @@ func (t *TypeAliasRef) Clone() TypeRef {
 		Type:       typ,
 		Position:   t.Position,
 		Definition: t.Definition,
-		Declared:   t.Declared,
+		Code:       t.Code,
 	}
 }
 
@@ -77,7 +77,7 @@ func (t *MapRef) Clone() TypeRef {
 		Key:       t.Key.Clone(),
 		Value:     t.Value.Clone(),
 		Position:  t.Position,
-		Declared:  t.Declared,
+		Code:      t.Code,
 	}
 }
 
@@ -86,7 +86,7 @@ func (t *ChanRef) Clone() TypeRef {
 		Modifiers: t.Modifiers.Clone(),
 		Value:     t.Value.Clone(),
 		Position:  t.Position,
-		Declared:  t.Declared,
+		Code:      t.Code,
 	}
 }
 
@@ -96,7 +96,7 @@ func (t *FuncTypeRef) Clone() TypeRef {
 		Params:    t.Params.Clone(),
 		Results:   t.Results.Clone(),
 		Position:  t.Position,
-		Declared:  t.Declared,
+		Code:      t.Code,
 	}
 }
 
@@ -105,7 +105,7 @@ func (t *StructTypeRef) Clone() TypeRef {
 		Modifiers: t.Modifiers.Clone(),
 		Fields:    t.Fields.Clone(),
 		Position:  t.Position,
-		Declared:  t.Declared,
+		Code:      t.Code,
 	}
 }
 
@@ -114,7 +114,7 @@ func (t *InterfaceTypeRef) Clone() TypeRef {
 		Modifiers: t.Modifiers.Clone(),
 		Fields:    t.Fields.Clone(),
 		Position:  t.Position,
-		Declared:  t.Declared,
+		Code:      t.Code,
 	}
 }
 
@@ -125,7 +125,7 @@ func (t *TypeParamRef) Clone() TypeRef {
 		Name:       t.Name,
 		Position:   t.Position,
 		Definition: t.Definition,
-		Declared:   t.Declared,
+		Code:       t.Code,
 	}
 }
 
@@ -162,7 +162,7 @@ func (f *Field) Clone() *Field {
 		Name:     f.Name,
 		Type:     f.Type.Clone(),
 		Position: f.Position,
-		Declared: f.Declared,
+		Code:     f.Code,
 	}
 }
 

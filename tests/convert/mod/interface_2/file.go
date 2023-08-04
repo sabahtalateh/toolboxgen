@@ -1,4 +1,4 @@
-package interface2
+package interface_2
 
 type A interface {
 	Method1(a string) (b string, c error)

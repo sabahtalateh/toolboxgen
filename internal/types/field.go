@@ -7,7 +7,7 @@ type (
 		Name     string
 		Type     TypeRef
 		Position token.Position
-		Declared string
+		Code     string
 	}
 
 	Fields []*Field

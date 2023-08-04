@@ -24,7 +24,7 @@ func TypeParams(ctx Context, ff *ast.FieldList) types.TypeParams {
 				Order:    i,
 				Name:     name.Name,
 				Position: ctx.NodePosition(name),
-				Declared: fmt.Sprintf("%s %s", code.OfNode(name), code.OfNode(field.Type)),
+				Code:     fmt.Sprintf("%s %s", code.OfNode(name), code.OfNode(field.Type)),
 			})
 			i += 1
 		}
@@ -42,7 +42,7 @@ func InitTypeParams(params types.TypeParams) types.TypeRefs {
 			Name:       param.Name,
 			Position:   param.Position,
 			Definition: param,
-			Declared:   param.Declared,
+			Code:       param.Code,
 		})
 	}
 

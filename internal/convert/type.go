@@ -15,7 +15,7 @@ func (c *Converter) Type(ctx Context, typ *ast.TypeSpec) (types.Type, error) {
 	if b, ok := c.builtin.Types[typ.Name.Name]; ok {
 		return &types.Builtin{
 			TypeName: b.TypeName,
-			Declared: b.Declared,
+			Code:     b.Code,
 		}, nil
 	}
 
@@ -93,7 +93,7 @@ func (c *Converter) findType(ctx Context, Package, Type string) (types.Type, err
 
 	if spec == nil && Package == ctx.Package() {
 		if t, ok := c.builtin.Types[Type]; ok {
-			return &types.Builtin{TypeName: Type, Declared: t.Declared}, nil
+			return &types.Builtin{TypeName: Type, Code: t.Code}, nil
 		}
 	}
 
@@ -116,7 +116,7 @@ func (c *Converter) structFromSpec(ctx Context, spec *ast.TypeSpec, ast *ast.Str
 		TypeParams:   TypeParams(ctx, spec.TypeParams),
 		Position:     ctx.NodePosition(spec),
 		TypePosition: ctx.NodePosition(spec.Type),
-		Declared:     code.OfNode(spec),
+		Code:         code.OfNode(spec),
 	}
 
 	c.putType(typ)
@@ -140,7 +140,7 @@ func (c *Converter) interfaceFromSpec(ctx Context, spec *ast.TypeSpec, ast *ast.
 		TypeParams:   TypeParams(ctx, spec.TypeParams),
 		Position:     ctx.NodePosition(spec),
 		TypePosition: ctx.NodePosition(spec.Type),
-		Declared:     code.OfNode(spec),
+		Code:         code.OfNode(spec),
 	}
 
 	c.putType(typ)
@@ -164,7 +164,7 @@ func (c *Converter) typeDefFromSpec(ctx Context, spec *ast.TypeSpec) (*types.Typ
 		TypeParams:   TypeParams(ctx, spec.TypeParams),
 		Position:     ctx.NodePosition(spec),
 		TypePosition: ctx.NodePosition(spec.Type),
-		Declared:     code.OfNode(spec),
+		Code:         code.OfNode(spec),
 	}
 
 	c.putType(typ)
@@ -187,7 +187,7 @@ func (c *Converter) typeAliasFromSpec(ctx Context, spec *ast.TypeSpec) (*types.T
 		TypeName:     spec.Name.Name,
 		Position:     ctx.NodePosition(spec),
 		TypePosition: ctx.NodePosition(spec.Type),
-		Declared:     code.OfNode(spec),
+		Code:         code.OfNode(spec),
 	}
 
 	c.putType(typ)

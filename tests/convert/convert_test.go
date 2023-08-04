@@ -22,12 +22,12 @@ import (
 )
 
 func convertFile(file, trim string) map[string]any {
-	dir := tests.Unwrap(os.Getwd())
-	m := tests.Unwrap(mod.LookupDir(filepath.Dir(filepath.Join(dir, file)), true))
-	conv := tests.Unwrap(convert.New(m))
+	dir := tutils.Unwrap(os.Getwd())
+	m := tutils.Unwrap(mod.LookupDir(filepath.Join(dir, "mod"), true))
+	conv := tutils.Unwrap(convert.New(m))
 
 	files := token.NewFileSet()
-	pkgs := tests.Unwrap(parser.ParseDir(files, filepath.Join(dir, file), nil, parser.ParseComments))
+	pkgs := tutils.Unwrap(parser.ParseDir(files, filepath.Join(dir, "mod", file), nil, parser.ParseComments))
 
 	res := map[string]any{}
 	for _, pkg := range pkgs {
@@ -41,13 +41,13 @@ func convertFile(file, trim string) map[string]any {
 				ctx := convert.NewContext().WithPackage(Package).WithImports(f.Imports).WithFiles(files)
 				switch n := node.(type) {
 				case *ast.TypeSpec:
-					t := tests.Unwrap(conv.Type(ctx.WithPos(n.Pos()), n))
+					t := tutils.Unwrap(conv.Type(ctx.WithPos(n.Pos()), n))
 					i := inspect.New(inspect.Config{TrimPackage: trim}).Type(t)
 					for k, v := range i {
 						res[k] = v
 					}
 				case *ast.FuncDecl:
-					f := tests.Unwrap(conv.Function(ctx.WithPos(n.Pos()), n))
+					f := tutils.Unwrap(conv.Function(ctx.WithPos(n.Pos()), n))
 					i := inspect.New(inspect.Config{TrimPackage: trim}).Function(f)
 					for k, v := range i {
 						res[k] = v
@@ -62,44 +62,40 @@ func convertFile(file, trim string) map[string]any {
 }
 
 func TestConvert(t *testing.T) {
-	type testCase struct {
-		name string
-		dir  string
+	tests := []string{
+		"struct",
+		"interface",
+		"interface_2",
+		"typedef",
+		"typealias",
+		"builtin",
+		"map",
+		"chan",
+		"functype",
+		"structtype",
+		"interfacetype",
+		"structref",
+		"interfaceref",
+		"typedefref",
+		"typealiasref",
+		"typeparamref",
+		"complex",
+		"typeparams",
+		"func",
 	}
-	ttt := []testCase{
-		{name: "struct", dir: "mod/convert/struct"},
-		{name: "interface", dir: "mod/convert/interface"},
-		{name: "interface-2", dir: "mod/convert/interface2"},
-		{name: "typedef", dir: "mod/convert/typedef"},
-		{name: "typealias", dir: "mod/convert/typealias"},
-		{name: "builtin", dir: "mod/convert/builtin"},
-		{name: "map", dir: "mod/convert/map"},
-		{name: "chan", dir: "mod/convert/chan"},
-		{name: "functype", dir: "mod/convert/functype"},
-		{name: "structtype", dir: "mod/convert/structtype"},
-		{name: "interfacetype", dir: "mod/convert/interfacetype"},
-		{name: "structref", dir: "mod/convert/structref"},
-		{name: "interfaceref", dir: "mod/convert/interfaceref"},
-		{name: "typedefref", dir: "mod/convert/typedefref"},
-		{name: "typealiasref", dir: "mod/convert/typealiasref"},
-		{name: "typeparamref", dir: "mod/convert/typeparamref"},
-		{name: "complex", dir: "mod/convert/complex"},
-		{name: "typeparams", dir: "mod/convert/typeparams"},
-		{name: "func", dir: "mod/convert/func"},
-	}
-	for _, tt := range ttt {
-		t.Run(tt.name, func(t *testing.T) {
-			dir := tests.Unwrap(os.Getwd())
-			bb := tests.Unwrap(os.ReadFile(filepath.Join(dir, tt.dir, "want.yaml")))
+	for _, tName := range tests {
+		t.Run(tName, func(t *testing.T) {
+			dir := tutils.Unwrap(os.Getwd())
+			bb := tutils.Unwrap(os.ReadFile(filepath.Join(dir, "mod", tName, "want.yaml")))
 
 			var want map[string]any
-			tests.Check(yaml3.Unmarshal(bb, &want))
+			tutils.Check(yaml3.Unmarshal(bb, &want))
 
-			got := convertFile(tt.dir, tt.dir)
+			got := convertFile(tName, filepath.Join("mod", tName))
 
 			if !reflect.DeepEqual(got, want) {
-				g := tests.Unwrap(yaml2.Marshal(ordered(got)))
-				w := tests.Unwrap(yaml2.Marshal(ordered(want)))
+				g := tutils.Unwrap(yaml2.Marshal(ordered(got)))
+				w := tutils.Unwrap(yaml2.Marshal(ordered(want)))
 
 				t.Errorf("\ngot:\n\n%s\nwant\n\n%s", g, w)
 			}

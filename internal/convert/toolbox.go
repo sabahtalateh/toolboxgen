@@ -12,7 +12,7 @@ const (
 	diComponentFunction = "Component"
 )
 
-func (c *Converter) ToolBox(ctx Context, calls []mid.FunctionCall) (tool.Tool, *errors.PositionedErr) {
+func (c *Converter) ToolBox(ctx Context, calls []mid.Call) (tool.Tool, *errors.PositionedErr) {
 	// if len(calls) == 0 {
 	// 	return nil, nil
 	// }

@@ -1,4 +1,4 @@
-package tests
+package tutils
 
 func Check(err error) {
 	if err != nil {
