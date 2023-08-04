@@ -2,11 +2,11 @@ package convert
 
 import (
 	"fmt"
-	"github.com/sabahtalateh/toolboxgen/internal/syntax"
 	"go/ast"
 
 	"github.com/sabahtalateh/toolboxgen/internal/code"
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
+	"github.com/sabahtalateh/toolboxgen/internal/syntax"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
@@ -55,12 +55,12 @@ func (c *Converter) receiver(ctx Context, r *ast.FieldList) (*types.Field, types
 
 	recvField := r.List[0]
 
-	midType := syntax.ParseTypeRef(ctx.Files(), recvField.Type)
-	if err = midType.Error(); err != nil {
+	typeExpr := syntax.ParseTypeExpr(ctx.Files(), recvField.Type)
+	if err = typeExpr.Error(); err != nil {
 		return nil, nil, err
 	}
 
-	defined, err := receiverTypeParams(midType)
+	defined, err := receiverTypeParams(typeExpr)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,9 +73,9 @@ func (c *Converter) receiver(ctx Context, r *ast.FieldList) (*types.Field, types
 	return fields[0], defined, err
 }
 
-func receiverTypeParams(recv syntax.TypeRef) (types.TypeParams, error) {
+func receiverTypeParams(recv syntax.TypeExpr) (types.TypeParams, error) {
 	var (
-		params []syntax.TypeRef
+		params []syntax.TypeExpr
 		res    types.TypeParams
 	)
 

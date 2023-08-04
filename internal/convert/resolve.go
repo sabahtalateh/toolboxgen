@@ -6,8 +6,8 @@ import (
 )
 
 // resolveRef resolves type parameters into actual types
-func resolveRef(ctx Context, ref types.TypeRef, actual types.TypeRefs) (types.TypeRef, error) {
-	switch r := ref.(type) {
+func resolveRef(ctx Context, t types.TypeRef, actual types.TypeRefs) (types.TypeRef, error) {
+	switch r := t.(type) {
 	case *types.BuiltinRef:
 		return r, nil
 	case *types.StructRef:
@@ -35,135 +35,135 @@ func resolveRef(ctx Context, ref types.TypeRef, actual types.TypeRefs) (types.Ty
 	}
 }
 
-func resolveStruct(ctx Context, ref *types.StructRef, actual types.TypeRefs) (*types.StructRef, error) {
+func resolveStruct(ctx Context, t *types.StructRef, actual types.TypeRefs) (*types.StructRef, error) {
 	var err error
 
-	ref.TypeParams, err = resolveTypeParams(ctx, ref.TypeParams, actual)
+	t.TypeParams, err = resolveTypeParams(ctx, t.TypeParams, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	ref.Fields, err = resolveFields(ctx, ref.Fields, actual)
+	t.Fields, err = resolveFields(ctx, t.Fields, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveInterface(ctx Context, ref *types.InterfaceRef, actual types.TypeRefs) (*types.InterfaceRef, error) {
+func resolveInterface(ctx Context, t *types.InterfaceRef, actual types.TypeRefs) (*types.InterfaceRef, error) {
 	var err error
 
-	ref.TypeParams, err = resolveTypeParams(ctx, ref.TypeParams, actual)
+	t.TypeParams, err = resolveTypeParams(ctx, t.TypeParams, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	ref.Fields, err = resolveFields(ctx, ref.Fields, actual)
+	t.Fields, err = resolveFields(ctx, t.Fields, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveTypeDef(ctx Context, ref *types.TypeDefRef, actual types.TypeRefs) (*types.TypeDefRef, error) {
+func resolveTypeDef(ctx Context, t *types.TypeDefRef, actual types.TypeRefs) (*types.TypeDefRef, error) {
 	var err error
 
-	ref.TypeParams, err = resolveTypeParams(ctx, ref.TypeParams, actual)
+	t.TypeParams, err = resolveTypeParams(ctx, t.TypeParams, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	ref.Type, err = resolveRef(ctx, ref.Type, actual)
+	t.Type, err = resolveRef(ctx, t.Type, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveMap(ctx Context, ref *types.MapRef, actual types.TypeRefs) (*types.MapRef, error) {
+func resolveMap(ctx Context, t *types.MapRef, actual types.TypeRefs) (*types.MapRef, error) {
 	var err error
 
-	ref.Key, err = resolveRef(ctx, ref.Key, actual)
+	t.Key, err = resolveRef(ctx, t.Key, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	ref.Value, err = resolveRef(ctx, ref.Value, actual)
+	t.Value, err = resolveRef(ctx, t.Value, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveChan(ctx Context, ref *types.ChanRef, actual types.TypeRefs) (*types.ChanRef, error) {
+func resolveChan(ctx Context, t *types.ChanRef, actual types.TypeRefs) (*types.ChanRef, error) {
 	var err error
 
-	ref.Value, err = resolveRef(ctx, ref.Value, actual)
+	t.Value, err = resolveRef(ctx, t.Value, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveFuncType(ctx Context, ref *types.FuncTypeRef, actual types.TypeRefs) (*types.FuncTypeRef, error) {
+func resolveFuncType(ctx Context, t *types.FuncTypeRef, actual types.TypeRefs) (*types.FuncTypeRef, error) {
 	var err error
 
-	if ref.Params, err = resolveFields(ctx, ref.Params, actual); err != nil {
+	if t.Params, err = resolveFields(ctx, t.Params, actual); err != nil {
 		return nil, err
 	}
 
-	if ref.Results, err = resolveFields(ctx, ref.Results, actual); err != nil {
+	if t.Results, err = resolveFields(ctx, t.Results, actual); err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveStructType(ctx Context, ref *types.StructTypeRef, actual types.TypeRefs) (*types.StructTypeRef, error) {
+func resolveStructType(ctx Context, t *types.StructTypeRef, actual types.TypeRefs) (*types.StructTypeRef, error) {
 	var err error
 
-	if ref.Fields, err = resolveFields(ctx, ref.Fields, actual); err != nil {
+	if t.Fields, err = resolveFields(ctx, t.Fields, actual); err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveInterfaceType(ctx Context, ref *types.InterfaceTypeRef, actual types.TypeRefs) (*types.InterfaceTypeRef, error) {
+func resolveInterfaceType(ctx Context, t *types.InterfaceTypeRef, actual types.TypeRefs) (*types.InterfaceTypeRef, error) {
 	var err error
 
-	if ref.Fields, err = resolveFields(ctx, ref.Fields, actual); err != nil {
+	if t.Fields, err = resolveFields(ctx, t.Fields, actual); err != nil {
 		return nil, err
 	}
 
-	return ref, nil
+	return t, nil
 }
 
-func resolveTypeParam(ctx Context, ref *types.TypeParamRef, actual types.TypeRefs) (types.TypeRef, error) {
+func resolveTypeParam(ctx Context, t *types.TypeParamRef, actual types.TypeRefs) (types.TypeRef, error) {
 	actual = actual.Clone()
 
-	defined, ok := ctx.DefinedByName(ref.Name)
+	defined, ok := ctx.DefinedByName(t.Name)
 	if !ok {
-		return nil, errors.Errorf(ref.Position, "type parameter not found")
+		return nil, errors.Errorf(t.Position, "type parameter not found")
 	}
 
 	if len(actual)-1 < defined.Order {
-		return nil, errors.Errorf(ref.Position, "type parameter not found")
+		return nil, errors.Errorf(t.Position, "type parameter not found")
 	}
 
 	a := actual[defined.Order]
-	a.Set().Modifiers(append(ref.Modifiers, a.Get().Modifiers()...))
+	a.Set().Modifiers(append(t.Modifiers, a.Get().Modifiers()...))
 
 	return a, nil
 }
 
-func resolveTypeParams(ctx Context, params types.TypeRefs, actual types.TypeRefs) (types.TypeRefs, error) {
-	for i, param := range params {
+func resolveTypeParams(ctx Context, tt types.TypeRefs, actual types.TypeRefs) (types.TypeRefs, error) {
+	for i, param := range tt {
 		var (
 			resolved types.TypeRef
 			err      error
@@ -178,9 +178,9 @@ func resolveTypeParams(ctx Context, params types.TypeRefs, actual types.TypeRefs
 		if err != nil {
 			return nil, err
 		}
-		params[i] = resolved
+		tt[i] = resolved
 	}
-	return params, nil
+	return tt, nil
 }
 
 func resolveFields(ctx Context, ff types.Fields, actual types.TypeRefs) (types.Fields, error) {

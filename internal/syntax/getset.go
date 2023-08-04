@@ -5,7 +5,7 @@ import (
 )
 
 type (
-	GetFromTypeRef struct{ typ TypeRef }
+	GetFromTypeRef struct{ typ TypeExpr }
 )
 
 func (g GetFromTypeRef) Position() token.Position {

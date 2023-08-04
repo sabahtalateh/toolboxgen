@@ -79,13 +79,13 @@ func (v *callVisitor) visitIdent(id *ast.Ident) {
 
 func (v *callVisitor) visitIndexListExpr(e *ast.IndexListExpr) {
 	// for _, index := range ee.Indices {
-	// v.addTypeParam(ParseTypeRef(v.files, index))
+	// v.addTypeParam(ParseTypeExpr(v.files, index))
 	// }
 	v.visitExpr(e.X)
 }
 
 func (v *callVisitor) visitIndexExpr(e *ast.IndexExpr) {
-	// v.addTypeParam(ParseTypeRef(v.files, ee.Index))
+	// v.addTypeParam(ParseTypeExpr(v.files, ee.Index))
 	v.visitExpr(e.X)
 }
 
@@ -100,7 +100,7 @@ type (
 		PkgAlias string
 		FuncName string
 		// Args     []E
-		// TypeParams []*ParseTypeRef
+		// TypeParams []*ParseTypeExpr
 		Err      *errors.PositionedErr
 		Position token.Position
 	}
