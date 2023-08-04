@@ -1,12 +1,12 @@
 package convert
 
 import (
-	"github.com/sabahtalateh/toolboxgen/internal/mid"
+	"github.com/sabahtalateh/toolboxgen/internal/syntax"
 	"go/ast"
 )
 
 func (c *Converter) Call(ctx Context, call *ast.CallExpr) {
-	cc := mid.ParseFuncCalls(call, ctx.files)
+	cc := syntax.ParseFuncCalls(call, ctx.files)
 
 	println(cc)
 }

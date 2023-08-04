@@ -1,4 +1,4 @@
-package mid
+package syntax
 
 type kind int
 

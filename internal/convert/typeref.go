@@ -1,15 +1,15 @@
 package convert
 
 import (
+	"github.com/sabahtalateh/toolboxgen/internal/syntax"
 	"go/ast"
 
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
-	"github.com/sabahtalateh/toolboxgen/internal/mid"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
 func (c *Converter) TypeRef(ctx Context, expr ast.Expr) (types.TypeRef, error) {
-	midRef := mid.ParseTypeRef(ctx.Files(), expr)
+	midRef := syntax.ParseTypeRef(ctx.Files(), expr)
 	if err := midRef.Error(); err != nil {
 		return nil, err
 	}
@@ -17,26 +17,26 @@ func (c *Converter) TypeRef(ctx Context, expr ast.Expr) (types.TypeRef, error) {
 	return c.midTypeRef(ctx, midRef)
 }
 
-func (c *Converter) midTypeRef(ctx Context, ref mid.TypeRef) (types.TypeRef, error) {
+func (c *Converter) midTypeRef(ctx Context, ref syntax.TypeRef) (types.TypeRef, error) {
 	switch r := ref.(type) {
-	case *mid.Type:
+	case *syntax.Type:
 		return c.midType(ctx.WithPosition(r.Position), r)
-	case *mid.Map:
+	case *syntax.Map:
 		return c.midMap(ctx.WithPosition(r.Position), r)
-	case *mid.Chan:
+	case *syntax.Chan:
 		return c.midChan(ctx.WithPosition(r.Position), r)
-	case *mid.FuncType:
+	case *syntax.FuncType:
 		return c.midFuncType(ctx.WithPosition(r.Position), r)
-	case *mid.StructType:
+	case *syntax.StructType:
 		return c.midStructType(ctx.WithPosition(r.Position), r)
-	case *mid.InterfaceType:
+	case *syntax.InterfaceType:
 		return c.midInterfaceType(ctx.WithPosition(r.Position), r)
 	default:
 		return nil, errors.Errorf(ref.Get().Position(), "unknown type %T", r)
 	}
 }
 
-func (c *Converter) midType(ctx Context, mid *mid.Type) (types.TypeRef, error) {
+func (c *Converter) midType(ctx Context, mid *syntax.Type) (types.TypeRef, error) {
 	if mid.Package == "" {
 		if def, ok := ctx.DefinedByName(mid.TypeName); ok {
 			return typeParamRef(mid, def), nil
@@ -64,7 +64,7 @@ func (c *Converter) midType(ctx Context, mid *mid.Type) (types.TypeRef, error) {
 	}
 }
 
-func (c *Converter) midMap(ctx Context, midType *mid.Map) (*types.MapRef, error) {
+func (c *Converter) midMap(ctx Context, midType *syntax.Map) (*types.MapRef, error) {
 	var (
 		res *types.MapRef
 		err error
@@ -87,7 +87,7 @@ func (c *Converter) midMap(ctx Context, midType *mid.Map) (*types.MapRef, error)
 	return res, nil
 }
 
-func (c *Converter) midChan(ctx Context, midType *mid.Chan) (*types.ChanRef, error) {
+func (c *Converter) midChan(ctx Context, midType *syntax.Chan) (*types.ChanRef, error) {
 	var (
 		res *types.ChanRef
 		err error
@@ -106,7 +106,7 @@ func (c *Converter) midChan(ctx Context, midType *mid.Chan) (*types.ChanRef, err
 	return res, nil
 }
 
-func (c *Converter) midFuncType(ctx Context, midType *mid.FuncType) (*types.FuncTypeRef, error) {
+func (c *Converter) midFuncType(ctx Context, midType *syntax.FuncType) (*types.FuncTypeRef, error) {
 	var (
 		res *types.FuncTypeRef
 		err error
@@ -129,7 +129,7 @@ func (c *Converter) midFuncType(ctx Context, midType *mid.FuncType) (*types.Func
 	return res, nil
 }
 
-func (c *Converter) midStructType(ctx Context, midType *mid.StructType) (*types.StructTypeRef, error) {
+func (c *Converter) midStructType(ctx Context, midType *syntax.StructType) (*types.StructTypeRef, error) {
 	var (
 		res *types.StructTypeRef
 		err error
@@ -148,7 +148,7 @@ func (c *Converter) midStructType(ctx Context, midType *mid.StructType) (*types.
 	return res, nil
 }
 
-func (c *Converter) midInterfaceType(ctx Context, midType *mid.InterfaceType) (*types.InterfaceTypeRef, error) {
+func (c *Converter) midInterfaceType(ctx Context, midType *syntax.InterfaceType) (*types.InterfaceTypeRef, error) {
 	var (
 		res *types.InterfaceTypeRef
 		err error
@@ -167,7 +167,7 @@ func (c *Converter) midInterfaceType(ctx Context, midType *mid.InterfaceType) (*
 	return res, nil
 }
 
-func (c *Converter) midFields(ctx Context, fields ...*mid.Field) (types.Fields, error) {
+func (c *Converter) midFields(ctx Context, fields ...*syntax.Field) (types.Fields, error) {
 	var (
 		res     types.Fields
 		typeRef types.TypeRef
@@ -189,7 +189,7 @@ func (c *Converter) midFields(ctx Context, fields ...*mid.Field) (types.Fields, 
 	return res, nil
 }
 
-func builtinRef(midType *mid.Type, typ *types.Builtin) *types.BuiltinRef {
+func builtinRef(midType *syntax.Type, typ *types.Builtin) *types.BuiltinRef {
 	return &types.BuiltinRef{
 		Modifiers:  Modifiers(midType.Modifiers),
 		TypeName:   typ.TypeName,
@@ -199,7 +199,7 @@ func builtinRef(midType *mid.Type, typ *types.Builtin) *types.BuiltinRef {
 	}
 }
 
-func (c *Converter) structRef(ctx Context, mid *mid.Type, typ *types.Struct) (*types.StructRef, error) {
+func (c *Converter) structRef(ctx Context, mid *syntax.Type, typ *types.Struct) (*types.StructRef, error) {
 	actual, err := c.actual(ctx, typ.TypeParams, mid.TypeParams)
 	if err != nil {
 		return nil, err
@@ -221,7 +221,7 @@ func (c *Converter) structRef(ctx Context, mid *mid.Type, typ *types.Struct) (*t
 	)
 }
 
-func (c *Converter) interfaceRef(ctx Context, mid *mid.Type, typ *types.Interface) (*types.InterfaceRef, error) {
+func (c *Converter) interfaceRef(ctx Context, mid *syntax.Type, typ *types.Interface) (*types.InterfaceRef, error) {
 	actual, err := c.actual(ctx, typ.TypeParams, mid.TypeParams)
 	if err != nil {
 		return nil, err
@@ -243,7 +243,7 @@ func (c *Converter) interfaceRef(ctx Context, mid *mid.Type, typ *types.Interfac
 	)
 }
 
-func (c *Converter) typeDefRef(ctx Context, mid *mid.Type, typ *types.TypeDef) (*types.TypeDefRef, error) {
+func (c *Converter) typeDefRef(ctx Context, mid *syntax.Type, typ *types.TypeDef) (*types.TypeDefRef, error) {
 	actual, err := c.actual(ctx, typ.TypeParams, mid.TypeParams)
 	if err != nil {
 		return nil, err
@@ -265,7 +265,7 @@ func (c *Converter) typeDefRef(ctx Context, mid *mid.Type, typ *types.TypeDef) (
 	)
 }
 
-func typeAliasRef(mid *mid.Type, typ *types.TypeAlias) *types.TypeAliasRef {
+func typeAliasRef(mid *syntax.Type, typ *types.TypeAlias) *types.TypeAliasRef {
 	return &types.TypeAliasRef{
 		Modifiers:  Modifiers(mid.Modifiers),
 		Package:    typ.Package,
@@ -277,7 +277,7 @@ func typeAliasRef(mid *mid.Type, typ *types.TypeAlias) *types.TypeAliasRef {
 	}
 }
 
-func typeParamRef(mid *mid.Type, typ *types.TypeParam) *types.TypeParamRef {
+func typeParamRef(mid *syntax.Type, typ *types.TypeParam) *types.TypeParamRef {
 	return &types.TypeParamRef{
 		Modifiers:  Modifiers(mid.Modifiers),
 		Name:       typ.Name,
@@ -288,7 +288,7 @@ func typeParamRef(mid *mid.Type, typ *types.TypeParam) *types.TypeParamRef {
 	}
 }
 
-func (c *Converter) actual(ctx Context, defined types.TypeParams, mids mid.TypeRefs) (types.TypeRefs, error) {
+func (c *Converter) actual(ctx Context, defined types.TypeParams, mids syntax.TypeRefs) (types.TypeRefs, error) {
 	if len(defined) != len(mids) {
 		return nil, errors.Errorf(ctx.Position(), "got %d type param but %d required", len(mids), len(defined))
 	}

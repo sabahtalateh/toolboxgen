@@ -1,4 +1,4 @@
-package mid
+package syntax
 
 import "go/token"
 

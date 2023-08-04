@@ -1,7 +1,4 @@
-// package mid is a short-word for intermediate
-// includes functions to parse ast into more convenient types
-
-package mid
+package syntax
 
 import (
 	"errors"

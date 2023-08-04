@@ -2,11 +2,11 @@ package convert
 
 import (
 	"fmt"
+	"github.com/sabahtalateh/toolboxgen/internal/syntax"
 	"go/ast"
 
 	"github.com/sabahtalateh/toolboxgen/internal/code"
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
-	"github.com/sabahtalateh/toolboxgen/internal/mid"
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
@@ -55,7 +55,7 @@ func (c *Converter) receiver(ctx Context, r *ast.FieldList) (*types.Field, types
 
 	recvField := r.List[0]
 
-	midType := mid.ParseTypeRef(ctx.Files(), recvField.Type)
+	midType := syntax.ParseTypeRef(ctx.Files(), recvField.Type)
 	if err = midType.Error(); err != nil {
 		return nil, nil, err
 	}
@@ -73,14 +73,14 @@ func (c *Converter) receiver(ctx Context, r *ast.FieldList) (*types.Field, types
 	return fields[0], defined, err
 }
 
-func receiverTypeParams(recv mid.TypeRef) (types.TypeParams, error) {
+func receiverTypeParams(recv syntax.TypeRef) (types.TypeParams, error) {
 	var (
-		params []mid.TypeRef
+		params []syntax.TypeRef
 		res    types.TypeParams
 	)
 
 	switch r := recv.(type) {
-	case *mid.Type:
+	case *syntax.Type:
 		params = r.TypeParams
 	default:
 		return nil, errors.Errorf(recv.Get().Position(), "unsupported receiver type")
@@ -88,7 +88,7 @@ func receiverTypeParams(recv mid.TypeRef) (types.TypeParams, error) {
 
 	for i, param := range params {
 		switch p := param.(type) {
-		case *mid.Type:
+		case *syntax.Type:
 			res = append(res, &types.TypeParam{
 				Order:    i,
 				Name:     fmt.Sprintf("T%d", i+1),

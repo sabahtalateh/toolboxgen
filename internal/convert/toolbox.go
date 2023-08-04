@@ -2,7 +2,7 @@ package convert
 
 import (
 	"github.com/sabahtalateh/toolboxgen/internal/errors"
-	"github.com/sabahtalateh/toolboxgen/internal/mid"
+	"github.com/sabahtalateh/toolboxgen/internal/syntax"
 	"github.com/sabahtalateh/toolboxgen/internal/tool"
 )
 
@@ -12,7 +12,7 @@ const (
 	diComponentFunction = "Component"
 )
 
-func (c *Converter) ToolBox(ctx Context, calls []mid.Call) (tool.Tool, *errors.PositionedErr) {
+func (c *Converter) ToolBox(ctx Context, calls []syntax.Call) (tool.Tool, *errors.PositionedErr) {
 	// if len(calls) == 0 {
 	// 	return nil, nil
 	// }
