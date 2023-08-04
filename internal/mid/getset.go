@@ -10,8 +10,6 @@ type (
 
 func (g GetOnTypeRef) Position() token.Position {
 	switch x := g.typ.(type) {
-	case *UnknownExpr:
-		return x.Position
 	case *Type:
 		return x.Position
 	case *Map:
@@ -21,6 +19,8 @@ func (g GetOnTypeRef) Position() token.Position {
 	case *FuncType:
 		return x.Position
 	case *StructType:
+		return x.Position
+	case *UnknownExpr:
 		return x.Position
 	default:
 		panic("unknown type")
@@ -48,5 +48,9 @@ func (t *StructType) Get() GetOnTypeRef {
 }
 
 func (t *InterfaceType) Get() GetOnTypeRef {
+	return GetOnTypeRef{typ: t}
+}
+
+func (t *UnknownExpr) Get() GetOnTypeRef {
 	return GetOnTypeRef{typ: t}
 }

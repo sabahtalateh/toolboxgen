@@ -93,11 +93,11 @@ func TestConvert(t *testing.T) {
 
 			got := convertFile(tName, filepath.Join("mod", tName))
 
-			if !reflect.DeepEqual(got, want) {
+			if !reflect.DeepEqual(want, got) {
 				g := tutils.Unwrap(yaml2.Marshal(ordered(got)))
 				w := tutils.Unwrap(yaml2.Marshal(ordered(want)))
 
-				t.Errorf("\ngot:\n\n%s\nwant\n\n%s", g, w)
+				t.Errorf("\nwant:\n\n%s\ngot\n\n%s", w, g)
 			}
 		})
 	}
