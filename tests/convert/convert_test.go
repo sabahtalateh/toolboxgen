@@ -65,37 +65,42 @@ func convertFile(file, trim string) map[string]any {
 }
 
 func TestConvert(t *testing.T) {
-	tests := []string{
-		// "struct",
-		// "interface",
-		// "interface_2",
-		// "typedef",
-		// "typealias",
-		// "builtin",
-		// "map",
-		// "chan",
-		// "functype",
-		// "structtype",
-		// "interfacetype",
-		// "structref",
-		// "interfaceref",
-		// "typedefref",
-		// "typealiasref",
-		// "typeparamref",
-		// "complex",
-		// "typeparams",
-		// "func",
-		"call",
+	type testCase struct {
+		name    string
+		dir     string
+		wantErr error
 	}
-	for _, tName := range tests {
-		t.Run(tName, func(t *testing.T) {
+	tests := []testCase{
+		{name: "struct"},
+		{name: "interface"},
+		{name: "interface_2"},
+		{name: "typedef"},
+		{name: "typealias"},
+		{name: "builtin"},
+		{name: "map"},
+		{name: "chan"},
+		{name: "functype"},
+		{name: "structtype"},
+		{name: "interfacetype"},
+		{name: "structref"},
+		{name: "interfaceref"},
+		{name: "typedefref"},
+		{name: "typealiasref"},
+		{name: "typeparamref"},
+		{name: "complex"},
+		{name: "typeparams"},
+		{name: "func"},
+		{name: "call"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			dir := tutils.Unwrap(os.Getwd())
-			bb := tutils.Unwrap(os.ReadFile(filepath.Join(dir, "mod", tName, "want.yaml")))
+			bb := tutils.Unwrap(os.ReadFile(filepath.Join(dir, "mod", test.name, "want.yaml")))
 
 			var want map[string]any
 			tutils.Check(yaml3.Unmarshal(bb, &want))
 
-			got := convertFile(tName, filepath.Join("mod", tName))
+			got := convertFile(test.name, filepath.Join("mod", test.name))
 
 			if !reflect.DeepEqual(want, got) {
 				g := tutils.Unwrap(yaml2.Marshal(ordered(got)))
