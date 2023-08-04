@@ -65,11 +65,7 @@ func convertFile(file, trim string) map[string]any {
 }
 
 func TestConvert(t *testing.T) {
-	type testCase struct {
-		name    string
-		dir     string
-		wantErr error
-	}
+	type testCase struct{ name string }
 	tests := []testCase{
 		{name: "struct"},
 		{name: "interface"},
