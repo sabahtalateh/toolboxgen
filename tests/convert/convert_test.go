@@ -52,6 +52,9 @@ func convertFile(file, trim string) map[string]any {
 					for k, v := range i {
 						res[k] = v
 					}
+				case *ast.CallExpr:
+					c := tutils.Unwrap(conv.Call(ctx.WithPos(n.Pos()), n))
+					println(c)
 				}
 				return true
 			})
@@ -63,25 +66,26 @@ func convertFile(file, trim string) map[string]any {
 
 func TestConvert(t *testing.T) {
 	tests := []string{
-		"struct",
-		"interface",
-		"interface_2",
-		"typedef",
-		"typealias",
-		"builtin",
-		"map",
-		"chan",
-		"functype",
-		"structtype",
-		"interfacetype",
-		"structref",
-		"interfaceref",
-		"typedefref",
-		"typealiasref",
-		"typeparamref",
-		"complex",
-		"typeparams",
-		"func",
+		// "struct",
+		// "interface",
+		// "interface_2",
+		// "typedef",
+		// "typealias",
+		// "builtin",
+		// "map",
+		// "chan",
+		// "functype",
+		// "structtype",
+		// "interfacetype",
+		// "structref",
+		// "interfaceref",
+		// "typedefref",
+		// "typealiasref",
+		// "typeparamref",
+		// "complex",
+		// "typeparams",
+		// "func",
+		"call",
 	}
 	for _, tName := range tests {
 		t.Run(tName, func(t *testing.T) {
