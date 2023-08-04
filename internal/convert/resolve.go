@@ -5,8 +5,8 @@ import (
 	"github.com/sabahtalateh/toolboxgen/internal/types"
 )
 
-// resolveRef resolves type parameters into actual types
-func resolveRef(ctx Context, t types.TypeRef, actual types.TypeRefs) (types.TypeRef, error) {
+// resolveType resolves type parameters into actual types
+func resolveType(ctx Context, t types.TypeRef, actual types.TypeRefs) (types.TypeRef, error) {
 	switch r := t.(type) {
 	case *types.BuiltinRef:
 		return r, nil
@@ -75,7 +75,7 @@ func resolveTypeDef(ctx Context, t *types.TypeDefRef, actual types.TypeRefs) (*t
 		return nil, err
 	}
 
-	t.Type, err = resolveRef(ctx, t.Type, actual)
+	t.Type, err = resolveType(ctx, t.Type, actual)
 	if err != nil {
 		return nil, err
 	}
@@ -86,12 +86,12 @@ func resolveTypeDef(ctx Context, t *types.TypeDefRef, actual types.TypeRefs) (*t
 func resolveMap(ctx Context, t *types.MapRef, actual types.TypeRefs) (*types.MapRef, error) {
 	var err error
 
-	t.Key, err = resolveRef(ctx, t.Key, actual)
+	t.Key, err = resolveType(ctx, t.Key, actual)
 	if err != nil {
 		return nil, err
 	}
 
-	t.Value, err = resolveRef(ctx, t.Value, actual)
+	t.Value, err = resolveType(ctx, t.Value, actual)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func resolveMap(ctx Context, t *types.MapRef, actual types.TypeRefs) (*types.Map
 func resolveChan(ctx Context, t *types.ChanRef, actual types.TypeRefs) (*types.ChanRef, error) {
 	var err error
 
-	t.Value, err = resolveRef(ctx, t.Value, actual)
+	t.Value, err = resolveType(ctx, t.Value, actual)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +173,7 @@ func resolveTypeParams(ctx Context, tt types.TypeRefs, actual types.TypeRefs) (t
 		case *types.TypeParamRef:
 			resolved, err = resolveTypeParam(ctx, p, actual)
 		default:
-			resolved, err = resolveRef(ctx, p, actual)
+			resolved, err = resolveType(ctx, p, actual)
 		}
 		if err != nil {
 			return nil, err
@@ -187,7 +187,7 @@ func resolveFields(ctx Context, ff types.Fields, actual types.TypeRefs) (types.F
 	var err error
 
 	for _, field := range ff {
-		field.Type, err = resolveRef(ctx, field.Type, actual)
+		field.Type, err = resolveType(ctx, field.Type, actual)
 		if err != nil {
 			return nil, err
 		}

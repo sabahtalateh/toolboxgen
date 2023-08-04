@@ -23,28 +23,28 @@ func (c *Converter) Type(ctx Context, s *ast.TypeSpec) (types.Type, error) {
 	case *ast.StructType:
 		switch s.Assign {
 		case token.NoPos:
-			return c.structFromSpec(ctx, s, t)
+			return c.convertStruct(ctx, s, t)
 		default:
-			return c.typeAliasFromSpec(ctx, s)
+			return c.convertTypeAlias(ctx, s)
 		}
 	case *ast.InterfaceType:
 		switch s.Assign {
 		case token.NoPos:
-			return c.interfaceFromSpec(ctx, s, t)
+			return c.convertInterface(ctx, s, t)
 		default:
-			return c.typeAliasFromSpec(ctx, s)
+			return c.convertTypeAlias(ctx, s)
 		}
 	default:
 		switch s.Assign {
 		case token.NoPos:
-			return c.typeDefFromSpec(ctx, s)
+			return c.convertTypeDef(ctx, s)
 		default:
-			return c.typeAliasFromSpec(ctx, s)
+			return c.convertTypeAlias(ctx, s)
 		}
 	}
 }
 
-func (c *Converter) structFromSpec(ctx Context, s *ast.TypeSpec, t *ast.StructType) (*types.Struct, error) {
+func (c *Converter) convertStruct(ctx Context, s *ast.TypeSpec, t *ast.StructType) (*types.Struct, error) {
 	var (
 		typ *types.Struct
 		err error
@@ -68,7 +68,7 @@ func (c *Converter) structFromSpec(ctx Context, s *ast.TypeSpec, t *ast.StructTy
 	return typ, nil
 }
 
-func (c *Converter) interfaceFromSpec(ctx Context, s *ast.TypeSpec, t *ast.InterfaceType) (*types.Interface, error) {
+func (c *Converter) convertInterface(ctx Context, s *ast.TypeSpec, t *ast.InterfaceType) (*types.Interface, error) {
 	var (
 		typ *types.Interface
 		err error
@@ -92,7 +92,7 @@ func (c *Converter) interfaceFromSpec(ctx Context, s *ast.TypeSpec, t *ast.Inter
 	return typ, nil
 }
 
-func (c *Converter) typeDefFromSpec(ctx Context, s *ast.TypeSpec) (*types.TypeDef, error) {
+func (c *Converter) convertTypeDef(ctx Context, s *ast.TypeSpec) (*types.TypeDef, error) {
 	var (
 		typ *types.TypeDef
 		err error
@@ -116,7 +116,7 @@ func (c *Converter) typeDefFromSpec(ctx Context, s *ast.TypeSpec) (*types.TypeDe
 	return typ, nil
 }
 
-func (c *Converter) typeAliasFromSpec(ctx Context, s *ast.TypeSpec) (*types.TypeAlias, error) {
+func (c *Converter) convertTypeAlias(ctx Context, s *ast.TypeSpec) (*types.TypeAlias, error) {
 	var (
 		typ *types.TypeAlias
 		err error
