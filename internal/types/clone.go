@@ -1,7 +1,7 @@
 package types
 
-func (t *BuiltinRef) Clone() TypeRef {
-	return &BuiltinRef{
+func (t *BuiltinExpr) Clone() TypeExpr {
+	return &BuiltinExpr{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeName:   t.TypeName,
 		Position:   t.Position,
@@ -10,21 +10,8 @@ func (t *BuiltinRef) Clone() TypeRef {
 	}
 }
 
-func (t *StructRef) Clone() TypeRef {
-	return &StructRef{
-		Modifiers:  t.Modifiers.Clone(),
-		TypeParams: t.TypeParams.Clone(),
-		Package:    t.Package,
-		TypeName:   t.TypeName,
-		Fields:     t.Fields.Clone(),
-		Position:   t.Position,
-		Definition: t.Definition,
-		Code:       t.Code,
-	}
-}
-
-func (t *InterfaceRef) Clone() TypeRef {
-	return &InterfaceRef{
+func (t *StructExpr) Clone() TypeExpr {
+	return &StructExpr{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeParams: t.TypeParams.Clone(),
 		Package:    t.Package,
@@ -36,13 +23,26 @@ func (t *InterfaceRef) Clone() TypeRef {
 	}
 }
 
-func (t *TypeDefRef) Clone() TypeRef {
-	var typ TypeRef
+func (t *InterfaceExpr) Clone() TypeExpr {
+	return &InterfaceExpr{
+		Modifiers:  t.Modifiers.Clone(),
+		TypeParams: t.TypeParams.Clone(),
+		Package:    t.Package,
+		TypeName:   t.TypeName,
+		Fields:     t.Fields.Clone(),
+		Position:   t.Position,
+		Definition: t.Definition,
+		Code:       t.Code,
+	}
+}
+
+func (t *TypeDefExpr) Clone() TypeExpr {
+	var typ TypeExpr
 	if t.Type != nil {
 		typ = t.Type.Clone()
 	}
 
-	return &TypeDefRef{
+	return &TypeDefExpr{
 		Modifiers:  t.Modifiers.Clone(),
 		TypeParams: t.TypeParams.Clone(),
 		Package:    t.Package,
@@ -54,13 +54,13 @@ func (t *TypeDefRef) Clone() TypeRef {
 	}
 }
 
-func (t *TypeAliasRef) Clone() TypeRef {
-	var typ TypeRef
+func (t *TypeAliasExpr) Clone() TypeExpr {
+	var typ TypeExpr
 	if t.Type != nil {
 		typ = t.Type.Clone()
 	}
 
-	return &TypeAliasRef{
+	return &TypeAliasExpr{
 		Modifiers:  t.Modifiers.Clone(),
 		Package:    t.Package,
 		TypeName:   t.TypeName,
@@ -71,8 +71,8 @@ func (t *TypeAliasRef) Clone() TypeRef {
 	}
 }
 
-func (t *MapRef) Clone() TypeRef {
-	return &MapRef{
+func (t *MapExpr) Clone() TypeExpr {
+	return &MapExpr{
 		Modifiers: t.Modifiers.Clone(),
 		Key:       t.Key.Clone(),
 		Value:     t.Value.Clone(),
@@ -81,8 +81,8 @@ func (t *MapRef) Clone() TypeRef {
 	}
 }
 
-func (t *ChanRef) Clone() TypeRef {
-	return &ChanRef{
+func (t *ChanExpr) Clone() TypeExpr {
+	return &ChanExpr{
 		Modifiers: t.Modifiers.Clone(),
 		Value:     t.Value.Clone(),
 		Position:  t.Position,
@@ -90,8 +90,8 @@ func (t *ChanRef) Clone() TypeRef {
 	}
 }
 
-func (t *FuncTypeRef) Clone() TypeRef {
-	return &FuncTypeRef{
+func (t *FuncTypeExpr) Clone() TypeExpr {
+	return &FuncTypeExpr{
 		Modifiers: t.Modifiers.Clone(),
 		Params:    t.Params.Clone(),
 		Results:   t.Results.Clone(),
@@ -100,8 +100,8 @@ func (t *FuncTypeRef) Clone() TypeRef {
 	}
 }
 
-func (t *StructTypeRef) Clone() TypeRef {
-	return &StructTypeRef{
+func (t *StructTypeExpr) Clone() TypeExpr {
+	return &StructTypeExpr{
 		Modifiers: t.Modifiers.Clone(),
 		Fields:    t.Fields.Clone(),
 		Position:  t.Position,
@@ -109,8 +109,8 @@ func (t *StructTypeRef) Clone() TypeRef {
 	}
 }
 
-func (t *InterfaceTypeRef) Clone() TypeRef {
-	return &InterfaceTypeRef{
+func (t *InterfaceTypeExpr) Clone() TypeExpr {
+	return &InterfaceTypeExpr{
 		Modifiers: t.Modifiers.Clone(),
 		Fields:    t.Fields.Clone(),
 		Position:  t.Position,
@@ -118,8 +118,8 @@ func (t *InterfaceTypeRef) Clone() TypeRef {
 	}
 }
 
-func (t *TypeParamRef) Clone() TypeRef {
-	return &TypeParamRef{
+func (t *TypeParamExpr) Clone() TypeExpr {
+	return &TypeParamExpr{
 		Modifiers:  t.Modifiers.Clone(),
 		Order:      t.Order,
 		Name:       t.Name,
@@ -129,10 +129,10 @@ func (t *TypeParamRef) Clone() TypeRef {
 	}
 }
 
-func (t TypeRefs) Clone() TypeRefs {
-	var res TypeRefs
-	for _, ref := range t {
-		res = append(res, ref.Clone())
+func (t TypeExprs) Clone() TypeExprs {
+	var res TypeExprs
+	for _, expr := range t {
+		res = append(res, expr.Clone())
 	}
 	return res
 }

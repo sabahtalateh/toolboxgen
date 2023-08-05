@@ -138,9 +138,9 @@ func (t TypeParams) Equal(t2 TypeParams) bool {
 	return true
 }
 
-func (t *BuiltinRef) Equal(t2 TypeRef) bool {
+func (t *BuiltinExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *BuiltinRef:
+	case *BuiltinExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -155,34 +155,9 @@ func (t *BuiltinRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *StructRef) Equal(t2 TypeRef) bool {
+func (t *StructExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *StructRef:
-		if !t.Modifiers.Equal(tt2.Modifiers) {
-			return false
-		}
-
-		if t.Package != tt2.Package {
-			return false
-		}
-
-		if t.TypeName != tt2.TypeName {
-			return false
-		}
-
-		if !t.TypeParams.Equal(tt2.TypeParams) {
-			return false
-		}
-
-		return true
-	default:
-		return false
-	}
-}
-
-func (t *InterfaceRef) Equal(t2 TypeRef) bool {
-	switch tt2 := t2.(type) {
-	case *InterfaceRef:
+	case *StructExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -205,9 +180,9 @@ func (t *InterfaceRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *TypeDefRef) Equal(t2 TypeRef) bool {
+func (t *InterfaceExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *TypeDefRef:
+	case *InterfaceExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -230,9 +205,34 @@ func (t *TypeDefRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *TypeAliasRef) Equal(t2 TypeRef) bool {
+func (t *TypeDefExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *TypeAliasRef:
+	case *TypeDefExpr:
+		if !t.Modifiers.Equal(tt2.Modifiers) {
+			return false
+		}
+
+		if t.Package != tt2.Package {
+			return false
+		}
+
+		if t.TypeName != tt2.TypeName {
+			return false
+		}
+
+		if !t.TypeParams.Equal(tt2.TypeParams) {
+			return false
+		}
+
+		return true
+	default:
+		return false
+	}
+}
+
+func (t *TypeAliasExpr) Equal(t2 TypeExpr) bool {
+	switch tt2 := t2.(type) {
+	case *TypeAliasExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -251,9 +251,9 @@ func (t *TypeAliasRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *MapRef) Equal(t2 TypeRef) bool {
+func (t *MapExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *MapRef:
+	case *MapExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -272,9 +272,9 @@ func (t *MapRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *ChanRef) Equal(t2 TypeRef) bool {
+func (t *ChanExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *ChanRef:
+	case *ChanExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -289,9 +289,9 @@ func (t *ChanRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *FuncTypeRef) Equal(t2 TypeRef) bool {
+func (t *FuncTypeExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *FuncTypeRef:
+	case *FuncTypeExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -310,9 +310,9 @@ func (t *FuncTypeRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *StructTypeRef) Equal(t2 TypeRef) bool {
+func (t *StructTypeExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *StructTypeRef:
+	case *StructTypeExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -327,9 +327,9 @@ func (t *StructTypeRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *InterfaceTypeRef) Equal(t2 TypeRef) bool {
+func (t *InterfaceTypeExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *InterfaceTypeRef:
+	case *InterfaceTypeExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -344,9 +344,9 @@ func (t *InterfaceTypeRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t *TypeParamRef) Equal(t2 TypeRef) bool {
+func (t *TypeParamExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *TypeParamRef:
+	case *TypeParamExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}
@@ -361,13 +361,13 @@ func (t *TypeParamRef) Equal(t2 TypeRef) bool {
 	}
 }
 
-func (t TypeRefs) Equal(t2 TypeRefs) bool {
+func (t TypeExprs) Equal(t2 TypeExprs) bool {
 	if len(t) != len(t2) {
 		return false
 	}
 
-	for i, ref := range t {
-		if !ref.Equal(t2[i]) {
+	for i, expr := range t {
+		if !expr.Equal(t2[i]) {
 			return false
 		}
 	}

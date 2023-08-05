@@ -63,182 +63,182 @@ func (t *TypeAlias) Get() GetFromType {
 }
 
 type (
-	GetFromRef struct{ ref TypeRef }
+	GetFromExpr struct{ expr TypeExpr }
 )
 
-func (g GetFromRef) Position() token.Position {
-	switch r := g.ref.(type) {
-	case *BuiltinRef:
+func (g GetFromExpr) Position() token.Position {
+	switch r := g.expr.(type) {
+	case *BuiltinExpr:
 		return r.Position
-	case *StructRef:
+	case *StructExpr:
 		return r.Position
-	case *InterfaceRef:
+	case *InterfaceExpr:
 		return r.Position
-	case *TypeDefRef:
+	case *TypeDefExpr:
 		return r.Position
-	case *TypeAliasRef:
+	case *TypeAliasExpr:
 		return r.Position
-	case *MapRef:
+	case *MapExpr:
 		return r.Position
-	case *ChanRef:
+	case *ChanExpr:
 		return r.Position
-	case *FuncTypeRef:
+	case *FuncTypeExpr:
 		return r.Position
-	case *StructTypeRef:
+	case *StructTypeExpr:
 		return r.Position
-	case *TypeParamRef:
+	case *TypeParamExpr:
 		return r.Position
 	default:
 		panic("unknown type")
 	}
 }
 
-func (g GetFromRef) Modifiers() Modifiers {
-	switch r := g.ref.(type) {
-	case *BuiltinRef:
+func (g GetFromExpr) Modifiers() Modifiers {
+	switch r := g.expr.(type) {
+	case *BuiltinExpr:
 		return r.Modifiers
-	case *StructRef:
+	case *StructExpr:
 		return r.Modifiers
-	case *InterfaceRef:
+	case *InterfaceExpr:
 		return r.Modifiers
-	case *TypeDefRef:
+	case *TypeDefExpr:
 		return r.Modifiers
-	case *TypeAliasRef:
+	case *TypeAliasExpr:
 		return r.Modifiers
-	case *MapRef:
+	case *MapExpr:
 		return r.Modifiers
-	case *ChanRef:
+	case *ChanExpr:
 		return r.Modifiers
-	case *FuncTypeRef:
+	case *FuncTypeExpr:
 		return r.Modifiers
-	case *StructTypeRef:
+	case *StructTypeExpr:
 		return r.Modifiers
-	case *InterfaceTypeRef:
+	case *InterfaceTypeExpr:
 		return r.Modifiers
-	case *TypeParamRef:
+	case *TypeParamExpr:
 		return r.Modifiers
 	default:
 		panic("unknown type")
 	}
 }
 
-func (t *BuiltinRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *BuiltinExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *StructRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *StructExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *InterfaceRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *InterfaceExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *TypeDefRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *TypeDefExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *TypeAliasRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *TypeAliasExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *MapRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *MapExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *ChanRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *ChanExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *FuncTypeRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *FuncTypeExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *StructTypeRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *StructTypeExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *InterfaceTypeRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *InterfaceTypeExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
-func (t *TypeParamRef) Get() GetFromRef {
-	return GetFromRef{ref: t}
+func (t *TypeParamExpr) Get() GetFromExpr {
+	return GetFromExpr{expr: t}
 }
 
 type (
-	SetOnRef struct{ ref TypeRef }
+	SetOnExpr struct{ expr TypeExpr }
 )
 
-func (s SetOnRef) Modifiers(m Modifiers) {
-	switch r := s.ref.(type) {
-	case *BuiltinRef:
+func (s SetOnExpr) Modifiers(m Modifiers) {
+	switch r := s.expr.(type) {
+	case *BuiltinExpr:
 		r.Modifiers = m
-	case *StructRef:
+	case *StructExpr:
 		r.Modifiers = m
-	case *InterfaceRef:
+	case *InterfaceExpr:
 		r.Modifiers = m
-	case *TypeDefRef:
+	case *TypeDefExpr:
 		r.Modifiers = m
-	case *TypeAliasRef:
+	case *TypeAliasExpr:
 		r.Modifiers = m
-	case *MapRef:
+	case *MapExpr:
 		r.Modifiers = m
-	case *ChanRef:
+	case *ChanExpr:
 		r.Modifiers = m
-	case *FuncTypeRef:
+	case *FuncTypeExpr:
 		r.Modifiers = m
-	case *StructTypeRef:
+	case *StructTypeExpr:
 		r.Modifiers = m
-	case *InterfaceTypeRef:
+	case *InterfaceTypeExpr:
 		r.Modifiers = m
-	case *TypeParamRef:
+	case *TypeParamExpr:
 		r.Modifiers = m
 	default:
 		panic("unknown type")
 	}
 }
 
-func (t *BuiltinRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *BuiltinExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *StructRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *StructExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *InterfaceRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *InterfaceExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *TypeDefRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *TypeDefExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *TypeAliasRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *TypeAliasExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *MapRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *MapExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *ChanRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *ChanExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *FuncTypeRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *FuncTypeExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *StructTypeRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *StructTypeExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *InterfaceTypeRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *InterfaceTypeExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }
 
-func (t *TypeParamRef) Set() SetOnRef {
-	return SetOnRef{ref: t}
+func (t *TypeParamExpr) Set() SetOnExpr {
+	return SetOnExpr{expr: t}
 }

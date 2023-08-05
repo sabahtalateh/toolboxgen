@@ -7,17 +7,16 @@ import (
 )
 
 type (
-	TypeRef interface {
-		typeRef()
+	TypeExpr interface {
+		typeExpr()
 
-		Get() GetFromRef
-		Set() SetOnRef
-		Equal(TypeRef) bool
-
-		clone.Clone[TypeRef]
+		clone.Clone[TypeExpr]
+		Get() GetFromExpr
+		Set() SetOnExpr
+		Equal(TypeExpr) bool
 	}
 
-	BuiltinRef struct {
+	BuiltinExpr struct {
 		TypeName   string
 		Modifiers  Modifiers
 		Position   token.Position
@@ -25,65 +24,65 @@ type (
 		Code       string
 	}
 
-	StructRef struct {
+	StructExpr struct {
 		Package    string
 		TypeName   string
 		Fields     Fields
 		Modifiers  Modifiers
-		TypeParams TypeRefs
+		TypeParams TypeExprs
 		Position   token.Position
 		Definition *Struct
 		Code       string
 	}
 
-	InterfaceRef struct {
+	InterfaceExpr struct {
 		Package    string
 		TypeName   string
 		Fields     Fields
 		Modifiers  Modifiers
-		TypeParams TypeRefs
+		TypeParams TypeExprs
 		Position   token.Position
 		Definition *Interface
 		Code       string
 	}
 
-	TypeDefRef struct {
+	TypeDefExpr struct {
 		Package    string
 		TypeName   string
-		Type       TypeRef
+		Type       TypeExpr
 		Modifiers  Modifiers
-		TypeParams TypeRefs
+		TypeParams TypeExprs
 		Position   token.Position
 		Definition *TypeDef
 		Code       string
 	}
 
-	TypeAliasRef struct {
+	TypeAliasExpr struct {
 		Package    string
 		TypeName   string
-		Type       TypeRef
+		Type       TypeExpr
 		Modifiers  Modifiers
 		Position   token.Position
 		Definition *TypeAlias
 		Code       string
 	}
 
-	MapRef struct {
-		Key       TypeRef
-		Value     TypeRef
+	MapExpr struct {
+		Key       TypeExpr
+		Value     TypeExpr
 		Modifiers Modifiers
 		Position  token.Position
 		Code      string
 	}
 
-	ChanRef struct {
-		Value     TypeRef
+	ChanExpr struct {
+		Value     TypeExpr
 		Modifiers Modifiers
 		Position  token.Position
 		Code      string
 	}
 
-	FuncTypeRef struct {
+	FuncTypeExpr struct {
 		Params    Fields
 		Results   Fields
 		Modifiers Modifiers
@@ -91,21 +90,21 @@ type (
 		Code      string
 	}
 
-	StructTypeRef struct {
+	StructTypeExpr struct {
 		Fields    Fields
 		Modifiers Modifiers
 		Position  token.Position
 		Code      string
 	}
 
-	InterfaceTypeRef struct {
+	InterfaceTypeExpr struct {
 		Fields    Fields
 		Modifiers Modifiers
 		Position  token.Position
 		Code      string
 	}
 
-	TypeParamRef struct {
+	TypeParamExpr struct {
 		Order      int
 		Modifiers  Modifiers
 		Name       string
@@ -114,17 +113,17 @@ type (
 		Code       string
 	}
 
-	TypeRefs []TypeRef
+	TypeExprs []TypeExpr
 )
 
-func (t *BuiltinRef) typeRef()       {}
-func (t *StructRef) typeRef()        {}
-func (t *InterfaceRef) typeRef()     {}
-func (t *TypeDefRef) typeRef()       {}
-func (t *TypeAliasRef) typeRef()     {}
-func (t *MapRef) typeRef()           {}
-func (t *ChanRef) typeRef()          {}
-func (t *FuncTypeRef) typeRef()      {}
-func (t *StructTypeRef) typeRef()    {}
-func (t *InterfaceTypeRef) typeRef() {}
-func (t *TypeParamRef) typeRef()     {}
+func (t *BuiltinExpr) typeExpr()       {}
+func (t *StructExpr) typeExpr()        {}
+func (t *InterfaceExpr) typeExpr()     {}
+func (t *TypeDefExpr) typeExpr()       {}
+func (t *TypeAliasExpr) typeExpr()     {}
+func (t *MapExpr) typeExpr()           {}
+func (t *ChanExpr) typeExpr()          {}
+func (t *FuncTypeExpr) typeExpr()      {}
+func (t *StructTypeExpr) typeExpr()    {}
+func (t *InterfaceTypeExpr) typeExpr() {}
+func (t *TypeParamExpr) typeExpr()     {}

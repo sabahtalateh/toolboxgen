@@ -41,7 +41,7 @@ type (
 		Package      string
 		TypeName     string
 		TypeParams   TypeParams
-		Type         TypeRef
+		Type         TypeExpr
 		Position     token.Position
 		TypePosition token.Position
 		Code         string
@@ -50,7 +50,7 @@ type (
 	TypeAlias struct {
 		Package      string
 		TypeName     string
-		Type         TypeRef
+		Type         TypeExpr
 		Position     token.Position
 		TypePosition token.Position
 		Code         string

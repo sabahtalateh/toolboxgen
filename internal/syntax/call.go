@@ -95,7 +95,7 @@ func (v *callVisitor) visitSelectorExpr(e *ast.SelectorExpr) {
 }
 
 type (
-	Call struct {
+	C struct {
 		Code     string
 		PkgAlias string
 		FuncName string
@@ -105,10 +105,10 @@ type (
 		Position token.Position
 	}
 
-	Calls []*Call
+	BaseCall []*C
 )
 
-func ParseFuncCalls(ce *ast.CallExpr, files *token.FileSet) Calls {
+func ParseFuncCalls(ce *ast.CallExpr, files *token.FileSet) BaseCall {
 	cc := &callVisitor{files: files}
 	cc.visitCallExpr(ce)
 	c := cc.complete
@@ -117,7 +117,7 @@ func ParseFuncCalls(ce *ast.CallExpr, files *token.FileSet) Calls {
 	return nil
 }
 
-func (x *Call) Path() string {
+func (x *C) Path() string {
 	if x.PkgAlias == "" {
 		return x.FuncName
 	}

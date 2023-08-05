@@ -5,7 +5,7 @@ import "go/token"
 type (
 	Field struct {
 		Name     string
-		Type     TypeRef
+		Type     TypeExpr
 		Position token.Position
 		Code     string
 	}
