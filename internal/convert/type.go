@@ -109,7 +109,7 @@ func (c *Converter) convertTypeDef(ctx Context, s *ast.TypeSpec) (*types.TypeDef
 
 	c.putType(typ)
 
-	if typ.Type, err = c.TypeRef(ctx.WithDefined(typ.TypeParams), s.Type); err != nil {
+	if typ.Type, err = c.TypeExpr(ctx.WithDefined(typ.TypeParams), s.Type); err != nil {
 		return nil, err
 	}
 
@@ -132,7 +132,7 @@ func (c *Converter) convertTypeAlias(ctx Context, s *ast.TypeSpec) (*types.TypeA
 
 	c.putType(typ)
 
-	if typ.Type, err = c.TypeRef(ctx, s.Type); err != nil {
+	if typ.Type, err = c.TypeExpr(ctx, s.Type); err != nil {
 		return nil, err
 	}
 

@@ -3,7 +3,7 @@ package syntax
 type kind int
 
 const (
-	kUnknown kind = iota + 1
+	kUnexpected kind = iota + 1
 	kType
 	kMap
 	kChan

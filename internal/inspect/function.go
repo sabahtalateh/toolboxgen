@@ -28,7 +28,7 @@ func (i *Inspect) Function(f *types.Function) map[string]any {
 func (i *Inspect) funcID(f *types.Function) string {
 	recv := ""
 	if f.Receiver != nil {
-		recv = "(" + i.typeRef(f.Receiver.Type) + ") "
+		recv = "(" + i.typeExpr(f.Receiver.Type) + ") "
 	}
 
 	if f.Package == i.trimPackage {

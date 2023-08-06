@@ -1,4 +1,4 @@
-package interfaceref_1
+package interfacetype
 
 type A = interface {
 	Method(b bool) error

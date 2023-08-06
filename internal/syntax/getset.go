@@ -5,10 +5,10 @@ import (
 )
 
 type (
-	GetFromTypeRef struct{ typ TypeExpr }
+	GetFromTypeExpr struct{ typ TypeExpr }
 )
 
-func (g GetFromTypeRef) Position() token.Position {
+func (g GetFromTypeExpr) Position() token.Position {
 	switch x := g.typ.(type) {
 	case *Type:
 		return x.Position
@@ -20,37 +20,37 @@ func (g GetFromTypeRef) Position() token.Position {
 		return x.Position
 	case *StructType:
 		return x.Position
-	case *UnknownExpr:
+	case *UnexpectedExpr:
 		return x.Position
 	default:
 		panic("unknown type")
 	}
 }
 
-func (t *Type) Get() GetFromTypeRef {
-	return GetFromTypeRef{typ: t}
+func (t *Type) Get() GetFromTypeExpr {
+	return GetFromTypeExpr{typ: t}
 }
 
-func (t *Map) Get() GetFromTypeRef {
-	return GetFromTypeRef{typ: t}
+func (t *Map) Get() GetFromTypeExpr {
+	return GetFromTypeExpr{typ: t}
 }
 
-func (t *Chan) Get() GetFromTypeRef {
-	return GetFromTypeRef{typ: t}
+func (t *Chan) Get() GetFromTypeExpr {
+	return GetFromTypeExpr{typ: t}
 }
 
-func (t *FuncType) Get() GetFromTypeRef {
-	return GetFromTypeRef{typ: t}
+func (t *FuncType) Get() GetFromTypeExpr {
+	return GetFromTypeExpr{typ: t}
 }
 
-func (t *StructType) Get() GetFromTypeRef {
-	return GetFromTypeRef{typ: t}
+func (t *StructType) Get() GetFromTypeExpr {
+	return GetFromTypeExpr{typ: t}
 }
 
-func (t *InterfaceType) Get() GetFromTypeRef {
-	return GetFromTypeRef{typ: t}
+func (t *InterfaceType) Get() GetFromTypeExpr {
+	return GetFromTypeExpr{typ: t}
 }
 
-func (t *UnknownExpr) Get() GetFromTypeRef {
-	return GetFromTypeRef{typ: t}
+func (t *UnexpectedExpr) Get() GetFromTypeExpr {
+	return GetFromTypeExpr{typ: t}
 }

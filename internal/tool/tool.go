@@ -18,7 +18,7 @@ type (
 	}
 )
 
-// func TypeRefFromDef(d TypeDef) TypeRef {
+// func TypeRefFromDef(d TypeDef) TypeExpr {
 // 	switch dd := d.(type) {
 // 	case *BuiltinDef:
 // 		return BuiltinRefFromDef(dd)

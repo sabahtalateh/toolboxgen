@@ -8,7 +8,7 @@ import (
 
 func (i *Inspect) Fields(ff types.Fields) []any {
 	return slices.Map(ff, func(f *types.Field) any {
-		intro := i.TypeRef(f.Type)
+		intro := i.TypeExpr(f.Type)
 		switch in := intro.(type) {
 		case map[string]any:
 			res := map[string]any{}
@@ -37,7 +37,7 @@ func (i *Inspect) field(f *types.Field) string {
 	if f.Name != "" {
 		name = f.Name + " "
 	}
-	return name + i.typeRef(f.Type)
+	return name + i.typeExpr(f.Type)
 }
 
 func (i *Inspect) fields(f types.Fields) []string {

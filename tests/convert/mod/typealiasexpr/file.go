@@ -1,4 +1,4 @@
-package typealiasref
+package typealiasexpr
 
 type C struct {
 	a string

@@ -1,4 +1,4 @@
-package structref
+package structexpr
 
 type A struct {
 	a uintptr

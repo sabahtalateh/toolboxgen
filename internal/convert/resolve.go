@@ -6,36 +6,36 @@ import (
 )
 
 // resolveType resolves type parameters into actual types
-func resolveType(ctx Context, t types.TypeRef, actual types.TypeRefs) (types.TypeRef, error) {
+func resolveType(ctx Context, t types.TypeExpr, actual types.TypeExprs) (types.TypeExpr, error) {
 	switch r := t.(type) {
-	case *types.BuiltinRef:
+	case *types.BuiltinExpr:
 		return r, nil
-	case *types.StructRef:
+	case *types.StructExpr:
 		return resolveStruct(ctx, r, actual)
-	case *types.InterfaceRef:
+	case *types.InterfaceExpr:
 		return resolveInterface(ctx, r, actual)
-	case *types.TypeDefRef:
+	case *types.TypeDefExpr:
 		return resolveTypeDef(ctx, r, actual)
-	case *types.TypeAliasRef:
+	case *types.TypeAliasExpr:
 		return r, nil
-	case *types.MapRef:
+	case *types.MapExpr:
 		return resolveMap(ctx, r, actual)
-	case *types.ChanRef:
+	case *types.ChanExpr:
 		return resolveChan(ctx, r, actual)
-	case *types.FuncTypeRef:
+	case *types.FuncTypeExpr:
 		return resolveFuncType(ctx, r, actual)
-	case *types.StructTypeRef:
+	case *types.StructTypeExpr:
 		return resolveStructType(ctx, r, actual)
-	case *types.InterfaceTypeRef:
+	case *types.InterfaceTypeExpr:
 		return resolveInterfaceType(ctx, r, actual)
-	case *types.TypeParamRef:
+	case *types.TypeParamExpr:
 		return resolveTypeParam(ctx, r, actual)
 	default:
 		return nil, errors.Errorf(r.Get().Position(), "unknown type %T", r)
 	}
 }
 
-func resolveStruct(ctx Context, t *types.StructRef, actual types.TypeRefs) (*types.StructRef, error) {
+func resolveStruct(ctx Context, t *types.StructExpr, actual types.TypeExprs) (*types.StructExpr, error) {
 	var err error
 
 	t.TypeParams, err = resolveTypeParams(ctx, t.TypeParams, actual)
@@ -51,7 +51,7 @@ func resolveStruct(ctx Context, t *types.StructRef, actual types.TypeRefs) (*typ
 	return t, nil
 }
 
-func resolveInterface(ctx Context, t *types.InterfaceRef, actual types.TypeRefs) (*types.InterfaceRef, error) {
+func resolveInterface(ctx Context, t *types.InterfaceExpr, actual types.TypeExprs) (*types.InterfaceExpr, error) {
 	var err error
 
 	t.TypeParams, err = resolveTypeParams(ctx, t.TypeParams, actual)
@@ -67,7 +67,7 @@ func resolveInterface(ctx Context, t *types.InterfaceRef, actual types.TypeRefs)
 	return t, nil
 }
 
-func resolveTypeDef(ctx Context, t *types.TypeDefRef, actual types.TypeRefs) (*types.TypeDefRef, error) {
+func resolveTypeDef(ctx Context, t *types.TypeDefExpr, actual types.TypeExprs) (*types.TypeDefExpr, error) {
 	var err error
 
 	t.TypeParams, err = resolveTypeParams(ctx, t.TypeParams, actual)
@@ -83,7 +83,7 @@ func resolveTypeDef(ctx Context, t *types.TypeDefRef, actual types.TypeRefs) (*t
 	return t, nil
 }
 
-func resolveMap(ctx Context, t *types.MapRef, actual types.TypeRefs) (*types.MapRef, error) {
+func resolveMap(ctx Context, t *types.MapExpr, actual types.TypeExprs) (*types.MapExpr, error) {
 	var err error
 
 	t.Key, err = resolveType(ctx, t.Key, actual)
@@ -99,7 +99,7 @@ func resolveMap(ctx Context, t *types.MapRef, actual types.TypeRefs) (*types.Map
 	return t, nil
 }
 
-func resolveChan(ctx Context, t *types.ChanRef, actual types.TypeRefs) (*types.ChanRef, error) {
+func resolveChan(ctx Context, t *types.ChanExpr, actual types.TypeExprs) (*types.ChanExpr, error) {
 	var err error
 
 	t.Value, err = resolveType(ctx, t.Value, actual)
@@ -110,7 +110,7 @@ func resolveChan(ctx Context, t *types.ChanRef, actual types.TypeRefs) (*types.C
 	return t, nil
 }
 
-func resolveFuncType(ctx Context, t *types.FuncTypeRef, actual types.TypeRefs) (*types.FuncTypeRef, error) {
+func resolveFuncType(ctx Context, t *types.FuncTypeExpr, actual types.TypeExprs) (*types.FuncTypeExpr, error) {
 	var err error
 
 	if t.Params, err = resolveFields(ctx, t.Params, actual); err != nil {
@@ -124,7 +124,7 @@ func resolveFuncType(ctx Context, t *types.FuncTypeRef, actual types.TypeRefs) (
 	return t, nil
 }
 
-func resolveStructType(ctx Context, t *types.StructTypeRef, actual types.TypeRefs) (*types.StructTypeRef, error) {
+func resolveStructType(ctx Context, t *types.StructTypeExpr, actual types.TypeExprs) (*types.StructTypeExpr, error) {
 	var err error
 
 	if t.Fields, err = resolveFields(ctx, t.Fields, actual); err != nil {
@@ -134,7 +134,7 @@ func resolveStructType(ctx Context, t *types.StructTypeRef, actual types.TypeRef
 	return t, nil
 }
 
-func resolveInterfaceType(ctx Context, t *types.InterfaceTypeRef, actual types.TypeRefs) (*types.InterfaceTypeRef, error) {
+func resolveInterfaceType(ctx Context, t *types.InterfaceTypeExpr, actual types.TypeExprs) (*types.InterfaceTypeExpr, error) {
 	var err error
 
 	if t.Fields, err = resolveFields(ctx, t.Fields, actual); err != nil {
@@ -144,7 +144,7 @@ func resolveInterfaceType(ctx Context, t *types.InterfaceTypeRef, actual types.T
 	return t, nil
 }
 
-func resolveTypeParam(ctx Context, t *types.TypeParamRef, actual types.TypeRefs) (types.TypeRef, error) {
+func resolveTypeParam(ctx Context, t *types.TypeParamExpr, actual types.TypeExprs) (types.TypeExpr, error) {
 	actual = actual.Clone()
 
 	defined, ok := ctx.DefinedByName(t.Name)
@@ -162,15 +162,15 @@ func resolveTypeParam(ctx Context, t *types.TypeParamRef, actual types.TypeRefs)
 	return a, nil
 }
 
-func resolveTypeParams(ctx Context, tt types.TypeRefs, actual types.TypeRefs) (types.TypeRefs, error) {
+func resolveTypeParams(ctx Context, tt types.TypeExprs, actual types.TypeExprs) (types.TypeExprs, error) {
 	for i, param := range tt {
 		var (
-			resolved types.TypeRef
+			resolved types.TypeExpr
 			err      error
 		)
 
 		switch p := param.(type) {
-		case *types.TypeParamRef:
+		case *types.TypeParamExpr:
 			resolved, err = resolveTypeParam(ctx, p, actual)
 		default:
 			resolved, err = resolveType(ctx, p, actual)
@@ -183,7 +183,7 @@ func resolveTypeParams(ctx Context, tt types.TypeRefs, actual types.TypeRefs) (t
 	return tt, nil
 }
 
-func resolveFields(ctx Context, ff types.Fields, actual types.TypeRefs) (types.Fields, error) {
+func resolveFields(ctx Context, ff types.Fields, actual types.TypeExprs) (types.Fields, error) {
 	var err error
 
 	for _, field := range ff {

@@ -184,7 +184,7 @@ package syntax
 // func (e *InterfaceType) e()  {}
 // func (e *MapType) e()        {}
 // func (e *ChanType) e()       {}
-// func (e *UnknownExpr) e()        {}
+// func (e *UnexpectedExpr) e()        {}
 //
 // func ParseExpr(files *token.FileSet, e ast.Expr) Expr {
 // 	v := exprVisitor{files: files}
@@ -199,7 +199,7 @@ package syntax
 // type exprVisitor struct {
 // 	ee    Expr
 // 	files *token.FileSet
-// 	err   error
+// 	err   err
 // }
 //
 // func (v *exprVisitor) visitExpr(e ast.Expr) {
@@ -256,7 +256,7 @@ package syntax
 // 	case *ast.ChanType:
 // 		v.visitChanType(ee)
 // 	default:
-// 		v.visitUnknown(ee)
+// 		v.visitUnexpected(ee)
 // 	}
 // }
 //
@@ -459,8 +459,8 @@ package syntax
 // 	})
 // }
 //
-// func (v *exprVisitor) visitUnknown(e ast.Expr) {
-// 	v.ee = append(v.ee, &UnknownExpr{Position: v.files.Position(e.Pos())})
+// func (v *exprVisitor) visitUnexpected(e ast.Expr) {
+// 	v.ee = append(v.ee, &UnexpectedExpr{Position: v.files.Position(e.Pos())})
 // }
 //
 // func (v *exprVisitor) field(f *ast.Field) []*Field {

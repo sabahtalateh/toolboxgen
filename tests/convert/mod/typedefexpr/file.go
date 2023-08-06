@@ -1,4 +1,4 @@
-package typedefref
+package typedefexpr
 
 type A string
 

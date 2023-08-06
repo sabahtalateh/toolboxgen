@@ -3,123 +3,129 @@ package syntax
 import (
 	"go/ast"
 	"go/token"
-	"strings"
-
-	"github.com/sabahtalateh/toolboxgen/internal/code"
-	"github.com/sabahtalateh/toolboxgen/internal/errors"
 )
 
-type call struct {
-	code     string
-	selector []string
-	// args     []E
-	err error
-}
-
-type callVisitor struct {
-	files    *token.FileSet
-	stack    []*call
-	complete []*call
-}
-
-func (v *callVisitor) push(expr *ast.CallExpr) {
-	v.stack = append([]*call{{code: code.OfNode(expr)}}, v.stack...)
-}
-
-func (v *callVisitor) pop() {
-	v.complete = append(v.complete, v.stack[0])
-	v.stack = v.stack[1:]
-}
-
-func (v *callVisitor) head() *call {
-	return v.stack[0]
-}
-
-func (v *callVisitor) errorf(pos token.Pos, format string, a ...any) {
-	v.stack[0].err = errors.Errorf(v.files.Position(pos), format, a...)
-}
-
-func (v *callVisitor) visitExpr(e ast.Expr) {
-	switch ee := e.(type) {
-	case *ast.CallExpr:
-		v.visitCallExpr(ee)
-	case *ast.Ident:
-		v.visitIdent(ee)
-	case *ast.SelectorExpr:
-		v.visitSelectorExpr(ee)
-	case *ast.IndexExpr:
-		v.visitIndexExpr(ee)
-	case *ast.IndexListExpr:
-		v.visitIndexListExpr(ee)
-	default:
-		v.errorf(e.Pos(), "unknown")
-	}
-}
-
-func (v *callVisitor) visitCallExpr(e *ast.CallExpr) {
-	v.push(e)
-	v.visitExpr(e.Fun)
-
-	// h := v.head()
-	for _, arg := range e.Args {
-		println(arg)
-		// hh := ParseExpr(v.files, arg)
-		// println(hh)
-		// h.args = append(h.args, )
-	}
-
-	v.pop()
-}
-
-// visitIdent final step
-func (v *callVisitor) visitIdent(id *ast.Ident) {
-	h := v.head()
-	h.selector = append(h.selector, id.Name)
-}
-
-func (v *callVisitor) visitIndexListExpr(e *ast.IndexListExpr) {
-	// for _, index := range ee.Indices {
-	// v.addTypeParam(ParseTypeExpr(v.files, index))
-	// }
-	v.visitExpr(e.X)
-}
-
-func (v *callVisitor) visitIndexExpr(e *ast.IndexExpr) {
-	// v.addTypeParam(ParseTypeExpr(v.files, ee.Index))
-	v.visitExpr(e.X)
-}
-
-func (v *callVisitor) visitSelectorExpr(e *ast.SelectorExpr) {
-	v.visitExpr(e.X)
-	v.visitExpr(e.Sel)
-}
-
 type (
-	C struct {
-		Code     string
-		PkgAlias string
-		FuncName string
-		// Args     []E
-		// TypeParams []*ParseTypeExpr
-		Err      *errors.PositionedErr
-		Position token.Position
+	Call interface {
+		call()
+		Error() error
 	}
 
 	BaseCall []*C
+
+	CompositeCall struct {
+		Expr     *ast.CallExpr
+		Position token.Position
+	}
+
+	C struct {
+		Position token.Position
+		err      error
+	}
 )
 
-func ParseFuncCalls(ce *ast.CallExpr, files *token.FileSet) BaseCall {
-	cc := &callVisitor{files: files}
-	cc.visitCallExpr(ce)
-	c := cc.complete
-	println(c)
+func (c BaseCall) call()       {}
+func (c *CompositeCall) call() {}
+
+func (c BaseCall) Error() error {
+	for _, cc := range c {
+		if cc.err != nil {
+			return cc.err
+		}
+	}
 
 	return nil
 }
 
-func (x *C) Path() string {
-	if x.PkgAlias == "" {
-		return x.FuncName
+func (c *CompositeCall) Error() error {
+	return nil
+}
+
+func ParseCall(files *token.FileSet, e *ast.CallExpr) Call {
+	if !isBase(e) {
+		return &CompositeCall{Expr: e, Position: files.Position(e.Pos())}
 	}
-	return strings.Join([]string{x.PkgAlias, x.FuncName}, ".")
+
+	cc := &callVisitor{files: files}
+	cc.visitCallExpr(e)
+	println(123)
+
+	return nil
+}
+
+type (
+	call struct {
+		selector   []string
+		typeParams TypeExprs
+		err        error
+	}
+
+	callVisitor struct {
+		calls []*call
+		files *token.FileSet
+	}
+)
+
+func (v *callVisitor) visitExpr(e ast.Expr, c *call) {
+	switch ee := e.(type) {
+	case *ast.CallExpr:
+		v.visitCallExpr(ee)
+	case *ast.Ident:
+		v.visitIdent(ee, c)
+	case *ast.SelectorExpr:
+		v.visitSelectorExpr(ee, c)
+	case *ast.IndexExpr:
+		v.visitIndexExpr(ee, c)
+	case *ast.IndexListExpr:
+		v.visitIndexListExpr(ee, c)
+	}
+}
+
+func (v *callVisitor) visitCallExpr(e *ast.CallExpr) {
+	c := new(call)
+	v.visitExpr(e.Fun, c)
+	v.calls = append(v.calls, c)
+}
+
+func (v *callVisitor) visitIdent(id *ast.Ident, c *call) {
+	c.selector = append(c.selector, id.Name)
+}
+
+func (v *callVisitor) visitIndexExpr(e *ast.IndexExpr, c *call) {
+	c.typeParams = append(c.typeParams, ParseTypeExpr(v.files, e.Index))
+	v.visitExpr(e.X, c)
+}
+
+func (v *callVisitor) visitIndexListExpr(e *ast.IndexListExpr, c *call) {
+	for _, index := range e.Indices {
+		c.typeParams = append(c.typeParams, ParseTypeExpr(v.files, index))
+	}
+	v.visitExpr(e.X, c)
+}
+
+func (v *callVisitor) visitSelectorExpr(e *ast.SelectorExpr, c *call) {
+	v.visitExpr(e.X, c)
+	v.visitExpr(e.Sel, c)
+}
+
+func isBase(e *ast.CallExpr) bool {
+	fun := e.Fun
+	switch f := fun.(type) {
+	case *ast.IndexExpr:
+		fun = f.X
+	case *ast.IndexListExpr:
+		fun = f.X
+	}
+
+	switch ee := fun.(type) {
+	case *ast.Ident:
+		return true
+	case *ast.SelectorExpr:
+		switch ee.X.(type) {
+		case *ast.Ident:
+			return true
+		}
+	}
+
+	return false
 }

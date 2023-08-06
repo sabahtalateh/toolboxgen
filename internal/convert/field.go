@@ -10,7 +10,7 @@ import (
 
 // Field returns at least 1 element
 func (c *Converter) Field(ctx Context, field *ast.Field) (types.Fields, error) {
-	tr, err := c.TypeRef(ctx.WithPos(field.Type.Pos()), field.Type)
+	tr, err := c.TypeExpr(ctx.WithPos(field.Type.Pos()), field.Type)
 	if err != nil {
 		return nil, err
 	}

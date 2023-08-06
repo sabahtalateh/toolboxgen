@@ -27,7 +27,7 @@ package convert
 // 	// 		return nil, errors.ParseError(param.NodePosition, pErr)
 // 	// 	}
 // 	//
-// 	// 	effective, err := c.TypeRef(ctx, tParam, nil)
+// 	// 	effective, err := c.TypeExpr(ctx, tParam, nil)
 // 	// 	if err != nil {
 // 	// 		return nil, err
 // 	// 	}

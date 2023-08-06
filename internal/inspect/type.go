@@ -51,18 +51,18 @@ func (i *Inspect) Interface(t *types.Interface) map[string]any {
 
 func (i *Inspect) TypeDef(t *types.TypeDef) map[string]any {
 	res := map[string]any{
-		"typedef": i.composeType(t.Package, t.TypeName, t.TypeParams) + " " + i.typeRef(t.Type),
+		"typedef": i.composeType(t.Package, t.TypeName, t.TypeParams) + " " + i.typeExpr(t.Type),
 	}
 
-	res["intro"] = i.TypeRef(t.Type)
+	res["intro"] = i.TypeExpr(t.Type)
 
 	return map[string]any{"type " + t.TypeName: res}
 }
 
 func (i *Inspect) TypeAlias(t *types.TypeAlias) map[string]any {
-	res := map[string]any{"typealias": i.composeType(t.Package, t.TypeName, nil) + " = " + i.typeRef(t.Type)}
+	res := map[string]any{"typealias": i.composeType(t.Package, t.TypeName, nil) + " = " + i.typeExpr(t.Type)}
 
-	res["intro"] = i.TypeRef(t.Type)
+	res["intro"] = i.TypeExpr(t.Type)
 
 	return map[string]any{"type " + t.TypeName: res}
 }

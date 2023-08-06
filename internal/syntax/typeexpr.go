@@ -3,20 +3,79 @@ package syntax
 import (
 	"errors"
 	"fmt"
+	"github.com/sabahtalateh/toolboxgen/internal/code"
 	"go/ast"
 	"go/token"
-	"strings"
-
-	"github.com/sabahtalateh/toolboxgen/internal/code"
-	poserrors "github.com/sabahtalateh/toolboxgen/internal/errors"
 )
 
 var (
-	ErrUnknownExpr = errors.New("unknown expression")
+	ErrUnexpectedExpr = errors.New("unexpected expression")
+)
+
+type (
+	TypeExpr interface {
+		typeExpr()
+
+		Error() error
+		Get() GetFromTypeExpr
+	}
+
+	Type struct {
+		Modifiers  Modifiers
+		Package    string
+		TypeName   string
+		TypeParams TypeExprs
+		Position   token.Position
+		Code       string
+	}
+
+	Map struct {
+		Modifiers Modifiers
+		Key       TypeExpr
+		Value     TypeExpr
+		Position  token.Position
+		Code      string
+	}
+
+	Chan struct {
+		Modifiers Modifiers
+		Value     TypeExpr
+		Position  token.Position
+		Code      string
+	}
+
+	FuncType struct {
+		Modifiers Modifiers
+		Params    Fields
+		Results   Fields
+		Position  token.Position
+		Code      string
+	}
+
+	StructType struct {
+		Modifiers Modifiers
+		Fields    Fields
+		Position  token.Position
+		Code      string
+	}
+
+	InterfaceType struct {
+		Modifiers Modifiers
+		Fields    Fields
+		Position  token.Position
+		Code      string
+	}
+
+	UnexpectedExpr struct {
+		Expr     ast.Expr
+		Position token.Position
+	}
+
+	TypeExprs []TypeExpr
 )
 
 func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
-	v := &typeRefVisitor{kind: kUnknown, files: files}
+	v := &typeExprVisitor{kind: kUnexpected, files: files}
 	v.visitExpr(e)
 
 	switch v.kind {
@@ -26,7 +85,6 @@ func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
 			TypeParams: v.typeParams,
 			Position:   files.Position(e.Pos()),
 			Code:       code.OfNode(e),
-			error:      v.err,
 		}
 
 		switch len(v.selector) {
@@ -35,8 +93,6 @@ func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
 		case 2:
 			t.Package = v.selector[0]
 			t.TypeName = v.selector[1]
-		default:
-			v.err = poserrors.Errorf(v.files.Position(e.Pos()), "malformed selector: %s", strings.Join(v.selector, "."))
 		}
 
 		return t
@@ -47,7 +103,6 @@ func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
 			Value:     ParseTypeExpr(files, v.value),
 			Position:  files.Position(e.Pos()),
 			Code:      code.OfNode(e),
-			error:     v.err,
 		}
 	case kChan:
 		return &Chan{
@@ -55,7 +110,6 @@ func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
 			Value:     ParseTypeExpr(files, v.value),
 			Position:  files.Position(e.Pos()),
 			Code:      code.OfNode(e),
-			error:     v.err,
 		}
 	case kFuncType:
 		return &FuncType{
@@ -64,7 +118,6 @@ func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
 			Results:   v.results,
 			Position:  files.Position(e.Pos()),
 			Code:      code.OfNode(e),
-			error:     v.err,
 		}
 	case kStructType:
 		return &StructType{
@@ -72,7 +125,6 @@ func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
 			Fields:    v.fields,
 			Position:  files.Position(e.Pos()),
 			Code:      code.OfNode(e),
-			error:     v.err,
 		}
 	case kInterfaceType:
 		return &InterfaceType{
@@ -80,95 +132,26 @@ func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
 			Fields:    v.fields,
 			Position:  files.Position(e.Pos()),
 			Code:      code.OfNode(e),
-			error:     v.err,
 		}
 	default:
-		return &UnknownExpr{Expr: v.value, Position: files.Position(e.Pos())}
+		return &UnexpectedExpr{Expr: v.value, Position: files.Position(e.Pos())}
 	}
 }
 
-type (
-	TypeExpr interface {
-		typeExpr()
-
-		Error() error
-		Get() GetFromTypeRef
-	}
-
-	Type struct {
-		Modifiers  Modifiers
-		Package    string
-		TypeName   string
-		TypeParams TypeRefs
-		Position   token.Position
-		Code       string
-		error      error
-	}
-
-	Map struct {
-		Modifiers Modifiers
-		Key       TypeExpr
-		Value     TypeExpr
-		Position  token.Position
-		Code      string
-		error     error
-	}
-
-	Chan struct {
-		Modifiers Modifiers
-		Value     TypeExpr
-		Position  token.Position
-		Code      string
-		error     error
-	}
-
-	FuncType struct {
-		Modifiers Modifiers
-		Params    Fields
-		Results   Fields
-		Position  token.Position
-		Code      string
-		error     error
-	}
-
-	StructType struct {
-		Modifiers Modifiers
-		Fields    Fields
-		Position  token.Position
-		Code      string
-		error     error
-	}
-
-	InterfaceType struct {
-		Modifiers Modifiers
-		Fields    Fields
-		Position  token.Position
-		Code      string
-		error     error
-	}
-
-	UnknownExpr struct {
-		Expr     ast.Expr
-		Position token.Position
-	}
-
-	TypeRefs []TypeExpr
-)
-
-func (t *Type) typeExpr()          {}
-func (t *Map) typeExpr()           {}
-func (t *Chan) typeExpr()          {}
-func (t *FuncType) typeExpr()      {}
-func (t *StructType) typeExpr()    {}
-func (t *InterfaceType) typeExpr() {}
-func (t *UnknownExpr) typeExpr()   {}
+func (t *Type) typeExpr()           {}
+func (t *Map) typeExpr()            {}
+func (t *Chan) typeExpr()           {}
+func (t *FuncType) typeExpr()       {}
+func (t *StructType) typeExpr()     {}
+func (t *InterfaceType) typeExpr()  {}
+func (t *UnexpectedExpr) typeExpr() {}
 
 func (t *Type) Error() error {
 	if err := t.TypeParams.Error(); err != nil {
 		return err
 	}
 
-	return t.error
+	return nil
 }
 
 func (t *Map) Error() error {
@@ -180,7 +163,7 @@ func (t *Map) Error() error {
 		return err
 	}
 
-	return t.error
+	return nil
 }
 
 func (t *Chan) Error() error {
@@ -188,7 +171,7 @@ func (t *Chan) Error() error {
 		return err
 	}
 
-	return t.error
+	return nil
 }
 
 func (t *FuncType) Error() error {
@@ -204,7 +187,7 @@ func (t *FuncType) Error() error {
 		}
 	}
 
-	return t.error
+	return nil
 }
 
 func (t *StructType) Error() error {
@@ -212,7 +195,7 @@ func (t *StructType) Error() error {
 		return err
 	}
 
-	return t.error
+	return nil
 }
 
 func (t *InterfaceType) Error() error {
@@ -220,17 +203,14 @@ func (t *InterfaceType) Error() error {
 		return err
 	}
 
-	return t.error
+	return nil
 }
 
-func (t *UnknownExpr) Error() error {
-	return errors.Join(
-		ErrUnknownExpr,
-		fmt.Errorf("unknown expression at\n\t%s", t.Position),
-	)
+func (t *UnexpectedExpr) Error() error {
+	return errors.Join(ErrUnexpectedExpr, fmt.Errorf("unknown expression at\n\t%s", t.Position))
 }
 
-func (x TypeRefs) Error() error {
+func (x TypeExprs) Error() error {
 	for _, xx := range x {
 		if err := xx.Error(); err != nil {
 			return err
@@ -246,7 +226,7 @@ type (
 		Type     TypeExpr
 		Position token.Position
 		Code     string
-		error    error
+		err      error
 	}
 
 	Fields []*Field
@@ -257,7 +237,7 @@ func (x *Field) Error() error {
 		return err
 	}
 
-	return x.error
+	return x.err
 }
 
 func (x Fields) Error() error {
@@ -273,7 +253,7 @@ func (x Fields) Error() error {
 	return nil
 }
 
-type typeRefVisitor struct {
+type typeExprVisitor struct {
 	kind kind
 
 	// common
@@ -281,7 +261,7 @@ type typeRefVisitor struct {
 
 	// kType
 	selector   []string
-	typeParams []TypeExpr
+	typeParams TypeExprs
 
 	// kFuncType only
 	params  Fields
@@ -289,14 +269,13 @@ type typeRefVisitor struct {
 
 	// kMap only
 	key ast.Expr
-	// kMap + kChan + kUnknown
+	// kMap + kChan + kUnexpected
 	value ast.Expr
 
 	// kStructType + kInterfaceType
 	fields Fields
 
 	files *token.FileSet
-	err   error
 }
 
 // visitExpr
@@ -327,7 +306,7 @@ type typeRefVisitor struct {
 // + ast.InterfaceType		ex: interface {Method()}
 // + ast.MapType			ex: map[..]..
 // + ast.ChanType			ex: chan ..
-func (v *typeRefVisitor) visitExpr(e ast.Expr) {
+func (v *typeExprVisitor) visitExpr(e ast.Expr) {
 	switch ee := e.(type) {
 	case *ast.Ident:
 		v.visitIdent(ee)
@@ -354,43 +333,43 @@ func (v *typeRefVisitor) visitExpr(e ast.Expr) {
 	case *ast.ChanType:
 		v.visitChanType(ee)
 	default:
-		v.visitUnknown(ee)
+		v.visitUnexpected(ee)
 	}
 }
 
-func (v *typeRefVisitor) visitIdent(e *ast.Ident) {
+func (v *typeExprVisitor) visitIdent(e *ast.Ident) {
 	v.kind = kType
 	v.selector = append(v.selector, e.Name)
 }
 
-func (v *typeRefVisitor) visitEllipsis(e *ast.Ellipsis) {
+func (v *typeExprVisitor) visitEllipsis(e *ast.Ellipsis) {
 	v.modifiers = append(v.modifiers, &Ellipsis2{Position: v.files.Position(e.Pos())})
 	v.visitExpr(e.Elt)
 }
 
-func (v *typeRefVisitor) visitSelectorExpr(e *ast.SelectorExpr) {
+func (v *typeExprVisitor) visitSelectorExpr(e *ast.SelectorExpr) {
 	v.visitExpr(e.X)
 	v.visitExpr(e.Sel)
 }
 
-func (v *typeRefVisitor) visitIndexExpr(e *ast.IndexExpr) {
+func (v *typeExprVisitor) visitIndexExpr(e *ast.IndexExpr) {
 	v.typeParams = append(v.typeParams, ParseTypeExpr(v.files, e.Index))
 	v.visitExpr(e.X)
 }
 
-func (v *typeRefVisitor) visitIndexListExpr(e *ast.IndexListExpr) {
+func (v *typeExprVisitor) visitIndexListExpr(e *ast.IndexListExpr) {
 	for _, index := range e.Indices {
 		v.typeParams = append(v.typeParams, ParseTypeExpr(v.files, index))
 	}
 	v.visitExpr(e.X)
 }
 
-func (v *typeRefVisitor) visitStarExpr(e *ast.StarExpr) {
+func (v *typeExprVisitor) visitStarExpr(e *ast.StarExpr) {
 	v.modifiers = append(v.modifiers, &Pointer{Position: v.files.Position(e.Pos())})
 	v.visitExpr(e.X)
 }
 
-func (v *typeRefVisitor) visitArrayType(e *ast.ArrayType) {
+func (v *typeExprVisitor) visitArrayType(e *ast.ArrayType) {
 	mod := &Array{Position: v.files.Position(e.Pos())}
 	if e.Len != nil {
 		mod.Sized = true
@@ -400,39 +379,39 @@ func (v *typeRefVisitor) visitArrayType(e *ast.ArrayType) {
 	v.visitExpr(e.Elt)
 }
 
-func (v *typeRefVisitor) visitStructType(e *ast.StructType) {
+func (v *typeExprVisitor) visitStructType(e *ast.StructType) {
 	v.kind = kStructType
 	v.fields = v.fieldList(e.Fields)
 }
 
-func (v *typeRefVisitor) visitFuncType(e *ast.FuncType) {
+func (v *typeExprVisitor) visitFuncType(e *ast.FuncType) {
 	v.kind = kFuncType
 	v.params = v.fieldList(e.Params)
 	v.results = v.fieldList(e.Results)
 }
 
-func (v *typeRefVisitor) visitInterfaceType(e *ast.InterfaceType) {
+func (v *typeExprVisitor) visitInterfaceType(e *ast.InterfaceType) {
 	v.kind = kInterfaceType
 	v.fields = v.fieldList(e.Methods)
 }
 
-func (v *typeRefVisitor) visitMapType(e *ast.MapType) {
+func (v *typeExprVisitor) visitMapType(e *ast.MapType) {
 	v.kind = kMap
 	v.key = e.Key
 	v.value = e.Value
 }
 
-func (v *typeRefVisitor) visitChanType(e *ast.ChanType) {
+func (v *typeExprVisitor) visitChanType(e *ast.ChanType) {
 	v.kind = kChan
 	v.value = e.Value
 }
 
-func (v *typeRefVisitor) visitUnknown(e ast.Expr) {
-	v.kind = kUnknown
+func (v *typeExprVisitor) visitUnexpected(e ast.Expr) {
+	v.kind = kUnexpected
 	v.value = e
 }
 
-func (v *typeRefVisitor) fieldList(fields *ast.FieldList) Fields {
+func (v *typeExprVisitor) fieldList(fields *ast.FieldList) Fields {
 	if fields == nil {
 		return nil
 	}

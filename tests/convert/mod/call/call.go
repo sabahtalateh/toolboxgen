@@ -9,7 +9,11 @@ func NewA() {
 
 }
 
-var _ = di.Component(NewA)
+func f(...any) any {
+	return nil
+}
+
+var _ = f(map[string]int{})
 
 func init() {
 	di.Component(NewA)
