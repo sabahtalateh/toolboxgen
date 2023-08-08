@@ -29,7 +29,7 @@ type (
 		TypeName   string
 		Fields     Fields
 		Modifiers  Modifiers
-		TypeParams TypeExprs
+		TypeArgs   TypeExprs
 		Position   token.Position
 		Definition *Struct
 		Code       string
@@ -40,7 +40,7 @@ type (
 		TypeName   string
 		Fields     Fields
 		Modifiers  Modifiers
-		TypeParams TypeExprs
+		TypeArgs   TypeExprs
 		Position   token.Position
 		Definition *Interface
 		Code       string
@@ -51,7 +51,7 @@ type (
 		TypeName   string
 		Type       TypeExpr
 		Modifiers  Modifiers
-		TypeParams TypeExprs
+		TypeArgs   TypeExprs
 		Position   token.Position
 		Definition *TypeDef
 		Code       string
@@ -104,7 +104,7 @@ type (
 		Code      string
 	}
 
-	TypeParamExpr struct {
+	TypeArgExpr struct {
 		Order      int
 		Modifiers  Modifiers
 		Name       string
@@ -126,4 +126,4 @@ func (t *ChanExpr) typeExpr()          {}
 func (t *FuncTypeExpr) typeExpr()      {}
 func (t *StructTypeExpr) typeExpr()    {}
 func (t *InterfaceTypeExpr) typeExpr() {}
-func (t *TypeParamExpr) typeExpr()     {}
+func (t *TypeArgExpr) typeExpr()       {}

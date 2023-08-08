@@ -21,12 +21,12 @@ type (
 	}
 
 	Type struct {
-		Modifiers  Modifiers
-		Package    string
-		TypeName   string
-		TypeParams TypeExprs
-		Position   token.Position
-		Code       string
+		Modifiers Modifiers
+		Package   string
+		TypeName  string
+		TypeArgs  TypeExprs
+		Position  token.Position
+		Code      string
 	}
 
 	Map struct {
@@ -66,88 +66,18 @@ type (
 		Code      string
 	}
 
-	UnexpectedExpr struct {
-		Expr     ast.Expr
-		Position token.Position
-	}
-
 	TypeExprs []TypeExpr
 )
 
-func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
-	v := &typeExprVisitor{kind: kUnexpected, files: files}
-	v.visitExpr(e)
-
-	switch v.kind {
-	case kType:
-		t := &Type{
-			Modifiers:  v.modifiers,
-			TypeParams: v.typeParams,
-			Position:   files.Position(e.Pos()),
-			Code:       code.OfNode(e),
-		}
-
-		switch len(v.selector) {
-		case 1:
-			t.TypeName = v.selector[0]
-		case 2:
-			t.Package = v.selector[0]
-			t.TypeName = v.selector[1]
-		}
-
-		return t
-	case kMap:
-		return &Map{
-			Modifiers: v.modifiers,
-			Key:       ParseTypeExpr(files, v.key),
-			Value:     ParseTypeExpr(files, v.value),
-			Position:  files.Position(e.Pos()),
-			Code:      code.OfNode(e),
-		}
-	case kChan:
-		return &Chan{
-			Modifiers: v.modifiers,
-			Value:     ParseTypeExpr(files, v.value),
-			Position:  files.Position(e.Pos()),
-			Code:      code.OfNode(e),
-		}
-	case kFuncType:
-		return &FuncType{
-			Modifiers: v.modifiers,
-			Params:    v.params,
-			Results:   v.results,
-			Position:  files.Position(e.Pos()),
-			Code:      code.OfNode(e),
-		}
-	case kStructType:
-		return &StructType{
-			Modifiers: v.modifiers,
-			Fields:    v.fields,
-			Position:  files.Position(e.Pos()),
-			Code:      code.OfNode(e),
-		}
-	case kInterfaceType:
-		return &InterfaceType{
-			Modifiers: v.modifiers,
-			Fields:    v.fields,
-			Position:  files.Position(e.Pos()),
-			Code:      code.OfNode(e),
-		}
-	default:
-		return &UnexpectedExpr{Expr: v.value, Position: files.Position(e.Pos())}
-	}
-}
-
-func (t *Type) typeExpr()           {}
-func (t *Map) typeExpr()            {}
-func (t *Chan) typeExpr()           {}
-func (t *FuncType) typeExpr()       {}
-func (t *StructType) typeExpr()     {}
-func (t *InterfaceType) typeExpr()  {}
-func (t *UnexpectedExpr) typeExpr() {}
+func (t *Type) typeExpr()          {}
+func (t *Map) typeExpr()           {}
+func (t *Chan) typeExpr()          {}
+func (t *FuncType) typeExpr()      {}
+func (t *StructType) typeExpr()    {}
+func (t *InterfaceType) typeExpr() {}
 
 func (t *Type) Error() error {
-	if err := t.TypeParams.Error(); err != nil {
+	if err := t.TypeArgs.Error(); err != nil {
 		return err
 	}
 
@@ -206,13 +136,9 @@ func (t *InterfaceType) Error() error {
 	return nil
 }
 
-func (t *UnexpectedExpr) Error() error {
-	return errors.Join(ErrUnexpectedExpr, fmt.Errorf("unknown expression at\n\t%s", t.Position))
-}
-
-func (x TypeExprs) Error() error {
-	for _, xx := range x {
-		if err := xx.Error(); err != nil {
+func (t TypeExprs) Error() error {
+	for _, e := range t {
+		if err := e.Error(); err != nil {
 			return err
 		}
 	}
@@ -253,6 +179,70 @@ func (x Fields) Error() error {
 	return nil
 }
 
+func ParseTypeExpr(files *token.FileSet, e ast.Expr) TypeExpr {
+	v := &typeExprVisitor{kind: kUnexpected, files: files}
+	v.visitExpr(e)
+
+	switch v.kind {
+	case kType:
+		t := &Type{
+			Modifiers: v.modifiers,
+			TypeArgs:  v.typeArgs,
+			Position:  files.Position(e.Pos()),
+			Code:      code.OfNode(e),
+		}
+
+		switch len(v.selector) {
+		case 1:
+			t.TypeName = v.selector[0]
+		case 2:
+			t.Package = v.selector[0]
+			t.TypeName = v.selector[1]
+		}
+
+		return t
+	case kMap:
+		return &Map{
+			Modifiers: v.modifiers,
+			Key:       v.key,
+			Value:     v.value,
+			Position:  files.Position(e.Pos()),
+			Code:      code.OfNode(e),
+		}
+	case kChan:
+		return &Chan{
+			Modifiers: v.modifiers,
+			Value:     v.value,
+			Position:  files.Position(e.Pos()),
+			Code:      code.OfNode(e),
+		}
+	case kFuncType:
+		return &FuncType{
+			Modifiers: v.modifiers,
+			Params:    v.params,
+			Results:   v.results,
+			Position:  files.Position(e.Pos()),
+			Code:      code.OfNode(e),
+		}
+	case kStructType:
+		return &StructType{
+			Modifiers: v.modifiers,
+			Fields:    v.fields,
+			Position:  files.Position(e.Pos()),
+			Code:      code.OfNode(e),
+		}
+	case kInterfaceType:
+		return &InterfaceType{
+			Modifiers: v.modifiers,
+			Fields:    v.fields,
+			Position:  files.Position(e.Pos()),
+			Code:      code.OfNode(e),
+		}
+	default:
+		return &UnexpectedExpr{Expr: v.unexpected, Position: files.Position(e.Pos())}
+	}
+}
+
 type typeExprVisitor struct {
 	kind kind
 
@@ -260,20 +250,23 @@ type typeExprVisitor struct {
 	modifiers Modifiers
 
 	// kType
-	selector   []string
-	typeParams TypeExprs
+	selector []string
+	typeArgs TypeExprs
 
 	// kFuncType only
 	params  Fields
 	results Fields
 
 	// kMap only
-	key ast.Expr
-	// kMap + kChan + kUnexpected
-	value ast.Expr
+	key TypeExpr
+	// kMap + kChan
+	value TypeExpr
 
 	// kStructType + kInterfaceType
 	fields Fields
+
+	// kUnexpected
+	unexpected ast.Expr
 
 	files *token.FileSet
 }
@@ -281,8 +274,8 @@ type typeExprVisitor struct {
 // visitExpr
 //
 // https://github.com/golang/go/blob/release-branch.go1.21/src/go/ast/ast.go#L548
-// "+" - can be part of type ref
-// "-" - can NOT be part of type ref
+// "+" - can be part of type expression
+// "-" - can NOT be part of type expression
 // - ast.BadExpr
 // + ast.Ident				ex: *.TypeName
 // + ast.Ellipsis			ex: ...TypeName
@@ -290,7 +283,7 @@ type typeExprVisitor struct {
 // - ast.FuncLit			ex: func(x string) {}
 // - ast.CompositeLit 		ex: TypeName{a: 1}, []int{1,2}, map[string]int{"1": 1}. https://go.dev/ref/spec#Composite_literals
 // - ast.ParenExpr			ex: (a + b)
-// + ast.SelectorExpr		ex: *.*
+// + ast.SelectorExpr		ex: *.abc
 // + ast.IndexExpr			ex: ..[A any]
 // + ast.IndexListExpr		ex: ..[A any, B any]
 // - ast.SliceExpr			ex: a[1:n]
@@ -343,7 +336,7 @@ func (v *typeExprVisitor) visitIdent(e *ast.Ident) {
 }
 
 func (v *typeExprVisitor) visitEllipsis(e *ast.Ellipsis) {
-	v.modifiers = append(v.modifiers, &Ellipsis2{Position: v.files.Position(e.Pos())})
+	v.modifiers = append(v.modifiers, &Ellipsis{Position: v.files.Position(e.Pos())})
 	v.visitExpr(e.Elt)
 }
 
@@ -353,13 +346,13 @@ func (v *typeExprVisitor) visitSelectorExpr(e *ast.SelectorExpr) {
 }
 
 func (v *typeExprVisitor) visitIndexExpr(e *ast.IndexExpr) {
-	v.typeParams = append(v.typeParams, ParseTypeExpr(v.files, e.Index))
+	v.typeArgs = append(v.typeArgs, ParseTypeExpr(v.files, e.Index))
 	v.visitExpr(e.X)
 }
 
 func (v *typeExprVisitor) visitIndexListExpr(e *ast.IndexListExpr) {
 	for _, index := range e.Indices {
-		v.typeParams = append(v.typeParams, ParseTypeExpr(v.files, index))
+		v.typeArgs = append(v.typeArgs, ParseTypeExpr(v.files, index))
 	}
 	v.visitExpr(e.X)
 }
@@ -397,18 +390,18 @@ func (v *typeExprVisitor) visitInterfaceType(e *ast.InterfaceType) {
 
 func (v *typeExprVisitor) visitMapType(e *ast.MapType) {
 	v.kind = kMap
-	v.key = e.Key
-	v.value = e.Value
+	v.key = ParseTypeExpr(v.files, e.Key)
+	v.value = ParseTypeExpr(v.files, e.Value)
 }
 
 func (v *typeExprVisitor) visitChanType(e *ast.ChanType) {
 	v.kind = kChan
-	v.value = e.Value
+	v.value = ParseTypeExpr(v.files, e.Value)
 }
 
 func (v *typeExprVisitor) visitUnexpected(e ast.Expr) {
 	v.kind = kUnexpected
-	v.value = e
+	v.unexpected = e
 }
 
 func (v *typeExprVisitor) fieldList(fields *ast.FieldList) Fields {

@@ -30,7 +30,7 @@ func (i *Inspect) TypeExpr(t types.TypeExpr) any {
 		return i.StructTypeExpr(tt)
 	case *types.InterfaceTypeExpr:
 		return i.InterfaceTypeExpr(tt)
-	case *types.TypeParamExpr:
+	case *types.TypeArgExpr:
 		return Modifiers(tt.Modifiers) + tt.Name
 	default:
 		panic("unknown type")
@@ -59,8 +59,8 @@ func (i *Inspect) typeExpr(t types.TypeExpr) string {
 		return i.structTypeExpr(tt)
 	case *types.InterfaceTypeExpr:
 		return i.interfaceTypeExpr(tt)
-	case *types.TypeParamExpr:
-		return i.typeParamExpr(tt)
+	case *types.TypeArgExpr:
+		return i.typeArgExpr(tt)
 	default:
 		panic("unknown type expression")
 	}
@@ -75,8 +75,8 @@ func (i *Inspect) StructExpr(t *types.StructExpr) map[string]any {
 
 	res := map[string]any{"struct": Modifiers(t.Modifiers) + i.composeType(d.Package, d.TypeName, d.TypeParams)}
 
-	if len(t.TypeParams) != 0 {
-		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeExpr) any { return i.TypeExpr(el) })
+	if len(t.TypeArgs) != 0 {
+		res["actual"] = slices.Map(t.TypeArgs, func(el types.TypeExpr) any { return i.TypeExpr(el) })
 	}
 
 	if len(t.Fields) != 0 {
@@ -88,9 +88,9 @@ func (i *Inspect) StructExpr(t *types.StructExpr) map[string]any {
 
 func (i *Inspect) structExpr(t *types.StructExpr) string {
 	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
-	if len(t.TypeParams) > 0 {
-		typeParamsOut := i.typeExprs(t.TypeParams)
-		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
+	if len(t.TypeArgs) > 0 {
+		typeArgsOut := i.typeExprs(t.TypeArgs)
+		out += fmt.Sprintf("[%s]", strings.Join(typeArgsOut, ", "))
 	}
 	return out
 }
@@ -100,8 +100,8 @@ func (i *Inspect) InterfaceExpr(t *types.InterfaceExpr) map[string]any {
 
 	res := map[string]any{"interface": Modifiers(t.Modifiers) + i.composeType(d.Package, d.TypeName, d.TypeParams)}
 
-	if len(t.TypeParams) != 0 {
-		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeExpr) any { return i.TypeExpr(el) })
+	if len(t.TypeArgs) != 0 {
+		res["actual"] = slices.Map(t.TypeArgs, func(el types.TypeExpr) any { return i.TypeExpr(el) })
 	}
 
 	if len(t.Fields) != 0 {
@@ -113,9 +113,9 @@ func (i *Inspect) InterfaceExpr(t *types.InterfaceExpr) map[string]any {
 
 func (i *Inspect) interfaceExpr(t *types.InterfaceExpr) string {
 	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
-	if len(t.TypeParams) > 0 {
-		typeParamsOut := i.typeExprs(t.TypeParams)
-		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
+	if len(t.TypeArgs) > 0 {
+		typeArgsOut := i.typeExprs(t.TypeArgs)
+		out += fmt.Sprintf("[%s]", strings.Join(typeArgsOut, ", "))
 	}
 
 	return out
@@ -128,8 +128,8 @@ func (i *Inspect) TypeDefExpr(t *types.TypeDefExpr) map[string]any {
 		"typedef": Modifiers(t.Modifiers) + i.composeType(d.Package, d.TypeName, d.TypeParams) + " " + i.typeExpr(d.Type),
 	}
 
-	if len(t.TypeParams) != 0 {
-		res["actual"] = slices.Map(t.TypeParams, func(el types.TypeExpr) any { return i.TypeExpr(el) })
+	if len(t.TypeArgs) != 0 {
+		res["actual"] = slices.Map(t.TypeArgs, func(el types.TypeExpr) any { return i.TypeExpr(el) })
 	}
 
 	res["intro"] = i.TypeExpr(t.Type)
@@ -139,9 +139,9 @@ func (i *Inspect) TypeDefExpr(t *types.TypeDefExpr) map[string]any {
 
 func (i *Inspect) typeDefExpr(t *types.TypeDefExpr) string {
 	out := Modifiers(t.Modifiers) + i.typeID(t.Package, t.TypeName)
-	if len(t.TypeParams) > 0 {
-		typeParamsOut := i.typeExprs(t.TypeParams)
-		out += fmt.Sprintf("[%s]", strings.Join(typeParamsOut, ", "))
+	if len(t.TypeArgs) > 0 {
+		typeArgsOut := i.typeExprs(t.TypeArgs)
+		out += fmt.Sprintf("[%s]", strings.Join(typeArgsOut, ", "))
 	}
 	return out
 }
@@ -281,7 +281,7 @@ func (i *Inspect) interfaceTypeExpr(t *types.InterfaceTypeExpr) string {
 	return out
 }
 
-func (i *Inspect) typeParamExpr(t *types.TypeParamExpr) string {
+func (i *Inspect) typeArgExpr(t *types.TypeArgExpr) string {
 	return fmt.Sprintf("%s%s", Modifiers(t.Modifiers), t.Name)
 }
 

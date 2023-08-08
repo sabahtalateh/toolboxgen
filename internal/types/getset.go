@@ -86,7 +86,7 @@ func (g GetFromExpr) Position() token.Position {
 		return r.Position
 	case *StructTypeExpr:
 		return r.Position
-	case *TypeParamExpr:
+	case *TypeArgExpr:
 		return r.Position
 	default:
 		panic("unknown type")
@@ -115,7 +115,7 @@ func (g GetFromExpr) Modifiers() Modifiers {
 		return r.Modifiers
 	case *InterfaceTypeExpr:
 		return r.Modifiers
-	case *TypeParamExpr:
+	case *TypeArgExpr:
 		return r.Modifiers
 	default:
 		panic("unknown type")
@@ -162,7 +162,7 @@ func (t *InterfaceTypeExpr) Get() GetFromExpr {
 	return GetFromExpr{expr: t}
 }
 
-func (t *TypeParamExpr) Get() GetFromExpr {
+func (t *TypeArgExpr) Get() GetFromExpr {
 	return GetFromExpr{expr: t}
 }
 
@@ -192,7 +192,7 @@ func (s SetOnExpr) Modifiers(m Modifiers) {
 		r.Modifiers = m
 	case *InterfaceTypeExpr:
 		r.Modifiers = m
-	case *TypeParamExpr:
+	case *TypeArgExpr:
 		r.Modifiers = m
 	default:
 		panic("unknown type")
@@ -239,6 +239,6 @@ func (t *InterfaceTypeExpr) Set() SetOnExpr {
 	return SetOnExpr{expr: t}
 }
 
-func (t *TypeParamExpr) Set() SetOnExpr {
+func (t *TypeArgExpr) Set() SetOnExpr {
 	return SetOnExpr{expr: t}
 }

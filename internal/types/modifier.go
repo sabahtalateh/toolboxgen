@@ -18,6 +18,10 @@ type (
 		Position token.Position
 	}
 
+	Reference struct {
+		Position token.Position
+	}
+
 	Array struct {
 		Sized    bool
 		Position token.Position
@@ -30,9 +34,10 @@ type (
 	Modifiers []Modifier
 )
 
-func (m *Pointer) modifier()  {}
-func (m *Array) modifier()    {}
-func (m *Ellipsis) modifier() {}
+func (m *Pointer) modifier()   {}
+func (m *Reference) modifier() {}
+func (m *Array) modifier()     {}
+func (m *Ellipsis) modifier()  {}
 
 func (m *Pointer) Equal(m2 Modifier) bool {
 	switch m2.(type) {
@@ -45,6 +50,19 @@ func (m *Pointer) Equal(m2 Modifier) bool {
 
 func (m *Pointer) String() string {
 	return "*"
+}
+
+func (m *Reference) Equal(m2 Modifier) bool {
+	switch m2.(type) {
+	case *Reference:
+		return true
+	default:
+		return false
+	}
+}
+
+func (m *Reference) String() string {
+	return "&"
 }
 
 func (m *Array) Equal(m2 Modifier) bool {

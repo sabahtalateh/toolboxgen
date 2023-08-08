@@ -50,7 +50,3 @@ func (t *StructType) Get() GetFromTypeExpr {
 func (t *InterfaceType) Get() GetFromTypeExpr {
 	return GetFromTypeExpr{typ: t}
 }
-
-func (t *UnexpectedExpr) Get() GetFromTypeExpr {
-	return GetFromTypeExpr{typ: t}
-}

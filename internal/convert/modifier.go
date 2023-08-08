@@ -14,7 +14,7 @@ func Modifiers(modifiers syntax.Modifiers) types.Modifiers {
 			res = append(res, &types.Pointer{Position: modifier.Position})
 		case *syntax.Array:
 			res = append(res, &types.Array{Sized: modifier.Sized, Position: modifier.Position})
-		case *syntax.Ellipsis2:
+		case *syntax.Ellipsis:
 			res = append(res, &types.Ellipsis{Position: modifier.Position})
 		}
 	}

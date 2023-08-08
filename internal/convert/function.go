@@ -81,7 +81,7 @@ func receiverTypeParams(recv syntax.TypeExpr) (types.TypeParams, error) {
 
 	switch r := recv.(type) {
 	case *syntax.Type:
-		params = r.TypeParams
+		params = r.TypeArgs
 	default:
 		return nil, errors.Errorf(recv.Get().Position(), "unsupported receiver type")
 	}

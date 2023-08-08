@@ -82,7 +82,7 @@ func TestConvert(t *testing.T) {
 		{name: "interfaceexpr"},
 		{name: "typedefexpr"},
 		{name: "typealiasexpr"},
-		{name: "typeparamexpr"},
+		{name: "typeargexpr"},
 		{name: "complex"},
 		{name: "typeparams"},
 		{name: "func"},

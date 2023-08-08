@@ -33,11 +33,11 @@ func TypeParams(ctx Context, ff *ast.FieldList) types.TypeParams {
 	return res
 }
 
-func InitTypeParams(params types.TypeParams) types.TypeExprs {
+func InitTypeArgs(params types.TypeParams) types.TypeExprs {
 	var res types.TypeExprs
 
 	for _, param := range params {
-		res = append(res, &types.TypeParamExpr{
+		res = append(res, &types.TypeArgExpr{
 			Order:      param.Order,
 			Name:       param.Name,
 			Position:   param.Position,

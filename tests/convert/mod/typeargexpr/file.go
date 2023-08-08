@@ -1,4 +1,4 @@
-package typeparamexpr
+package typeargexpr
 
 type A[X any] struct {
 	x *X

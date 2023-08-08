@@ -170,7 +170,7 @@ func (t *StructExpr) Equal(t2 TypeExpr) bool {
 			return false
 		}
 
-		if !t.TypeParams.Equal(tt2.TypeParams) {
+		if !t.TypeArgs.Equal(tt2.TypeArgs) {
 			return false
 		}
 
@@ -195,7 +195,7 @@ func (t *InterfaceExpr) Equal(t2 TypeExpr) bool {
 			return false
 		}
 
-		if !t.TypeParams.Equal(tt2.TypeParams) {
+		if !t.TypeArgs.Equal(tt2.TypeArgs) {
 			return false
 		}
 
@@ -220,7 +220,7 @@ func (t *TypeDefExpr) Equal(t2 TypeExpr) bool {
 			return false
 		}
 
-		if !t.TypeParams.Equal(tt2.TypeParams) {
+		if !t.TypeArgs.Equal(tt2.TypeArgs) {
 			return false
 		}
 
@@ -344,9 +344,9 @@ func (t *InterfaceTypeExpr) Equal(t2 TypeExpr) bool {
 	}
 }
 
-func (t *TypeParamExpr) Equal(t2 TypeExpr) bool {
+func (t *TypeArgExpr) Equal(t2 TypeExpr) bool {
 	switch tt2 := t2.(type) {
-	case *TypeParamExpr:
+	case *TypeArgExpr:
 		if !t.Modifiers.Equal(tt2.Modifiers) {
 			return false
 		}

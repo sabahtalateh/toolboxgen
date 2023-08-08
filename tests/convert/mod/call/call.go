@@ -13,7 +13,7 @@ func f(...any) any {
 	return nil
 }
 
-var _ = f(map[string]int{})
+var _ = y.z(a.b.c[string, int], 22, "joj", map[string]int{})
 
 func init() {
 	di.Component(NewA)

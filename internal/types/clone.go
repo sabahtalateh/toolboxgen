@@ -13,7 +13,7 @@ func (t *BuiltinExpr) Clone() TypeExpr {
 func (t *StructExpr) Clone() TypeExpr {
 	return &StructExpr{
 		Modifiers:  t.Modifiers.Clone(),
-		TypeParams: t.TypeParams.Clone(),
+		TypeArgs:   t.TypeArgs.Clone(),
 		Package:    t.Package,
 		TypeName:   t.TypeName,
 		Fields:     t.Fields.Clone(),
@@ -26,7 +26,7 @@ func (t *StructExpr) Clone() TypeExpr {
 func (t *InterfaceExpr) Clone() TypeExpr {
 	return &InterfaceExpr{
 		Modifiers:  t.Modifiers.Clone(),
-		TypeParams: t.TypeParams.Clone(),
+		TypeArgs:   t.TypeArgs.Clone(),
 		Package:    t.Package,
 		TypeName:   t.TypeName,
 		Fields:     t.Fields.Clone(),
@@ -44,7 +44,7 @@ func (t *TypeDefExpr) Clone() TypeExpr {
 
 	return &TypeDefExpr{
 		Modifiers:  t.Modifiers.Clone(),
-		TypeParams: t.TypeParams.Clone(),
+		TypeArgs:   t.TypeArgs.Clone(),
 		Package:    t.Package,
 		TypeName:   t.TypeName,
 		Type:       typ,
@@ -118,8 +118,8 @@ func (t *InterfaceTypeExpr) Clone() TypeExpr {
 	}
 }
 
-func (t *TypeParamExpr) Clone() TypeExpr {
-	return &TypeParamExpr{
+func (t *TypeArgExpr) Clone() TypeExpr {
+	return &TypeArgExpr{
 		Modifiers:  t.Modifiers.Clone(),
 		Order:      t.Order,
 		Name:       t.Name,
@@ -139,6 +139,10 @@ func (t TypeExprs) Clone() TypeExprs {
 
 func (m *Pointer) Clone() Modifier {
 	return &Pointer{Position: m.Position}
+}
+
+func (m *Reference) Clone() Modifier {
+	return &Reference{Position: m.Position}
 }
 
 func (m *Array) Clone() Modifier {

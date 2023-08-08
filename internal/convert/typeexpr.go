@@ -39,7 +39,7 @@ func (c *Converter) convertTypeExpr(ctx Context, e syntax.TypeExpr) (types.TypeE
 func (c *Converter) typeExpr(ctx Context, e *syntax.Type) (types.TypeExpr, error) {
 	if e.Package == "" {
 		if def, ok := ctx.DefinedByName(e.TypeName); ok {
-			return typeParamExpr(e, def), nil
+			return typeArgExpr(e, def), nil
 		}
 	}
 
@@ -200,16 +200,16 @@ func builtinExpr(e *syntax.Type, t *types.Builtin) *types.BuiltinExpr {
 }
 
 func (c *Converter) structExpr(ctx Context, e *syntax.Type, t *types.Struct) (*types.StructExpr, error) {
-	actual, err := c.actual(ctx, t.TypeParams, e.TypeParams)
+	actual, err := c.typeArgs(ctx, t.TypeParams, e.TypeArgs)
 	if err != nil {
 		return nil, err
 	}
 
-	return resolveStruct(
+	return forwardToStruct(
 		ctx.WithDefined(t.TypeParams),
 		&types.StructExpr{
 			Modifiers:  Modifiers(e.Modifiers),
-			TypeParams: InitTypeParams(t.TypeParams),
+			TypeArgs:   InitTypeArgs(t.TypeParams),
 			Package:    t.Package,
 			TypeName:   t.TypeName,
 			Fields:     t.Fields.Clone(),
@@ -222,16 +222,16 @@ func (c *Converter) structExpr(ctx Context, e *syntax.Type, t *types.Struct) (*t
 }
 
 func (c *Converter) interfaceExpr(ctx Context, e *syntax.Type, t *types.Interface) (*types.InterfaceExpr, error) {
-	actual, err := c.actual(ctx, t.TypeParams, e.TypeParams)
+	actual, err := c.typeArgs(ctx, t.TypeParams, e.TypeArgs)
 	if err != nil {
 		return nil, err
 	}
 
-	return resolveInterface(
+	return forwardToInterface(
 		ctx.WithDefined(t.TypeParams),
 		&types.InterfaceExpr{
 			Modifiers:  Modifiers(e.Modifiers),
-			TypeParams: InitTypeParams(t.TypeParams),
+			TypeArgs:   InitTypeArgs(t.TypeParams),
 			Package:    t.Package,
 			TypeName:   t.TypeName,
 			Fields:     t.Fields.Clone(),
@@ -244,16 +244,16 @@ func (c *Converter) interfaceExpr(ctx Context, e *syntax.Type, t *types.Interfac
 }
 
 func (c *Converter) typeDefExpr(ctx Context, e *syntax.Type, t *types.TypeDef) (*types.TypeDefExpr, error) {
-	actual, err := c.actual(ctx, t.TypeParams, e.TypeParams)
+	actual, err := c.typeArgs(ctx, t.TypeParams, e.TypeArgs)
 	if err != nil {
 		return nil, err
 	}
 
-	return resolveTypeDef(
+	return forwardToTypeDef(
 		ctx.WithDefined(t.TypeParams),
 		&types.TypeDefExpr{
 			Modifiers:  Modifiers(e.Modifiers),
-			TypeParams: InitTypeParams(t.TypeParams),
+			TypeArgs:   InitTypeArgs(t.TypeParams),
 			Package:    t.Package,
 			TypeName:   t.TypeName,
 			Type:       t.Type.Clone(),
@@ -277,8 +277,8 @@ func typeAliasExpr(e *syntax.Type, t *types.TypeAlias) *types.TypeAliasExpr {
 	}
 }
 
-func typeParamExpr(e *syntax.Type, t *types.TypeParam) *types.TypeParamExpr {
-	return &types.TypeParamExpr{
+func typeArgExpr(e *syntax.Type, t *types.TypeParam) *types.TypeArgExpr {
+	return &types.TypeArgExpr{
 		Modifiers:  Modifiers(e.Modifiers),
 		Name:       t.Name,
 		Order:      t.Order,
@@ -288,7 +288,7 @@ func typeParamExpr(e *syntax.Type, t *types.TypeParam) *types.TypeParamExpr {
 	}
 }
 
-func (c *Converter) actual(ctx Context, defined types.TypeParams, ee syntax.TypeExprs) (types.TypeExprs, error) {
+func (c *Converter) typeArgs(ctx Context, defined types.TypeParams, ee syntax.TypeExprs) (types.TypeExprs, error) {
 	if len(defined) != len(ee) {
 		return nil, errors.Errorf(ctx.Position(), "got %d type param but %d required", len(ee), len(defined))
 	}

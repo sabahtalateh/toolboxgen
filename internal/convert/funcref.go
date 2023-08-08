@@ -15,13 +15,13 @@ package convert
 // 	// 	return nil, err
 // 	// }
 // 	//
-// 	// if len(ref.TypeParams) != len(fDef.TypeParams) {
+// 	// if len(ref.TypeArgs) != len(fDef.TypeArgs) {
 // 	// 	return nil, errors.InconsistentTypeParamsErr(ref.NodePosition())
 // 	// }
 // 	//
 // 	// fRef := tool.FuncRefFromDef(ref.NodePosition(), fDef)
 // 	// fRef.Code = ref.Code()
-// 	// for i, tParam := range ref.TypeParams {
+// 	// for i, tParam := range ref.TypeArgs {
 // 	// 	param, pErr := fRef.NthTypeParam(i)
 // 	// 	if err != nil {
 // 	// 		return nil, errors.ParseError(param.NodePosition, pErr)

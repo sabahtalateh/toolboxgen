@@ -11,12 +11,16 @@ type (
 		Position token.Position
 	}
 
+	Reference struct {
+		Position token.Position
+	}
+
 	Array struct {
 		Sized    bool
 		Position token.Position
 	}
 
-	Ellipsis2 struct {
+	Ellipsis struct {
 		Position token.Position
 	}
 
@@ -24,5 +28,6 @@ type (
 )
 
 func (p *Pointer) modifier()   {}
+func (p *Reference) modifier() {}
 func (a *Array) modifier()     {}
-func (a *Ellipsis2) modifier() {}
+func (a *Ellipsis) modifier()  {}
