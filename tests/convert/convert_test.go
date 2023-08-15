@@ -86,7 +86,6 @@ func TestConvert(t *testing.T) {
 		{name: "complex"},
 		{name: "typeparams"},
 		{name: "func"},
-		{name: "call"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

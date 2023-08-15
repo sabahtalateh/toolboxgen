@@ -91,7 +91,7 @@ func (d *discovery) discoverFile(file *ast.File, Package string, files *token.Fi
 			return false
 		}
 
-		// reset insideFunction variable
+		// reset insideFunction
 		if node != nil && insideFunction != nil && node.Pos() >= insideFunction.End() {
 			insideFunction = nil
 		}

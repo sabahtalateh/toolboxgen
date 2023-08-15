@@ -464,12 +464,12 @@ package syntax
 // }
 //
 // func (v *exprVisitor) field(f *ast.Field) []*Field {
-// 	if len(f.Names) == 0 {
+// 	if len(f.Named) == 0 {
 // 		return []*Field{{Type: ParseExpr(v.files, f.Type), Position: v.files.Position(f.Pos())}}
 // 	}
 //
 // 	var ff []*Field
-// 	for _, name := range f.Names {
+// 	for _, name := range f.Named {
 // 		ff = append(ff, &Field{Name: name.Name, Type: ParseExpr(v.files, f.Type), Position: v.files.Position(f.Pos())})
 // 	}
 // 	return ff
