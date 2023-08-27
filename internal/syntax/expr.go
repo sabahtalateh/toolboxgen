@@ -157,7 +157,7 @@ package syntax
 // 	Expr []E
 //
 // 	Field struct {
-// 		Name     string
+// 		name     string
 // 		Type     Expr
 // 		Position token.Position
 // 	}
@@ -265,7 +265,7 @@ package syntax
 // }
 //
 // func (v *exprVisitor) visitIdent(e *ast.Ident) {
-// 	v.ee = append(v.ee, &Ident{Value: e.Name, Position: v.files.Position(e.Pos()), Expr: e})
+// 	v.ee = append(v.ee, &Ident{Value: e.name, Position: v.files.Position(e.Pos()), Expr: e})
 // }
 //
 // func (v *exprVisitor) visitEllipsis(e *ast.Ellipsis) {
@@ -470,7 +470,7 @@ package syntax
 //
 // 	var ff []*Field
 // 	for _, name := range f.Named {
-// 		ff = append(ff, &Field{Name: name.Name, Type: ParseExpr(v.files, f.Type), Position: v.files.Position(f.Pos())})
+// 		ff = append(ff, &Field{name: name.name, Type: ParseExpr(v.files, f.Type), Position: v.files.Position(f.Pos())})
 // 	}
 // 	return ff
 // }

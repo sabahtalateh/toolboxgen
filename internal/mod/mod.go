@@ -101,7 +101,7 @@ type PkgInfo struct {
 //         }
 //         dir := filepath.Join(dirParts[:len(dirParts)-1]...)
 //         nameParts := strings.Split(pkgPath, "/")
-//         pInf.Name = nameParts[len(nameParts)-1]
+//         pInf.name = nameParts[len(nameParts)-1]
 //         pInf.Dir = dir
 //         pInf.Vendored = false
 //         pInf.StdLib = true
@@ -136,7 +136,7 @@ type PkgInfo struct {
 //     if len(pkgs) > 1 {
 //         pkgNames := make([]string, 0)
 //         for _, p := range pkgs {
-//             pkgNames = append(pkgNames, p.Name)
+//             pkgNames = append(pkgNames, p.name)
 //         }
 //
 //         return nil, fmt.Errorf(
@@ -147,10 +147,10 @@ type PkgInfo struct {
 //
 //     if len(pkgs) == 0 {
 //         _, dir := filepath.Split(pInf.Dir)
-//         pInf.Name = dir
+//         pInf.name = dir
 //     } else {
 //         for _, p := range pkgs {
-//             pInf.Name = p.Name
+//             pInf.name = p.name
 //             break
 //         }
 //     }
@@ -169,12 +169,12 @@ type PkgInfo struct {
 //     }
 //
 //     var impAlias string
-//     if impSpec.Name != nil {
-//         impAlias = impSpec.Name.Name
+//     if impSpec.name != nil {
+//         impAlias = impSpec.name.name
 //     } else {
 //         parts := strings.Split(pkgPath, "/")
-//         if parts[len(parts)-1] != pInf.Name {
-//             impAlias = pInf.Name
+//         if parts[len(parts)-1] != pInf.name {
+//             impAlias = pInf.name
 //         } else {
 //             impAlias = parts[len(parts)-1]
 //         }

@@ -31,7 +31,7 @@ package convert
 // 	// 	if err != nil {
 // 	// 		return nil, err
 // 	// 	}
-// 	// 	fRef.SetEffectiveParamRecursive(param.Name, effective)
+// 	// 	fRef.SetEffectiveParamRecursive(param.name, effective)
 // 	// }
 //
 // 	// return fRef, nil

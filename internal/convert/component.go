@@ -34,7 +34,7 @@ type component struct {
 //
 // 	for _, call := range calls[1:] {
 // 		switch call.FuncName {
-// 		case "Name":
+// 		case "name":
 // 			if err = c.setName(comp, call); err != nil {
 // 				return nil, err
 // 			}
@@ -65,11 +65,11 @@ type component struct {
 // 		if name.Val == "" {
 // 			return errors.Errorf(nameArg.Val.NodePosition(), "component name should not be empty")
 // 		}
-// 		if comp.Name != "" {
+// 		if comp.name != "" {
 // 			return errors.Errorf(nameArg.Val.NodePosition(), "component name already set")
 // 		}
 //
-// 		comp.Name = name.Val
+// 		comp.name = name.Val
 // 		return nil
 // 	default:
 // 		return errors.StringLitExpectedErr(nameArg.Val.NodePosition())
